@@ -1,7 +1,8 @@
 from os import environ
+from random import choice
 
-from telegram import Update
-from telegram.ext import Updater
+from telegram import Update, BotCommand
+from telegram.ext import Updater, CallbackContext, CommandHandler
 
 
 # class for configuration of a bot
@@ -51,3 +52,56 @@ config = Config(
 # create updater and dispatcher
 updater = Updater(config.TOKEN, use_context=True)
 dispatcher = updater.dispatcher
+
+
+# default reply strings
+
+START_TEXT = """
+Hello, everynyan!
+
+I'm `kawai neko chan`, a cute little bot that does rendum shit rn.
+"""
+
+HELP_TEXT = """
+Hello, everynyan!
+
+I'm `kawai neko chan`, a cute little bot that does rendum shit rn.
+
+Use following commands to use me (*blush*):
+/help - recursion ftw
+/start - turn me on
+/talk - make me meow
+"""
+
+
+def start(update: Update, context: CallbackContext):
+    # start message
+    log(update, func_name="start")
+    update.message.reply_markdown(START_TEXT)
+
+
+def help(update: Update, context: CallbackContext):
+    # display help message
+    log(update, func_name="help")
+    update.message.reply_markdown(HELP_TEXT)
+
+
+def talk(update: Update, context: CallbackContext):
+    # this cat meows
+    log(update, func_name="talk")
+    update.message.reply_markdown(f"`{('meow ' * choice(range(100))).rstrip()}`")
+
+
+# create handlers
+dispatcher.add_handler(CommandHandler("start", start))
+dispatcher.add_handler(TALK_COMMAND_HANDLER=CommandHandler("talk", talk))
+dispatcher.add_handler(HELP_COMMAND_HANDLER=CommandHandler("help", help))
+
+
+# set bot commands
+COMMANDS = [
+    BotCommand(command='help', description="Display the help text to understand how to use this bot"),
+    BotCommand(command='talk', description="This cat can meow"),
+]
+
+updater.bot.set_my_commands(COMMANDS)
