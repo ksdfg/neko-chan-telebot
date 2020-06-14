@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from random import choice
 
-from telegram import Update
+from telegram import Update, BotCommand
 from telegram.ext import CommandHandler, CallbackContext
 
 from telebot import dispatcher, updater, config
@@ -63,11 +63,20 @@ TALK_COMMAND_HANDLER = CommandHandler("talk", talk)
 HELP_COMMAND_HANDLER = CommandHandler("help", help)
 
 
+# bot commands
+COMMANDS = [
+    BotCommand(command='help', description="Display the help text to understand how to use this bot"),
+    BotCommand(command='talk', description="This cat can meow"),
+]
+
 if __name__ == "__main__":
     # add handlers
     dispatcher.add_handler(START_COMMAND_HANDLER)
     dispatcher.add_handler(TALK_COMMAND_HANDLER)
     dispatcher.add_handler(HELP_COMMAND_HANDLER)
+
+    # set bot commands
+    updater.bot.set_my_commands(COMMANDS)
 
     # start bot
     updater.start_polling()
