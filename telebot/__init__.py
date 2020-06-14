@@ -33,8 +33,12 @@ def log(update: Update, func_name: str, extra_text: str = ""):
     :param extra_text: any extra text to be logged
     :return: None
     """
+    chat = "private chat"
+    if update.effective_chat.type != "private":
+        chat = update.effective_chat.title
+
     print("------------------------------------")
-    print(update.effective_user.username, "called function", func_name)
+    print(update.effective_user.username, "called function", func_name, "from", chat)
     if extra_text:
         print(extra_text)
 
