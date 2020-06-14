@@ -68,9 +68,9 @@ Hello, everynyan!
 I'm `kawai neko chan`, a cute little bot that does rendum shit rn.
 
 Use following commands to use me (*blush*):
-/help - recursion ftw
-/start - turn me on
-/talk - make me meow
+/help - Recursion ftw
+/start - Turn me on
+/talk - Make me meow
 """
 
 
@@ -89,19 +89,26 @@ def help(update: Update, context: CallbackContext):
 def talk(update: Update, context: CallbackContext):
     # this cat meows
     log(update, func_name="talk")
-    update.message.reply_markdown(f"`{('meow ' * choice(range(100))).rstrip()}`")
+
+    word = "meow "
+    if context.args:
+        word = context.args[0] + " "
+
+    update.message.reply_markdown(f"`{(word * choice(range(100))).rstrip()}`")
+    if word != "meow ":
+        update.message.reply_markdown(f"`meow`")
 
 
 # create handlers
 dispatcher.add_handler(CommandHandler("start", start))
-dispatcher.add_handler(TALK_COMMAND_HANDLER=CommandHandler("talk", talk))
-dispatcher.add_handler(HELP_COMMAND_HANDLER=CommandHandler("help", help))
+dispatcher.add_handler(CommandHandler("talk", talk))
+dispatcher.add_handler(CommandHandler("help", help))
 
 
 # set bot commands
 COMMANDS = [
     BotCommand(command='help', description="Display the help text to understand how to use this bot"),
-    BotCommand(command='talk', description="This cat can meow"),
+    BotCommand(command='talk', description="Say <word> (or meow, if not given) rendum number of times."),
 ]
 
 updater.bot.set_my_commands(COMMANDS)
