@@ -1,0 +1,13 @@
+name: check-black-formatting
+on: [pull_request, push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@master
+      with:
+        python-version: 3.8.3
+    - uses: actions/checkout@master
+    - run: |
+          pip install black
+          black --check .
