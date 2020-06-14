@@ -1,21 +1,36 @@
+from collections import OrderedDict
+from random import choice
+
 from telegram.ext import CommandHandler
 
 from telebot import dispatcher, updater
 
 
-def start(update, context):
-    start_text = """Hello, everynyan!
-    
+START_TEXT = """
+Hello, everynyan!
+
 I'm `kawai neko chan`, a cute little bot that does nothing rn.
 """
-    update.message.reply_markdown(start_text)
+
+
+def start(update, context):
+    # start message
+    update.message.reply_markdown(START_TEXT)
+
+
+def talk(update, context):
+    # this cat meows
+    update.message.reply_markdown(f"`{('meow ' * choice(range(100))).rstrip()}`")
 
 
 START_COMMAND_HANDLER = CommandHandler("start", start)
+TALK_COMMAND_HANDLER = CommandHandler("talk", talk)
 
 
 if __name__ == "__main__":
+    # add handlers
     dispatcher.add_handler(START_COMMAND_HANDLER)
+    dispatcher.add_handler(TALK_COMMAND_HANDLER)
 
     updater.start_polling()
     updater.idle()
