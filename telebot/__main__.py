@@ -26,7 +26,7 @@ Use following commands to use me (*blush*):
 """
 
 
-def log(username: str, func_name: str, extra_text: str = ""):
+def log(update: Update, func_name: str, extra_text: str = ""):
     """
     Function to log bot activity
     :param username: username of the user who called a command
@@ -35,26 +35,26 @@ def log(username: str, func_name: str, extra_text: str = ""):
     :return: None
     """
     print("------------------------------------")
-    print(username, "called function", func_name)
+    print(update.message.from_user.username, "called function", func_name)
     if extra_text:
         print(extra_text)
 
 
 def start(update: Update, context: CallbackContext):
     # start message
-    log(username=update.message.from_user.username, func_name="start")
+    log(update, func_name="start")
     update.message.reply_markdown(START_TEXT)
 
 
 def help(update: Update, context: CallbackContext):
     # display help message
-    log(username=update.message.from_user.username, func_name="help")
+    log(update, func_name="help")
     update.message.reply_markdown(HELP_TEXT)
 
 
 def talk(update: Update, context: CallbackContext):
     # this cat meows
-    log(username=update.message.from_user.username, func_name="talk")
+    log(update, func_name="talk")
     update.message.reply_markdown(f"`{('meow ' * choice(range(100))).rstrip()}`")
 
 
