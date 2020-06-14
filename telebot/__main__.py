@@ -58,6 +58,7 @@ def talk(update: Update, context: CallbackContext):
     update.message.reply_markdown(f"`{('meow ' * choice(range(100))).rstrip()}`")
 
 
+# create handlers
 START_COMMAND_HANDLER = CommandHandler("start", start)
 TALK_COMMAND_HANDLER = CommandHandler("talk", talk)
 HELP_COMMAND_HANDLER = CommandHandler("help", help)
@@ -79,7 +80,12 @@ if __name__ == "__main__":
     updater.bot.set_my_commands(COMMANDS)
 
     # start bot
-    updater.start_polling()
+    if config.WEBHOOK_URL:
+        updater.start_webhook(listen="0.0.0.0", port=config.PORT, url_path=config.TOKEN)
+        updater.bot.set_webhook(url=config.WEBHOOK_URL + config.TOKEN)
 
-    print("neko chan can meow now")
+    else:
+        updater.start_polling()
+
+    print("neko chan go nyan nyan")
     updater.idle()
