@@ -37,10 +37,10 @@ def log(update: Update, func_name: str, extra_text: str = ""):
     if update.effective_chat.type != "private":
         chat = update.effective_chat.title
 
-    print("------------------------------------")
     print(update.effective_user.username, "called function", func_name, "from", chat)
     if extra_text:
         print(extra_text)
+    print("------------------------------------")
 
 
 # create config object
@@ -98,9 +98,11 @@ def talk(update: Update, context: CallbackContext):
     if context.args:
         word = context.args[0] + " "
 
-    update.message.reply_markdown(f"`{(word * choice(range(100))).rstrip()}`")
+    spem = (word * choice(range(100))).rstrip()
     if word != "meow ":
-        update.message.reply_markdown(f"`meow`")
+        spem += "\n\nmeow"
+
+    update.message.reply_markdown(f"`{spem}`")
 
 
 # create handlers

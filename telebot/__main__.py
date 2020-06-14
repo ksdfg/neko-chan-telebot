@@ -12,7 +12,7 @@ for module_name in ALL_MODULES:
     imported_module = importlib.import_module("telebot.modules." + module_name)
     IMPORTED.add(module_name)
 
-print("Imported modules :", sorted(IMPORTED))
+print("Imported modules :", sorted(IMPORTED), "\n")
 
 if __name__ == "__main__":
     # start bot
@@ -24,4 +24,5 @@ if __name__ == "__main__":
         updater.start_polling()
 
     print("neko chan go nyan nyan")
+    print("------------------------------------")
     updater.idle()
