@@ -15,11 +15,13 @@ I'm `kawai neko chan`, a cute little bot that does nothing rn.
 
 def start(update, context):
     # start message
+    print(update.message.from_user.username, "called start function")
     update.message.reply_markdown(START_TEXT)
 
 
 def talk(update, context):
     # this cat meows
+    print(update.message.from_user.username, "called talk function")
     update.message.reply_markdown(f"`{('meow ' * choice(range(100))).rstrip()}`")
 
 
@@ -33,4 +35,5 @@ if __name__ == "__main__":
     dispatcher.add_handler(TALK_COMMAND_HANDLER)
 
     updater.start_polling()
+    print("neko chan can meow now")
     updater.idle()
