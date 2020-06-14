@@ -1,5 +1,7 @@
 from os import environ
 
+from telegram.ext import Updater
+
 
 # class for configuration of a bot
 class Config:
@@ -13,8 +15,9 @@ class Config:
         self.DB_URI = db_uri
 
 
-try:
-    config = Config(token=environ['TOKEN'], db_uri=environ['DATABASE_URL'])
-except KeyError:
-    print("Please set all required environment variables")
-    exit(1)
+# create config object
+config = Config(token=environ['TOKEN'], db_uri=environ['DATABASE_URL'])
+
+# create updater and dispatcher
+updater = Updater(config.TOKEN, use_context=True)
+dispatcher = updater.dispatcher
