@@ -1,10 +1,11 @@
-from collections import OrderedDict
+import importlib
 from random import choice
 
 from telegram import Update, BotCommand
 from telegram.ext import CommandHandler, CallbackContext
 
-from telebot import dispatcher, updater, config
+from telebot import dispatcher, updater, config, log
+from telebot.modules import ALL_MODULES
 
 # default reply strings
 
@@ -26,18 +27,16 @@ Use following commands to use me (*blush*):
 """
 
 
-def log(update: Update, func_name: str, extra_text: str = ""):
-    """
-    Function to log bot activity
-    :param username: username of the user who called a command
-    :param func_name: name of the function being called
-    :param extra_text: any extra text to be logged
-    :return: None
-    """
-    print("------------------------------------")
-    print(update.message.from_user.username, "called function", func_name)
-    if extra_text:
-        print(extra_text)
+# Import all modules
+IMPORTED = set()
+for module_name in ALL_MODULES:
+    if (config.LOAD and module_name not in config.LOAD) or (config.NO_LOAD and module_name in config.NO_LOAD):
+        continue
+
+    imported_module = importlib.import_module("telebot.modules." + module_name)
+    IMPORTED.add(module_name)
+
+print("Imported modules :", sorted(IMPORTED))
 
 
 def start(update: Update, context: CallbackContext):
