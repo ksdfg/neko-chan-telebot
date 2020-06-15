@@ -1,6 +1,7 @@
 import importlib
 from random import choice
 
+from emoji import emojize
 from telegram import Update, BotCommand
 from telegram.ext import CallbackContext, CommandHandler
 
@@ -24,23 +25,22 @@ print("Imported modules :", sorted(imported_mods.keys()), "\n")
 
 # default reply strings
 
-START_TEXT = """
-Hello, everynyan!
+START_TEXT = f"""
+Hello, everynyan! {emojize(':cat:', use_aliases=True)}
 
 I'm `kawai neko chan`, a cute little bot that does rendum shit rn.
 """
 
-HELP_TEXT = """
-Hello, everynyan!
-
-I'm `kawai neko chan`, a cute little bot that does rendum shit rn.
-
+HELP_TEXT = (
+    START_TEXT
+    + """
 Use following commands to use me (*blush*):
 
 - /help - Recursion ftw
 - /start - Turn me on
 - /talk - Make me meow
 """
+)
 
 # add help strings of all imported modules too
 for mod_name, mod in imported_mods.items():
