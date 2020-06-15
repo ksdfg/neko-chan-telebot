@@ -8,15 +8,18 @@ from telebot import updater, config, log, dispatcher
 from telebot.modules import ALL_MODULES
 
 # Import all modules
-IMPORTED = set()
+imported_mods = {}
 for module_name in ALL_MODULES:
     if (config.LOAD and module_name not in config.LOAD) or (config.NO_LOAD and module_name in config.NO_LOAD):
         continue
 
     imported_module = importlib.import_module("telebot.modules." + module_name)
-    IMPORTED.add(module_name)
 
-print("Imported modules :", sorted(IMPORTED), "\n")
+    # add imported module to the dict of modules, to be used later
+    key = imported_module.__mod_name__ if imported_module.__mod_name__ else imported_module.__name__
+    imported_mods[key] = imported_module
+
+print("Imported modules :", sorted(imported_mods.keys()), "\n")
 
 
 # default reply strings
@@ -33,10 +36,16 @@ Hello, everynyan!
 I'm `kawai neko chan`, a cute little bot that does rendum shit rn.
 
 Use following commands to use me (*blush*):
-/help - Recursion ftw
-/start - Turn me on
-/talk - Make me meow
+
+- /help - Recursion ftw
+- /start - Turn me on
+- /talk - Make me meow
 """
+
+# add help strings of all imported modules too
+for mod_name, mod in imported_mods.items():
+    if mod.__help__:
+        HELP_TEXT += f"\n`{mod_name}`{mod.__help__}"
 
 
 def start(update: Update, context: CallbackContext):
