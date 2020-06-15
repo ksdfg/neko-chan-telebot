@@ -93,11 +93,9 @@ def sauce(update: Update, context: CallbackContext):
 
         # send message
         if update.effective_chat.id in get_command_exception_groups("sauce"):
-            print("meow")
             update.message.reply_html(text_blob)
         else:
             msg = context.bot.send_message(chat_id=update.effective_user.id, text=text_blob, parse_mode=ParseMode.HTML)
-            print(msg.__dict__)
             if update.effective_user.id != update.effective_chat.id:
                 update.message.reply_markdown(
                     f"[Let's enjoy this together in our private chat...](https://t.me/{context.bot.username}"
