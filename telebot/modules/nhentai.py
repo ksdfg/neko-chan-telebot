@@ -1,16 +1,21 @@
-from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, run_async
 from string import Template
+
 import requests
 from bs4 import BeautifulSoup
+from telegram import Update
+from telegram.ext import CommandHandler, run_async, CallbackContext
 from telegraph import Telegraph
+
 from telebot import dispatcher, log
 
 
-def get_info(soup):
-    title = soup.find('h1').text  # title
-    title_jap = soup.find('h2').text  # title in japnese
-    article = soup.find("h3", {"id": "gallery_id"}).text  # hash id
+def get_info(digits):
+    # generate soup object for doujin
+    soup = BeautifulSoup(requests.get(f"https://nhentai.net/g/{digits}/").text, 'html.parser')
 
+    title = soup.find('h1').text  # title
+
+    # get gallery ID for the doujin pages
     thumbnail = soup.find("meta", {"itemprop": "image"})
     gallery_id = thumbnail.get('content').split("/")[-2]
 
@@ -19,20 +24,32 @@ def get_info(soup):
     parodies = get_content(content, 0)
     characters = get_content(content, 1)
     tags = get_content(content, 2)
-    artist = get_content(content, 3)
+    artist = "#" + content[3].find("span", {"class": "name"}).text.replace(' ', '_').replace('-', '_').replace('.', '_')
     groups = get_content(content, 4)
     languages = get_content(content, 5)
     categories = get_content(content, 6)
-    pages = get_content(content, 7)
+    pages = content[7].find("span", {"class": "name"}).text
 
     image_template = Template('<img src="https://i.nhentai.net/galleries/$gallery_id/$page_no.jpg">')
 
     image_tags = ""
 
-    for page_no in range(1, int(pages.replace("#", ""))):
+    for page_no in range(1, int(pages)):
         image_tags += image_template.substitute({'gallery_id': gallery_id, 'page_no': page_no}) + "\n"
 
-    return title, title_jap, article, parodies, characters, tags, artist, groups, languages, categories, image_tags
+    return (
+        title,
+        {
+            'Tags': tags,
+            'Parodies': parodies,
+            'Characters': characters,
+            'Artists': artist,
+            'Groups': groups,
+            'Languages': languages,
+            'Categories': categories,
+        },
+        image_tags,
+    )
 
 
 def get_content(content, id):
@@ -47,48 +64,40 @@ def get_content(content, id):
     else:
         res = ""
         for item in items:
-            res += f"#{item.replace(' ', '_').replace('-', '_')} "
+            res += f"#{item.replace(' ', '_').replace('-', '_').replace('.', '')} "
         return res.strip()
 
 
-def run(sauce):
-    url = f"https://nhentai.net/g/{sauce}/"
-    r = requests.get(url)
-    soup = BeautifulSoup(r.text, 'html.parser')
-    (
-    title,
-    title_jap,
-    article,
-    parodies,
-    characters,
-    tags,
-    artist,
-    groups,
-    languages,
-    categories,
-    image_tags,
-    ) = get_info(soup)
-    telegraph = Telegraph()
-
-    telegraph.create_account(short_name='1337')
-
-    response = telegraph.create_page(str(title), html_content=image_tags,)
-    message = 'https://telegra.ph/{}'.format(response['path']) + "\n" + "title: " + str(title) + "\n" + "title_jap: " + str(title_jap) + "\n" + "article: " + str(article) + "\n" + "parodies: " + str(parodies) + "\n" + "characters: " + str(characters) + "\n" + "tags: " + str(tags) + "\n" + "artist: " + str(artist) + "\n" + "groups: " + str(groups) + "\n" + "languages: " + str(languages) + "\n" + "categories: " + str(categories)
-    return message
-
-
-
 @run_async
-def sauce(update, context):
-    text = context.args
-    for i in range(0, len(text)):
-        message = run(text[i])
-        context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+def sauce(update: Update, context: CallbackContext):
+    log(update, "sauce")
+
+    # check if any args were given
+    if not context.args:
+        update.effective_message.reply_text("Please give some codes to fetch, this cat can't read your mind...")
+        return
+
+    # iterate over each given sauce and fetch the doujin
+    for digits in context.args:
+        title, data, image_tags = get_info(digits)
+
+        telegraph = Telegraph()
+        telegraph.create_account(short_name='1337')
+        article_path = telegraph.create_page(title, html_content=image_tags,)['path']
+
+        text_blob = f"<code>{digits}</code>\n<a href='https://telegra.ph/{article_path}'>{title}</a>"
+        for key, value in data.items():
+            if value:
+                text_blob += f"\n\n<code>{key}</code>\n{value}"
+
+        # send message
+        update.message.reply_html(text_blob)
+
 
 __help__ = """
-- /sauce: Give 6 Digit number for hentai on nhentai.net
+- /sauce: Read a doujin from nhentai.net in telegram instant preview by giving it's 5/6 digit code. You can give multiple codes, and it will fetch all those doujins
 """
+
 __mod_name__ = "nhentai"
 
 dispatcher.add_handler(CommandHandler('sauce', sauce))
-
