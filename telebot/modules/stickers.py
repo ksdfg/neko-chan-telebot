@@ -1,5 +1,6 @@
 from os import remove
 
+from emoji import emojize
 from telegram import Update
 from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
@@ -26,16 +27,23 @@ def get_sticker(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
 
     if rep_msg and rep_msg.sticker:
-        # download file
-        file_id = rep_msg.sticker.file_id
-        new_file = context.bot.get_file(file_id)
-        new_file.download(f'{file_id}.png')
+        # check if sticker is animated, fugg off if it is
+        if rep_msg.sticker.is_animated:
+            update.effective_message.reply_text(
+                f"Sorry, cannyot get animated stickers for now {emojize(':crying_cat_face:', use_aliases=True)} I can meow tho..."
+            )
 
-        # send picture
-        context.bot.send_photo(chat_id, photo=open(f'{file_id}.png', 'rb'))
+        else:
+            # download file
+            file_id = rep_msg.sticker.file_id
+            new_file = context.bot.get_file(file_id)
+            new_file.download(f'{file_id}.png')
 
-        # delete locally created image
-        remove(f'{file_id}.png')
+            # send picture
+            context.bot.send_photo(chat_id, photo=open(f'{file_id}.png', 'rb'))
+
+            # delete locally created image
+            remove(f'{file_id}.png')
 
     else:
         update.effective_message.reply_text("Please reply to a sticker for me to upload its PNG.")
