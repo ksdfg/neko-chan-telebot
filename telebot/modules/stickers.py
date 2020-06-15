@@ -40,7 +40,7 @@ def get_sticker(update: Update, context: CallbackContext):
             new_file.download(f'{file_id}.png')
 
             # send picture
-            context.bot.send_photo(chat_id, photo=open(f'{file_id}.png', 'rb'))
+            context.bot.send_document(chat_id, document=open(f'{file_id}.png', 'rb'))
 
             # delete locally created image
             remove(f'{file_id}.png')
