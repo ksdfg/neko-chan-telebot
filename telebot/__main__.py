@@ -28,7 +28,7 @@ print("Imported modules :", sorted(imported_mods.keys()), "\n")
 START_TEXT = f"""
 Hello, everynyan! {emojize(':cat:', use_aliases=True)}
 
-I'm `kawai neko chan`, a cute little bot that does rendum shit rn.
+I'm `{updater.bot.first_name}`, a cute little bot that does rendum shit rn.
 """
 
 HELP_TEXT = (
