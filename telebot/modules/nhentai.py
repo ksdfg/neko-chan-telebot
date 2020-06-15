@@ -80,9 +80,10 @@ def run(sauce):
 
 @run_async
 def sauce(update, context):
-    text = ' '.join(context.args)
-    message = run(text)
-    context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+    text = context.args
+    for i in range(0, len(text)):
+        message = run(text[i])
+        context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
 __help__ = """
 - /sauce: Give 6 Digit number for hentai on nhentai.net
