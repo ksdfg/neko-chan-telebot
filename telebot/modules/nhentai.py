@@ -2,11 +2,12 @@ from string import Template
 
 import requests
 from bs4 import BeautifulSoup
-from telegram import Update
+from telegram import Update, ParseMode
 from telegram.ext import CommandHandler, run_async, CallbackContext
 from telegraph import Telegraph
 
 from telebot import dispatcher, log
+from telebot.modules.sql.helper import get_command_exception_groups
 
 
 def get_info(digits):
@@ -91,11 +92,22 @@ def sauce(update: Update, context: CallbackContext):
                 text_blob += f"\n\n<code>{key}</code>\n{value}"
 
         # send message
-        update.message.reply_html(text_blob)
+        if update.effective_chat.id in get_command_exception_groups("sauce"):
+            print("meow")
+            update.message.reply_html(text_blob)
+        else:
+            msg = context.bot.send_message(chat_id=update.effective_user.id, text=text_blob, parse_mode=ParseMode.HTML)
+            print(msg.__dict__)
+            if update.effective_user.id != update.effective_chat.id:
+                update.message.reply_markdown(
+                    f"[Let's enjoy this together in our private chat...](https://t.me/{context.bot.username}"
+                )
 
 
 __help__ = """
-- /sauce: Read a doujin from nhentai.net in telegram instant preview by giving it's 5/6 digit code. You can give multiple codes, and it will fetch all those doujins
+- /sauce: Read a doujin from nhentai.net in telegram instant preview by giving it's 5/6 digit code. 
+You can give multiple codes, and it will fetch all those doujins. 
+If you don't have an exception set for your group, it'll send it to you in your private chat.
 """
 
 __mod_name__ = "nhentai"
