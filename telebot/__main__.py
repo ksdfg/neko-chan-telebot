@@ -20,7 +20,7 @@ for module_name in ALL_MODULES:
     key = imported_module.__mod_name__ if imported_module.__mod_name__ else imported_module.__name__
     imported_mods[key] = imported_module
 
-print("Imported modules :", sorted(imported_mods.keys()), "\n")
+print("Imported modules :", sorted(imported_mods.keys()))
 
 
 # default reply strings
@@ -98,5 +98,4 @@ if __name__ == "__main__":
         updater.start_polling()
 
     print("neko chan go nyan nyan")
-    print("------------------------------------")
     updater.idle()

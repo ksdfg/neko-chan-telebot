@@ -39,7 +39,6 @@ def log(update: Update, func_name: str, extra_text: str = ""):
     print(update.effective_user.username, "called function", func_name, "from", chat)
     if extra_text:
         print(extra_text)
-    print("------------------------------------")
 
 
 # create config object
