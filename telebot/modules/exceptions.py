@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import CommandHandler, run_async, CallbackContext
 
-from telebot import dispatcher
+from telebot import dispatcher, log
 from telebot.modules.sql.helper import (
     add_command_exception_groups,
     del_command_exception_groups,
@@ -11,6 +11,8 @@ from telebot.modules.sql.helper import (
 
 @run_async
 def list_exceptions(update: Update, context: CallbackContext):
+    log(update, "list exceptions")
+
     if update.effective_chat.type == "private":
         update.effective_message.reply_text("You can't list exceptions in private chats.")
 
@@ -26,6 +28,8 @@ def list_exceptions(update: Update, context: CallbackContext):
 
 @run_async
 def add_exception(update: Update, context: CallbackContext):
+    log(update, "add exceptions")
+
     if update.effective_chat.type == "private":
         update.effective_message.reply_text("You can't add exceptions in private chats.")
 
@@ -37,6 +41,8 @@ def add_exception(update: Update, context: CallbackContext):
 
 @run_async
 def del_exception(update: Update, context: CallbackContext):
+    log(update, "delete exceptions")
+
     if update.effective_chat.type == "private":
         update.effective_message.reply_text("You can't delete exceptions in private chats.")
 
@@ -49,12 +55,12 @@ def del_exception(update: Update, context: CallbackContext):
 __help__ = """
 Adding an exception for a command in your group will change it's behaviour. How it will change depends on the command.
 - /listexceptions: list all exceptions in group
-- /addexception <commands>: Add exceptions for given commands (space separated)
-- /delexception <command>: Delete exceptions for given commands (space separated)
+- /addexceptions <commands>: Add exceptions for given commands (space separated)
+- /delexceptions <command>: Delete exceptions for given commands (space separated)
 """
 
 __mod_name__ = "Exceptions"
 
 dispatcher.add_handler(CommandHandler('listexceptions', list_exceptions))
-dispatcher.add_handler(CommandHandler('addexception', add_exception))
-dispatcher.add_handler(CommandHandler('delexception', del_exception))
+dispatcher.add_handler(CommandHandler('addexceptions', add_exception))
+dispatcher.add_handler(CommandHandler('delexceptions', del_exception))
