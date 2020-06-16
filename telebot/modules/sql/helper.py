@@ -42,7 +42,10 @@ def del_command_exception_groups(command: str, group: int) -> str:
         try:
             groups = deepcopy(exceptions.groups)
             groups.remove(group)
-            exceptions.groups = groups
+            if groups:
+                exceptions.groups = groups
+            else:
+                session.delete(exceptions)
             session.commit()
 
             return f"Exception for command `{command}` deleted!"
