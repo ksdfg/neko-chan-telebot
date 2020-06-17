@@ -56,7 +56,7 @@ __help__ = """
 Adding an exception for a command in your group will change it's behaviour. How it will change depends on the command.
 - /listexceptions: list all exceptions in group
 - /addexceptions <commands>: Add exceptions for given commands (space separated)
-- /delexceptions <command>: Delete exceptions for given commands (space separated)
+- /delexceptions <commands>: Delete exceptions for given commands (space separated)
 """
 
 __mod_name__ = "Exceptions"

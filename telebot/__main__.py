@@ -84,6 +84,7 @@ def talk(update: Update, context: CallbackContext):
 COMMANDS = [
     BotCommand(command='help', description="Display the help text to understand how to use this bot"),
     BotCommand(command='talk', description="Say <word> (or meow, if not given) rendum number of times."),
+    BotCommand(command='kang', description="reply to a sticker to add it to your pack."),
 ]
 
 if __name__ == "__main__":
