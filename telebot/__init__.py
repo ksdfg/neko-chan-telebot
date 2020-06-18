@@ -21,8 +21,6 @@ class Config:
 
         self.LOAD = load
         self.NO_LOAD = no_load
-        print("load", load)
-        print("no load", no_load)
 
 
 def log(update: Update, func_name: str, extra_text: str = ""):
