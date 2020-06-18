@@ -1,5 +1,4 @@
-from os import environ
-
+from decouple import config
 from telegram import Update
 from telegram.ext import Updater
 
@@ -20,8 +19,10 @@ class Config:
         self.WEBHOOK_URL = webhook_url
         self.PORT = port
 
-        self.LOAD = load.split(" ") if load else False
-        self.NO_LOAD = no_load.split(" ") if no_load else False
+        self.LOAD = load
+        self.NO_LOAD = no_load
+        print("load", load)
+        print("no load", no_load)
 
 
 def log(update: Update, func_name: str, extra_text: str = ""):
@@ -43,12 +44,12 @@ def log(update: Update, func_name: str, extra_text: str = ""):
 
 # create config object
 config = Config(
-    token=environ['TOKEN'],
-    db_uri=environ['DATABASE_URL'],
-    webhook_url=environ.get('WEBHOOK_URL', False),
-    port=environ.get('PORT', False),
-    load=environ.get('LOAD', False),
-    no_load=environ.get('NO_LOAD', False),
+    token=config('TOKEN'),
+    db_uri=config('DATABASE_URL'),
+    webhook_url=config('WEBHOOK_URL', default=False),
+    port=config('PORT', default=False),
+    load=config('LOAD', default=False, cast=lambda x: x.split(" ") if x else False),
+    no_load=config('NO_LOAD', default=False, cast=lambda x: x.split(" ") if x else False),
 )
 
 # create updater and dispatcher

@@ -1,4 +1,4 @@
-def __list_all_modules():
+def _list_all_modules():
     from os.path import dirname, basename, isfile
     import glob
 
@@ -9,4 +9,4 @@ def __list_all_modules():
     return all_modules
 
 
-ALL_MODULES = sorted(__list_all_modules())
+ALL_MODULES = sorted(_list_all_modules())
