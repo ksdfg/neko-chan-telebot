@@ -19,6 +19,7 @@ def get_info(digits):
     # get gallery ID for the doujin pages
     thumbnail = soup.find("meta", {"itemprop": "image"})
     gallery_id = thumbnail.get('content').split("/")[-2]
+    image_type = thumbnail.get('content').split(".")[-1]
 
     content = soup.find_all("div", {"class": "tag-container"})  # scrape tag container
 
@@ -31,12 +32,14 @@ def get_info(digits):
     categories = get_content(content, 6)
     pages = content[7].find("span", {"class": "name"}).text
 
-    image_template = Template('<img src="https://i.nhentai.net/galleries/$gallery_id/$page_no.jpg">')
+    image_template = Template('<img src="https://i.nhentai.net/galleries/$gallery_id/$page_no.$image_type">')
 
     image_tags = ""
 
     for page_no in range(1, int(pages)):
-        image_tags += image_template.substitute({'gallery_id': gallery_id, 'page_no': page_no}) + "\n"
+        image_tags += (
+            image_template.substitute({'gallery_id': gallery_id, 'page_no': page_no, 'image_type': image_type}) + "\n"
+        )
 
     return (
         title,
