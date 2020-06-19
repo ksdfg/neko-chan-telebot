@@ -36,7 +36,7 @@ def get_info(digits):
 
     image_tags = ""
 
-    for page_no in range(1, int(pages)):
+    for page_no in range(1, int(pages) + 1):
         image_tags += (
             image_template.substitute({'gallery_id': gallery_id, 'page_no': page_no, 'image_type': image_type}) + "\n"
         )
