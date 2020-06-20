@@ -1,7 +1,7 @@
 from copy import deepcopy
 
-from sqlalchemy import Column, String, cast
-from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, array
+from sqlalchemy import Column, cast
+from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, array, TEXT
 
 from telebot.modules.sql import session, Base
 
@@ -10,7 +10,7 @@ from telebot.modules.sql import session, Base
 class CommandExceptionGroups(Base):
     __tablename__ = "CommandExceptionGroups"
 
-    command = Column(String, primary_key=True)
+    command = Column(TEXT, primary_key=True)
     groups = Column(ARRAY(BIGINT))
 
 
