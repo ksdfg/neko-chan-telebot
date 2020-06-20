@@ -7,7 +7,7 @@ from telegram.ext import CommandHandler, run_async, CallbackContext
 from telegraph import Telegraph
 
 from telebot import dispatcher, log
-from telebot.modules.sql.helper import get_command_exception_groups
+from telebot.modules.sql.exceptions_sql import get_command_exception_groups
 
 
 def get_info(digits):
@@ -87,8 +87,8 @@ def sauce(update: Update, context: CallbackContext):
         title, data, image_tags = get_info(digits)
 
         telegraph = Telegraph()
-        telegraph.create_account(short_name='1337')
-        article_path = telegraph.create_page(title, html_content=image_tags,)['path']
+        telegraph.create_account(short_name='neko-chan-telebot')
+        article_path = telegraph.create_page(title, html_content=image_tags)['path']
 
         text_blob = f"<code>{digits}</code>\n<a href='https://telegra.ph/{article_path}'>{title}</a>"
         for key, value in data.items():
@@ -99,11 +99,12 @@ def sauce(update: Update, context: CallbackContext):
         if update.effective_chat.id in get_command_exception_groups("sauce"):
             update.message.reply_html(text_blob)
         else:
-            msg = context.bot.send_message(chat_id=update.effective_user.id, text=text_blob, parse_mode=ParseMode.HTML)
-            if update.effective_user.id != update.effective_chat.id:
-                update.message.reply_markdown(
-                    f"[Let's enjoy this together in our private chat...](https://t.me/{context.bot.username}"
-                )
+            context.bot.send_message(chat_id=update.effective_user.id, text=text_blob, parse_mode=ParseMode.HTML)
+
+    if update.effective_user.id != update.effective_chat.id:
+        update.message.reply_markdown(
+            f"[Let's enjoy this together in our private chat...](https://t.me/{context.bot.username}"
+        )
 
 
 __help__ = """

@@ -10,7 +10,7 @@ from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher, log
-from telebot.modules.sql.helper import get_command_exception_groups
+from telebot.modules.sql.exceptions_sql import get_command_exception_groups
 
 
 @run_async

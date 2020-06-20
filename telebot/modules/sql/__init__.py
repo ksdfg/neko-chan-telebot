@@ -1,11 +1,13 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 from telebot import config
-from .models import Base
 
-engine = create_engine(config.DB_URI)
-Session = sessionmaker(engine)
-session = Session()
+Base = declarative_base()
 
+engine = create_engine(config.DB_URI, client_encoding="utf8")
+Base.metadata.bind = engine
 Base.metadata.create_all(engine)
+
+session = scoped_session(sessionmaker(bind=engine, autoflush=False))
