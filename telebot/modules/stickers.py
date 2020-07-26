@@ -4,6 +4,7 @@ from os import remove
 from urllib.request import urlretrieve
 
 from PIL import Image
+from decouple import config
 from emoji import emojize
 from telegram import Update, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import run_async, CallbackContext, CommandHandler
@@ -70,8 +71,8 @@ def _resize(kang_sticker):
             size2new = 512
         size1new = math.floor(size1new)
         size2new = math.floor(size2new)
-        sizenew = (size1new, size2new)
-        im = im.resize(sizenew)
+        size_new = (size1new, size2new)
+        im = im.resize(size_new)
     else:
         im.thumbnail(maxsize)
 
@@ -115,7 +116,9 @@ def _make_pack(msg, user, png_sticker, emoji, bot, pack_name, pack_num):
 def kang(update: Update, context: CallbackContext):
     log(update, "kang")
 
-    if update.effective_chat.id in get_command_exception_groups("kang"):
+    if update.effective_user.id not in config(
+        "SUPERUSERS", cast=lambda x: map(int, x.split(","))
+    ) and update.effective_chat.id in get_command_exception_groups("kang"):
         return
 
     msg = update.effective_message
