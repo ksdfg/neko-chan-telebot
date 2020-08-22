@@ -2,6 +2,7 @@ import importlib
 from random import choice
 
 from emoji import emojize
+from mongoengine import connect
 from telegram import Update, BotCommand
 from telegram.ext import CallbackContext, CommandHandler
 
@@ -94,6 +95,9 @@ if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("help", help))
 
     updater.bot.set_my_commands(COMMANDS)
+
+    # connect to database
+    connect(config.DB_NAME, 'default', host=config.DB_URI)
 
     # start bot
     if config.WEBHOOK_URL:
