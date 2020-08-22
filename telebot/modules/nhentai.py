@@ -82,6 +82,9 @@ def sauce(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Please give some codes to fetch, this cat can't read your mind...")
         return
 
+    # check if exception for sauce is added in current group
+    exception = update.effective_chat.id in get_command_exception_groups("sauce")
+
     # iterate over each given sauce and fetch the doujin
     for digits in context.args:
         title, data, image_tags = get_info(digits)
@@ -96,12 +99,12 @@ def sauce(update: Update, context: CallbackContext):
                 text_blob += f"\n\n<code>{key}</code>\n{value}"
 
         # send message
-        if update.effective_chat.id in get_command_exception_groups("sauce"):
+        if exception:
             update.message.reply_html(text_blob)
         else:
             context.bot.send_message(chat_id=update.effective_user.id, text=text_blob, parse_mode=ParseMode.HTML)
 
-    if update.effective_user.id != update.effective_chat.id:
+    if not exception:
         update.message.reply_markdown(
             f"[Let's enjoy this together in our private chat...](https://t.me/{context.bot.username}"
         )
