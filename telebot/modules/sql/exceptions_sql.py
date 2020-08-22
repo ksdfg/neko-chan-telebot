@@ -1,21 +1,12 @@
 from copy import deepcopy
 
-from sqlalchemy import Column, cast
-from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, array, TEXT
-
-from telebot.modules.sql import session, Base
+from mongoengine import Document, StringField, ListField, IntField
 
 
 # create models for this module
-class CommandExceptionGroups(Base):
-    __tablename__ = "CommandExceptionGroups"
-
-    command = Column(TEXT, primary_key=True)
-    groups = Column(ARRAY(BIGINT))
-
-
-# create the tables for the models
-CommandExceptionGroups.__table__.create(checkfirst=True)
+class CommandExceptionGroups(Document):
+    command = StringField(required=True)
+    groups = ListField(IntField())
 
 
 """
@@ -24,43 +15,44 @@ create helper functions to be used to interact with the model
 
 
 def get_command_exception_groups(command: str) -> list:
-    exceptions = session.query(CommandExceptionGroups).filter(CommandExceptionGroups.command == command).first()
+    exceptions = CommandExceptionGroups.objects(command=command)
 
     if exceptions:
-        return exceptions.groups
+        return exceptions[0].groups
     else:
         return []
 
 
 def add_command_exception_groups(command: str, group: int) -> str:
-    exceptions = session.query(CommandExceptionGroups).filter(CommandExceptionGroups.command == command).first()
+    exceptions_list = CommandExceptionGroups.objects(command=command)
 
-    if exceptions:
+    if exceptions_list:
+        exceptions = exceptions_list[0]
         if group in exceptions.groups:
             return f"Exception for command `{command}` already added!"
         else:
             exceptions.groups = exceptions.groups + [group]
-            session.commit()
+            exceptions.save()
 
     else:
-        session.add(CommandExceptionGroups(command=command, groups=[group]))
-        session.commit()
+        CommandExceptionGroups(command=command, groups=[group]).save()
 
     return f"Exception for command `{command}` added!"
 
 
 def del_command_exception_groups(command: str, group: int) -> str:
-    exceptions = session.query(CommandExceptionGroups).filter(CommandExceptionGroups.command == command).first()
+    exceptions_list = CommandExceptionGroups.objects(command=command)
 
-    if exceptions:
+    if exceptions_list:
+        exceptions = exceptions_list[0]
         try:
             groups = deepcopy(exceptions.groups)
             groups.remove(group)
             if groups:
                 exceptions.groups = groups
+                exceptions.save()
             else:
-                session.delete(exceptions)
-            session.commit()
+                exceptions.delete()
 
             return f"Exception for command `{command}` deleted!"
 
@@ -72,8 +64,7 @@ def del_command_exception_groups(command: str, group: int) -> str:
 
 
 def get_exceptions_for_group(group: int) -> list:
-    arr = cast(array(tuple([group])), ARRAY(BIGINT))
-    exceptions = session.query(CommandExceptionGroups).filter(CommandExceptionGroups.groups >= arr).all()
+    exceptions = CommandExceptionGroups.objects(groups=group)
 
     if exceptions:
         return [x.command for x in exceptions]
