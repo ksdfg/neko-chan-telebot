@@ -21,6 +21,13 @@ def get_filters_for_group(group_id):
         return []
 
 
+def get_filter(group_id, keyword):
+    try:
+        return Filter.objects(group=group_id, keyword=keyword)[0]
+    except:
+        return None
+
+
 def add_filter(group, keyword, content, filter_type):
     try:
         filter_list = Filter.objects(group=group, keyword=keyword)

@@ -1,10 +1,12 @@
+from re import IGNORECASE, search, escape
+
 from emoji import emojize
 from telegram import Update
-from telegram.ext import run_async, CallbackContext, CommandHandler
+from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import dispatcher, log
 from telebot.modules.sql.exceptions_sql import get_command_exception_groups
-from telebot.modules.sql.filter_sql import get_filters_for_group, add_filter
+from telebot.modules.sql.filter_sql import get_filters_for_group, add_filter, get_filter
 
 
 @run_async
@@ -46,6 +48,8 @@ def add_filter_handler(update: Update, context: CallbackContext):
     # set kwargs to be passed to add_filter function
     kwargs = {'group': update.effective_chat.id, 'keyword': keyword}
 
+    # add content and filter type to kwargs
+
     if content is not None:
         kwargs['content'] = content
         kwargs['filter_type'] = "text"
@@ -81,6 +85,42 @@ def add_filter_handler(update: Update, context: CallbackContext):
     msg.reply_markdown(add_filter(**kwargs))
 
 
+@run_async
+def reply(update: Update, context: CallbackContext):
+    # check if there is any text to check
+    msg = update.effective_message
+    text = msg.caption if msg.text is None else msg.text
+    if text is None:
+        return
+
+    # get triggers for the chat
+    triggers = get_filters_for_group(update.effective_chat.id)
+
+    for trigger in triggers:
+        pattern = r"( |^|[^\w])" + escape(trigger) + r"( |$|[^\w])"
+
+        if search(pattern, text, flags=IGNORECASE):
+            log(update, f"reply to filter trigger `{trigger}`")
+            _filter = get_filter(update.effective_chat.id, trigger)
+
+            if _filter.filter_type == "text":
+                msg.reply_markdown(_filter.content)
+            elif _filter.filter_type == "sticker":
+                msg.reply_sticker(_filter.content)
+            elif _filter.filter_type == "document":
+                msg.reply_document(_filter.content)
+            elif _filter.filter_type == "photo":
+                msg.reply_photo(_filter.content)
+            elif _filter.filter_type == "audio":
+                msg.reply_audio(_filter.content)
+            elif _filter.filter_type == "voice":
+                msg.reply_voice(_filter.content)
+            elif _filter.filter_type == "video":
+                msg.reply_video(_filter.content)
+
+            break
+
+
 __help__ = """
 /filters : list all active filters in the group
 /addfilter : add a filter
@@ -90,3 +130,4 @@ __mod_name__ = "filter"
 
 dispatcher.add_handler(CommandHandler("filters", list_filters))
 dispatcher.add_handler(CommandHandler("addfilter", add_filter_handler))
+dispatcher.add_handler(MessageHandler(Filters.all, reply))
