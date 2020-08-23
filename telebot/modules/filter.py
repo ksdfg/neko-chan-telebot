@@ -6,48 +6,48 @@ from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHand
 from telegram.ext.filters import InvertedFilter
 
 from telebot import dispatcher, log
-from telebot.modules.sql.exceptions_sql import get_command_exception_groups
-from telebot.modules.sql.filter_sql import get_filters_for_group, add_filter, get_filter, del_filter
+from telebot.modules.sql.exceptions_sql import get_command_exception_chats
+from telebot.modules.sql.filter_sql import get_triggers_for_chat, add_filter, get_filter, del_filter
 
 
 @run_async
 def list_filters(update: Update, context: CallbackContext):
     log(update, "filters")
 
-    if update.effective_chat.id in get_command_exception_groups("filter"):
+    if update.effective_chat.id in get_command_exception_chats("filter"):
         return
 
-    filters = get_filters_for_group(update.effective_chat.id)
+    filters = get_triggers_for_chat(update.effective_chat.id)
 
     if filters:
-        update.message.reply_markdown("Active filters in this group are as follows -\n`" + "`\n`".join(filters) + "`")
+        update.message.reply_markdown("Active filters in this chat are as follows -\n`" + "`\n`".join(filters) + "`")
     else:
-        update.message.reply_markdown(emojize("No active filters in this group :crying_cat_face:"))
+        update.message.reply_markdown(emojize("No active filters in this chat :crying_cat_face:"))
 
 
 @run_async
 def add_filter_handler(update: Update, context: CallbackContext):
     log(update, "addfilter")
 
-    if update.effective_chat.id in get_command_exception_groups("filter"):
+    if update.effective_chat.id in get_command_exception_chats("filter"):
         return
 
     # for ease of reference
     msg = update.effective_message
 
-    # get keyword and content from the message
+    # get trigger and content from the message
     try:
-        keyword, content = msg.text_markdown.split(None, 2)[1:]
+        trigger, content = msg.text_markdown.split(None, 2)[1:]
     except ValueError:
         try:
-            keyword = msg.text.split()[1]
+            trigger = msg.text.split()[1]
             content = None
         except IndexError:
-            msg.reply_markdown("No keyword, No content....\n\nYou could've at least come with some catnip\n`._.`")
+            msg.reply_markdown("No trigger, No content....\n\nYou could've at least come with some catnip\n`._.`")
             return
 
     # set kwargs to be passed to add_filter function
-    kwargs = {'group': update.effective_chat.id, 'keyword': keyword}
+    kwargs = {'chat': update.effective_chat.id, 'trigger': trigger}
 
     # add content and filter type to kwargs
 
@@ -90,12 +90,12 @@ def add_filter_handler(update: Update, context: CallbackContext):
 def del_filter_handler(update: Update, context: CallbackContext):
     log(update, "del filter")
 
-    if update.effective_chat.id in get_command_exception_groups("filter"):
+    if update.effective_chat.id in get_command_exception_chats("filter"):
         return
 
     if context.args:
-        for keyword in context.args:
-            update.effective_message.reply_markdown(del_filter(group=update.effective_chat.id, keyword=keyword))
+        for trigger in context.args:
+            update.effective_message.reply_markdown(del_filter(chat=update.effective_chat.id, trigger=trigger))
     else:
         update.effective_message.reply_markdown(
             "I can't stop meowing if you don't tell me what to stop meowing to, baka!"
@@ -104,7 +104,7 @@ def del_filter_handler(update: Update, context: CallbackContext):
 
 @run_async
 def reply(update: Update, context: CallbackContext):
-    if update.effective_chat.id in get_command_exception_groups("filter"):
+    if update.effective_chat.id in get_command_exception_chats("filter"):
         return
 
     # check if there is any text to check
@@ -114,7 +114,7 @@ def reply(update: Update, context: CallbackContext):
         return
 
     # get triggers for the chat
-    triggers = get_filters_for_group(update.effective_chat.id)
+    triggers = get_triggers_for_chat(update.effective_chat.id)
 
     for trigger in triggers:
         pattern = r"( |^|[^\w])" + escape(trigger) + r"( |$|[^\w])"
@@ -142,8 +142,9 @@ def reply(update: Update, context: CallbackContext):
 
 
 __help__ = """
-/filters : list all active filters in the group
+/filters : list all active filters in the chat
 /addfilter : add a filter
+/delfilters : delete active filters; give all filters to delete seperated by a space
 """
 
 __mod_name__ = "Filters"

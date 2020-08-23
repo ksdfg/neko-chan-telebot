@@ -5,8 +5,8 @@ from mongoengine import Document, IntField, StringField
 
 
 class Filter(Document):
-    group = IntField()
-    keyword = StringField()
+    chat = IntField()
+    trigger = StringField()
     content = StringField()
     filter_type = StringField(choices=('text', 'sticker', 'document', 'photo', 'audio', 'voice', 'video'))
 
@@ -14,23 +14,23 @@ class Filter(Document):
 # create helper functions to be used to interact with the model
 
 
-def get_filters_for_group(group_id):
+def get_triggers_for_chat(chat):
     try:
-        return [f.keyword for f in Filter.objects(group=group_id)]
+        return [f.trigger for f in Filter.objects(chat=chat)]
     except:
         return []
 
 
-def get_filter(group_id, keyword):
+def get_filter(chat, trigger):
     try:
-        return Filter.objects(group=group_id, keyword=keyword)[0]
+        return Filter.objects(chat=chat, trigger=trigger)[0]
     except:
         return None
 
 
-def add_filter(group, keyword, content, filter_type):
+def add_filter(chat, trigger, content, filter_type):
     try:
-        filter_list = Filter.objects(group=group, keyword=keyword)
+        filter_list = Filter.objects(chat=chat, trigger=trigger)
 
         if filter_list:
             f = filter_list[0]
@@ -38,22 +38,22 @@ def add_filter(group, keyword, content, filter_type):
             f.filter_type = filter_type
             f.save()
         else:
-            Filter(group=group, keyword=keyword, content=content, filter_type=filter_type).save()
+            Filter(chat=chat, trigger=trigger, content=content, filter_type=filter_type).save()
 
-        return f"I'm now going to meow everytime someone says `{keyword}`.... meow"
+        return f"I'm now going to meow everytime someone says `{trigger}`.... meow"
     except:
         return (
             f"Couldn't save the filter.... bribe my owner with some catnip and see if he can find the bug, or try again"
         )
 
 
-def del_filter(group, keyword):
+def del_filter(chat, trigger):
     try:
-        filter_list = Filter.objects(group=group, keyword=keyword)
+        filter_list = Filter.objects(chat=chat, trigger=trigger)
         if filter_list:
             filter_list[0].delete()
-            return f"I'm now going to stop meowing everytime someone says `{keyword}`.... meow"
+            return f"I'm now going to stop meowing everytime someone says `{trigger}`.... meow"
         else:
-            return f"Oi, you can't make me stop meowing if I'm not meowing in the first place. There's no filter for `{keyword}`, baka!"
+            return f"Oi, you can't make me stop meowing if I'm not meowing in the first place. There's no filter for `{trigger}`, baka!"
     except:
         return f"Couldn't delete the filter.... bribe my owner with some catnip and see if he can find the bug, or try again"
