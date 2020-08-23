@@ -9,9 +9,7 @@ class Exceptions(Document):
     chats = ListField(IntField())
 
 
-"""
-create helper functions to be used to interact with the model
-"""
+# create helper functions to be used to interact with the model
 
 
 def get_command_exception_chats(command: str) -> list:
