@@ -18,14 +18,17 @@ pathspec==0.8.0
 Pillow==7.2.0
 pycparser==2.20
 pymongo==3.11.0
+pyperclip==1.8.0
 python-decouple==3.3
 python-telegram-bot==12.8
 regex==2020.7.14
 requests==2.24.0
 six==1.15.0
 soupsieve==2.0.1
+spongemock==0.3.4
 telegraph==1.4.1
 toml==0.10.1
 tornado==6.0.4
 typed-ast==1.4.1
 urllib3==1.25.10
+zalgo-text==0.6
