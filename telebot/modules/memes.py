@@ -70,7 +70,7 @@ def owo(update: Update, context: CallbackContext):
         return
 
     try:
-        reply_text = sub(r'[rl]', "w", update.effective_message.reply_to_message.text)
+        reply_text = sub(r'[rl]', "w", update.effective_message.reply_to_message.text_markdown)
         reply_text = sub(r'[ｒｌ]', "ｗ", reply_text)
         reply_text = sub(r'[RL]', 'W', reply_text)
         reply_text = sub(r'[ＲＬ]', 'Ｗ', reply_text)
