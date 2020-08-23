@@ -54,6 +54,6 @@ def del_filter(group, keyword):
             filter_list[0].delete()
             return f"I'm now going to stop meowing everytime someone says `{keyword}`.... meow"
         else:
-            return "Oi, you can't make me stop meowing if I'm not meowing in the first place. There's no filter for this, baka!"
+            return f"Oi, you can't make me stop meowing if I'm not meowing in the first place. There's no filter for `{keyword}`, baka!"
     except:
         return f"Couldn't delete the filter.... bribe my owner with some catnip and see if he can find the bug, or try again"

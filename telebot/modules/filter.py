@@ -3,10 +3,11 @@ from re import IGNORECASE, search, escape
 from emoji import emojize
 from telegram import Update
 from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
+from telegram.ext.filters import InvertedFilter
 
 from telebot import dispatcher, log
 from telebot.modules.sql.exceptions_sql import get_command_exception_groups
-from telebot.modules.sql.filter_sql import get_filters_for_group, add_filter, get_filter
+from telebot.modules.sql.filter_sql import get_filters_for_group, add_filter, get_filter, del_filter
 
 
 @run_async
@@ -86,7 +87,26 @@ def add_filter_handler(update: Update, context: CallbackContext):
 
 
 @run_async
+def del_filter_handler(update: Update, context: CallbackContext):
+    log(update, "del filter")
+
+    if update.effective_chat.id in get_command_exception_groups("filter"):
+        return
+
+    if context.args:
+        for keyword in context.args:
+            update.effective_message.reply_markdown(del_filter(group=update.effective_chat.id, keyword=keyword))
+    else:
+        update.effective_message.reply_markdown(
+            "I can't stop meowing if you don't tell me what to stop meowing to, baka!"
+        )
+
+
+@run_async
 def reply(update: Update, context: CallbackContext):
+    if update.effective_chat.id in get_command_exception_groups("filter"):
+        return
+
     # check if there is any text to check
     msg = update.effective_message
     text = msg.caption if msg.text is None else msg.text
@@ -126,8 +146,9 @@ __help__ = """
 /addfilter : add a filter
 """
 
-__mod_name__ = "filter"
+__mod_name__ = "Filters"
 
 dispatcher.add_handler(CommandHandler("filters", list_filters))
 dispatcher.add_handler(CommandHandler("addfilter", add_filter_handler))
-dispatcher.add_handler(MessageHandler(Filters.all, reply))
+dispatcher.add_handler(CommandHandler("delfilters", del_filter_handler))
+dispatcher.add_handler(MessageHandler(InvertedFilter(Filters.command), reply))
