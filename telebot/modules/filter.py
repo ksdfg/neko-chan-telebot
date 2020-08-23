@@ -3,7 +3,6 @@ from re import IGNORECASE, search, escape
 from emoji import emojize
 from telegram import Update
 from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
-from telegram.ext.filters import InvertedFilter
 
 from telebot import dispatcher, log
 from telebot.modules.sql.exceptions_sql import get_command_exception_chats
@@ -152,4 +151,4 @@ __mod_name__ = "Filters"
 dispatcher.add_handler(CommandHandler("filters", list_filters))
 dispatcher.add_handler(CommandHandler("addfilter", add_filter_handler))
 dispatcher.add_handler(CommandHandler("delfilters", del_filter_handler))
-dispatcher.add_handler(MessageHandler(InvertedFilter(Filters.command), reply))
+dispatcher.add_handler(MessageHandler(Filters.all, reply), group=69)
