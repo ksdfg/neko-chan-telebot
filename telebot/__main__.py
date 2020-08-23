@@ -26,20 +26,23 @@ print("Imported modules :", sorted(imported_mods.keys()))
 
 # default reply strings
 
-START_TEXT = f"""
-Hello, everynyan! {emojize(':cat:', use_aliases=True)}
+START_TEXT = emojize(
+    f"""
+Hello, everynyan! :cat:
 
 I'm `{updater.bot.first_name}`, a cute little bot that does rendum shit rn.
-"""
+""",
+    use_aliases=True,
+)
 
 HELP_TEXT = (
     START_TEXT
     + """
 Use following commands to use me (*blush*):
 
-- /help - Recursion ftw
-- /start - Turn me on
-- /talk - Make me meow
+- /help : Recursion ftw
+- /start : Turn me on
+- /talk : Make me meow
 """
 )
 
@@ -58,10 +61,13 @@ def help(update: Update, context: CallbackContext):
     # add help strings of all imported modules too
     for mod_name, mod in imported_mods.items():
         if mod.__help__:
-            if (context.args and mod_name in context.args) or not context.args:
+            if (context.args and mod_name.lower() in map(lambda x: x.lower(), context.args)) or not context.args:
                 text_blob += f"\n`{mod_name}`{mod.__help__}"
 
-    text_blob += "\n\nIf you want to see help for just some select modules, run /help followed by the module names, space separated"
+    text_blob += (
+        "\n\nIf you want to see help for just some select modules, "
+        "run /help followed by the module names, space separated"
+    )
 
     update.message.reply_markdown(text_blob)
 
