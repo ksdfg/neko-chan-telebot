@@ -7,7 +7,7 @@ from telegram.ext import CommandHandler, run_async, CallbackContext
 from telegraph import Telegraph
 
 from telebot import dispatcher, log
-from telebot.modules.sql.exceptions_sql import get_command_exception_groups
+from telebot.modules.sql.exceptions_sql import get_command_exception_chats
 
 
 def get_info(digits):
@@ -82,8 +82,8 @@ def sauce(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Please give some codes to fetch, this cat can't read your mind...")
         return
 
-    # check if exception for sauce is added in current group
-    exception = update.effective_chat.id in get_command_exception_groups("sauce")
+    # check if exception for sauce is added in current chat
+    exception = update.effective_chat.id in get_command_exception_chats("sauce")
 
     # iterate over each given sauce and fetch the doujin
     for digits in context.args:
@@ -113,7 +113,7 @@ def sauce(update: Update, context: CallbackContext):
 __help__ = """
 - /sauce <digits>: Read a doujin from nhentai.net in telegram instant preview by giving it's 5/6 digit code. 
 You can give multiple codes, and it will fetch all those doujins. 
-If you don't have an exception set for your group, it'll send it to you in your private chat.
+If you don't have an exception set for your chat, it'll send it to you in your private chat.
 """
 
 __mod_name__ = "nhentai"

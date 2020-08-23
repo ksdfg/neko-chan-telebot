@@ -3,9 +3,9 @@ from telegram.ext import CommandHandler, run_async, CallbackContext
 
 from telebot import dispatcher, log
 from telebot.modules.sql.exceptions_sql import (
-    add_command_exception_groups,
-    del_command_exception_groups,
-    get_exceptions_for_group,
+    add_command_exception_chats,
+    del_command_exception_chats,
+    get_exceptions_for_chat,
 )
 
 
@@ -17,7 +17,7 @@ def list_exceptions(update: Update, context: CallbackContext):
         update.effective_message.reply_text("You can't list exceptions in private chats.")
 
     else:
-        commands = ", ".join(get_exceptions_for_group(update.effective_chat.id))
+        commands = ", ".join(get_exceptions_for_chat(update.effective_chat.id))
         if commands:
             update.effective_message.reply_markdown(
                 f"You have exceptions set for the following commands:\n`{commands}`"
@@ -35,7 +35,7 @@ def add_exception(update: Update, context: CallbackContext):
 
     else:
         for command in context.args:
-            reply = add_command_exception_groups(command, update.effective_chat.id)
+            reply = add_command_exception_chats(command, update.effective_chat.id)
             update.effective_message.reply_markdown(reply)
 
 
@@ -48,13 +48,13 @@ def del_exception(update: Update, context: CallbackContext):
 
     else:
         for command in context.args:
-            reply = del_command_exception_groups(command, update.effective_chat.id)
+            reply = del_command_exception_chats(command, update.effective_chat.id)
             update.effective_message.reply_markdown(reply)
 
 
 __help__ = """
-Adding an exception for a command in your group will change it's behaviour. How it will change depends on the command.
-- /listexceptions: list all exceptions in group
+Adding an exception for a command in your chat will change it's behaviour. How it will change depends on the command.
+- /listexceptions: list all exceptions in chat
 - /addexceptions <commands>: Add exceptions for given commands (space separated)
 - /delexceptions <commands>: Delete exceptions for given commands (space separated)
 """

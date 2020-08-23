@@ -4,9 +4,9 @@ from mongoengine import Document, StringField, ListField, IntField
 
 
 # create models for this module
-class CommandExceptionGroups(Document):
+class Exceptions(Document):
     command = StringField(required=True)
-    groups = ListField(IntField())
+    chats = ListField(IntField())
 
 
 """
@@ -14,42 +14,42 @@ create helper functions to be used to interact with the model
 """
 
 
-def get_command_exception_groups(command: str) -> list:
-    exceptions = CommandExceptionGroups.objects(command=command)
+def get_command_exception_chats(command: str) -> list:
+    exceptions = Exceptions.objects(command=command)
 
     if exceptions:
-        return exceptions[0].groups
+        return exceptions[0].chats
     else:
         return []
 
 
-def add_command_exception_groups(command: str, group: int) -> str:
-    exceptions_list = CommandExceptionGroups.objects(command=command)
+def add_command_exception_chats(command: str, chat: int) -> str:
+    exceptions_list = Exceptions.objects(command=command)
 
     if exceptions_list:
         exceptions = exceptions_list[0]
-        if group in exceptions.groups:
+        if chat in exceptions.chats:
             return f"Exception for command `{command}` already added!"
         else:
-            exceptions.groups = exceptions.groups + [group]
+            exceptions.chats = exceptions.chats + [chat]
             exceptions.save()
 
     else:
-        CommandExceptionGroups(command=command, groups=[group]).save()
+        Exceptions(command=command, chats=[chat]).save()
 
     return f"Exception for command `{command}` added!"
 
 
-def del_command_exception_groups(command: str, group: int) -> str:
-    exceptions_list = CommandExceptionGroups.objects(command=command)
+def del_command_exception_chats(command: str, chat: int) -> str:
+    exceptions_list = Exceptions.objects(command=command)
 
     if exceptions_list:
         exceptions = exceptions_list[0]
         try:
-            groups = deepcopy(exceptions.groups)
-            groups.remove(group)
-            if groups:
-                exceptions.groups = groups
+            chats = deepcopy(exceptions.chats)
+            chats.remove(chat)
+            if chats:
+                exceptions.chats = chats
                 exceptions.save()
             else:
                 exceptions.delete()
@@ -63,8 +63,8 @@ def del_command_exception_groups(command: str, group: int) -> str:
         return f"Exception for command `{command}` not added!"
 
 
-def get_exceptions_for_group(group: int) -> list:
-    exceptions = CommandExceptionGroups.objects(groups=group)
+def get_exceptions_for_chat(chat: int) -> list:
+    exceptions = Exceptions.objects(chats=chat)
 
     if exceptions:
         return [x.command for x in exceptions]

@@ -11,7 +11,7 @@ from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher, log
-from telebot.modules.sql.exceptions_sql import get_command_exception_groups
+from telebot.modules.sql.exceptions_sql import get_command_exception_chats
 
 
 @run_async
@@ -118,7 +118,7 @@ def kang(update: Update, context: CallbackContext):
 
     if update.effective_user.id not in config(
         "SUPERUSERS", cast=lambda x: map(int, x.split(","))
-    ) and update.effective_chat.id in get_command_exception_groups("kang"):
+    ) and update.effective_chat.id in get_command_exception_chats("kang"):
         return
 
     msg = update.effective_message
