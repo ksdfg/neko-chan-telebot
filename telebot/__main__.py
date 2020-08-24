@@ -90,9 +90,10 @@ def talk(update: Update, context: CallbackContext):
 
 # set bot commands
 COMMANDS = [
-    BotCommand(command='help', description="Display the help text to understand how to use this bot"),
-    BotCommand(command='talk', description="Say <word> (or meow, if not given) rendum number of times."),
-    BotCommand(command='kang', description="reply to a sticker to add it to your pack."),
+    BotCommand(command='help', description="[<module>] : Display the help text to understand how to use this bot"),
+    BotCommand(command='talk', description="[<word>] : Say <word> (or meow, if not given) rendum number of times."),
+    BotCommand(command='kang', description="<reply> [<emoji>] : reply to a sticker to add it to your pack."),
+    BotCommand(command="addfilter", description="<trigger> [<content>|<reply>] : add a filter"),
 ]
 
 if __name__ == "__main__":
