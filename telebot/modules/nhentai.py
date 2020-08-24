@@ -104,7 +104,7 @@ def sauce(update: Update, context: CallbackContext):
         else:
             context.bot.send_message(chat_id=update.effective_user.id, text=text_blob, parse_mode=ParseMode.HTML)
 
-    if not exception:
+    if not exception and update.effective_chat.type != "private":
         update.message.reply_markdown(
             f"[Let's enjoy this together in our private chat...](https://t.me/{context.bot.username}"
         )
