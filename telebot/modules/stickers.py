@@ -7,6 +7,7 @@ from PIL import Image
 from decouple import config
 from emoji import emojize
 from telegram import Update, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton, Bot, User
+from telegram.error import BadRequest
 from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
@@ -106,7 +107,7 @@ def _make_pack(msg, user, png_sticker, emoji, bot, pack_name, pack_num):
     try:
         extra_version = " " + str(pack_num) if pack_num > 0 else ""
         success = bot.create_new_sticker_set(
-            user.id, pack_name, f"{name}s kang pack" + extra_version, png_sticker=png_sticker, emojis=emoji
+            user.id, pack_name, f"{name}'s kang pack" + extra_version, png_sticker=png_sticker, emojis=emoji
         )
 
     except TelegramError as e:
@@ -127,9 +128,11 @@ def _make_pack(msg, user, png_sticker, emoji, bot, pack_name, pack_num):
 
     if success:
         msg.reply_markdown(f"Sticker pack successfully created. Get it [here](t.me/addstickers/{pack_name})")
+        print(f"created pack {pack_name}")
 
     else:
         msg.reply_text("Failed to create sticker pack. Possibly due to blek mejik.")
+        print(f"failed to create {pack_name}")
 
 
 @run_async
@@ -298,39 +301,96 @@ def kang(update: Update, context: CallbackContext):
 def migrate(update: Update, context: CallbackContext):
     log(update, "migrate pack")
 
+    # check if there is a sticker to kang set from
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate")
         return
 
+    # get original set name
     og_set_name = update.effective_message.reply_to_message.sticker.set_name
     if og_set_name is None:
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate")
         return
 
+    # check if the sticker set already belongs to this bot
     if context.bot.username in og_set_name:
         update.effective_message.reply_markdown(f"This pack already belongs to `{context.bot.first_name}`...")
         return
 
-    pack_num, pack_name = _get_pack_num_and_name(update.effective_user, context.bot)
-    sticker_pack = context.bot.get_sticker_set(pack_name)
-    appended_packs = [pack_name]
-
     update.effective_message.reply_text("Please be patient, this little kitty's paws can only kang so fast....")
 
-    stickers = context.bot.get_sticker_set(og_set_name).stickers
-    for sticker in stickers:
-        context.bot.get_file(sticker.file_id).download(f'{update.effective_user.id}_migrate_sticker.png')
-        if len(sticker_pack.stickers) < 120:
-            context.bot.add_sticker_to_set(
-                user_id=update.effective_user.id,
-                name=pack_name,
-                png_sticker=open(f'{update.effective_user.id}_migrate_sticker.png', 'rb'),
-                emojis=sticker.emoji,
+    # get original set data
+    og_stickers_set = context.bot.get_sticker_set(og_set_name)
+    og_set_title = og_stickers_set.title
+    stickers = og_stickers_set.stickers
+
+    # get the pack to migrate the stickers into
+    pack_num, pack_name = _get_pack_num_and_name(update.effective_user, context.bot)
+    appended_packs = [pack_name]  # list of packs the stickers were migrated into
+
+    try:
+        sticker_pack = context.bot.get_sticker_set(pack_name)
+    except BadRequest:
+        # download sticker
+        context.bot.get_file(stickers[0].file_id).download(f'{update.effective_user.id}_migrate_sticker.png')
+
+        # make pack
+        try:
+            _make_pack(
+                None,
+                update.effective_user,
+                open(f'{update.effective_user.id}_migrate_sticker.png', 'rb'),
+                stickers[0].emoji,
+                context.bot,
+                pack_name,
+                pack_num,
             )
+        # we don't want to send a message, hence passed msg as None to _make_pack
+        # this leads to an AttributeError being raised
+        except AttributeError:
+            pass
+
+        stickers = stickers[1:]  # because the first sticker is already in the new pack now
+        sticker_pack = context.bot.get_sticker_set(pack_name)
+
+    for sticker in stickers:
+        # download sticker
+        context.bot.get_file(sticker.file_id).download(f'{update.effective_user.id}_migrate_sticker.png')
+
+        # if current pack can still fit in more stickers
+        if len(sticker_pack.stickers) < 120:
+            try:
+                context.bot.add_sticker_to_set(
+                    user_id=update.effective_user.id,
+                    name=pack_name,
+                    png_sticker=open(f'{update.effective_user.id}_migrate_sticker.png', 'rb'),
+                    emojis=sticker.emoji,
+                )
+            except BadRequest:
+                # make new pack
+                try:
+                    _make_pack(
+                        None,
+                        update.effective_user,
+                        open(f'{update.effective_user.id}_migrate_sticker.png', 'rb'),
+                        sticker.emoji,
+                        context.bot,
+                        pack_name,
+                        pack_num,
+                    )
+                # we don't want to send a message, hence passed msg as None to _make_pack
+                # this leads to an AttributeError being raised
+                except AttributeError:
+                    pass
+
+        # if current pack is full
         else:
+            # new pack info
             pack_num += 1
             pack_name = "a" + str(pack_num) + "_" + str(update.effective_user.id) + "_by_" + context.bot.username
             appended_packs.append(pack_name)
+
+            # make new pack
             try:
                 _make_pack(
                     None,
@@ -341,17 +401,23 @@ def migrate(update: Update, context: CallbackContext):
                     pack_name,
                     pack_num,
                 )
+            # we don't want to send a message, hence passed msg as None to _make_pack
+            # this leads to an AttributeError being raised
             except AttributeError:
                 pass
 
+            sticker_pack = context.bot.get_sticker_set(pack_name)
+
+    # send success reply to the user
     reply = (
-        f"Done! Pack [{og_set_name}](t.me/addstickers/{og_set_name}) was migrated into :-"
+        f"Done! Pack [{og_set_title}](t.me/addstickers/{og_set_name}) was migrated into :-"
         + f"\n[pack](t.me/addstickers/{appended_packs[0]})"
     )
     for index, pack in enumerate(appended_packs[1:]):
         reply += f"\n[pack {index + 1}](t.me/addstickers/{pack})"
     update.effective_message.reply_markdown(reply)
 
+    # don't want rendum files on server
     if os.path.isfile(f'{update.effective_user.id}_migrate_sticker.png'):
         os.remove(f'{update.effective_user.id}_migrate_sticker.png')
 
