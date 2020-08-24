@@ -302,14 +302,22 @@ def migrate(update: Update, context: CallbackContext):
     log(update, "migrate pack")
 
     # check if there is a sticker to kang set from
-    if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
-        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate")
+    if (
+        not update.effective_message.reply_to_message
+        or not update.effective_message.reply_to_message.sticker
+        or update.effective_message.reply_to_message.sticker.is_animated
+    ):
+        update.effective_message.reply_text(
+            "Please reply to a non animated sticker that belongs to a pack you want to migrate"
+        )
         return
 
     # get original set name
     og_set_name = update.effective_message.reply_to_message.sticker.set_name
     if og_set_name is None:
-        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate")
+        update.effective_message.reply_text(
+            "Please reply to a non animated sticker that belongs to a pack you want to migrate"
+        )
         return
 
     # check if the sticker set already belongs to this bot
