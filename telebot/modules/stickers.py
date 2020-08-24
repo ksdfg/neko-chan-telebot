@@ -152,7 +152,8 @@ def kang(update: Update, context: CallbackContext):
     # get sticker pack of user
     pack_num, pack_name = _get_pack_num_and_name(user, bot)
 
-    kang_sticker = f"{user.id}_{uuid4()}_kang_sticker.png"
+    rendum_str = uuid4()
+    kang_sticker = f"{user.id}_{rendum_str}_kang_sticker.png"
 
     # If user has replied to some message
     if msg.reply_to_message:
@@ -170,7 +171,7 @@ def kang(update: Update, context: CallbackContext):
 
         # download sticker file
         kang_file = bot.get_file(file_id)
-        kang_file.download(f'{user.id}_{uuid4()}_kang_sticker.png')
+        kang_file.download(f'{user.id}_{rendum_str}_kang_sticker.png')
 
         # get emoji(s) for sticker
         if context.args:
@@ -190,7 +191,7 @@ def kang(update: Update, context: CallbackContext):
             bot.add_sticker_to_set(
                 user_id=user.id,
                 name=pack_name,
-                png_sticker=open(f'{user.id}_{uuid4()}_kang_sticker.png', 'rb'),
+                png_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
                 emojis=sticker_emoji,
             )
             msg.reply_markdown(
@@ -206,7 +207,7 @@ def kang(update: Update, context: CallbackContext):
                 _make_pack(
                     msg,
                     user,
-                    open(f'{user.id}_{uuid4()}_kang_sticker.png', 'rb'),
+                    open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
                     sticker_emoji,
                     bot,
                     pack_name,
@@ -218,7 +219,7 @@ def kang(update: Update, context: CallbackContext):
                 bot.add_sticker_to_set(
                     user_id=user.id,
                     name=pack_name,
-                    png_sticker=open(f'{user.id}_{uuid4()}_kang_sticker.png', 'rb'),
+                    png_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
                     emojis=sticker_emoji,
                 )
                 msg.reply_markdown(
@@ -251,11 +252,11 @@ def kang(update: Update, context: CallbackContext):
             im = _resize(kang_sticker)
             im.save(kang_sticker, "PNG")
 
-            msg.reply_photo(photo=open(f'{user.id}_{uuid4()}_kang_sticker.png', 'rb'))
+            msg.reply_photo(photo=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'))
             bot.add_sticker_to_set(
                 user_id=user.id,
                 name=pack_name,
-                png_sticker=open(f'{user.id}_{uuid4()}_kang_sticker.png', 'rb'),
+                png_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
                 emojis=sticker_emoji,
             )
             msg.reply_markdown(
@@ -271,7 +272,7 @@ def kang(update: Update, context: CallbackContext):
                 _make_pack(
                     msg,
                     user,
-                    open(f'{user.id}_{uuid4()}_kang_sticker.png', 'rb'),
+                    open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
                     sticker_emoji,
                     bot,
                     pack_name,
@@ -283,7 +284,7 @@ def kang(update: Update, context: CallbackContext):
                 bot.add_sticker_to_set(
                     user_id=user.id,
                     name=pack_name,
-                    png_sticker=open(f'{user.id}_{uuid4()}_kang_sticker.png', 'rb'),
+                    png_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
                     emojis=sticker_emoji,
                 )
                 msg.reply_markdown(
@@ -322,8 +323,8 @@ def kang(update: Update, context: CallbackContext):
 
         msg.reply_markdown(reply)
 
-    if os.path.isfile(f"{user.id}_{uuid4()}_kang_sticker.png"):
-        os.remove(f"{user.id}_{uuid4()}_kang_sticker.png")
+    if os.path.isfile(f"{user.id}_{rendum_str}_kang_sticker.png"):
+        os.remove(f"{user.id}_{rendum_str}_kang_sticker.png")
 
 
 @run_async
@@ -393,9 +394,11 @@ def migrate(update: Update, context: CallbackContext):
         stickers = stickers[1:]  # because the first sticker is already in the new pack now
         sticker_pack = context.bot.get_sticker_set(pack_name)
 
+    rendum_str = uuid4()
+
     for sticker in stickers:
         # download sticker
-        context.bot.get_file(sticker.file_id).download(f"{update.effective_user.id}_{uuid4()}_migrate_sticker.png")
+        context.bot.get_file(sticker.file_id).download(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png")
 
         # if current pack can still fit in more stickers
         if len(sticker_pack.stickers) < 120:
@@ -403,7 +406,7 @@ def migrate(update: Update, context: CallbackContext):
                 context.bot.add_sticker_to_set(
                     user_id=update.effective_user.id,
                     name=pack_name,
-                    png_sticker=open(f"{update.effective_user.id}_{uuid4()}_migrate_sticker.png", 'rb'),
+                    png_sticker=open(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png", 'rb'),
                     emojis=sticker.emoji,
                 )
             except BadRequest:
@@ -412,7 +415,7 @@ def migrate(update: Update, context: CallbackContext):
                     _make_pack(
                         None,
                         update.effective_user,
-                        open(f"{update.effective_user.id}_{uuid4()}_migrate_sticker.png", 'rb'),
+                        open(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png", 'rb'),
                         sticker.emoji,
                         context.bot,
                         pack_name,
@@ -435,7 +438,7 @@ def migrate(update: Update, context: CallbackContext):
                 _make_pack(
                     None,
                     update.effective_user,
-                    open(f"{update.effective_user.id}_{uuid4()}_migrate_sticker.png", 'rb'),
+                    open(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png", 'rb'),
                     sticker.emoji,
                     context.bot,
                     pack_name,
@@ -458,8 +461,8 @@ def migrate(update: Update, context: CallbackContext):
     update.effective_message.reply_markdown(reply)
 
     # don't want rendum files on server
-    if os.path.isfile(f"{update.effective_user.id}_{uuid4()}_migrate_sticker.png"):
-        os.remove(f"{update.effective_user.id}_{uuid4()}_migrate_sticker.png")
+    if os.path.isfile(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png"):
+        os.remove(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png")
 
 
 __help__ = r"""
