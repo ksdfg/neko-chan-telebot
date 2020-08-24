@@ -4,7 +4,7 @@ from random import choice
 from emoji import emojize
 from mongoengine import connect
 from telegram import Update, BotCommand
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import CallbackContext, CommandHandler, run_async
 
 from telebot import updater, config, log, dispatcher
 from telebot.modules import ALL_MODULES
@@ -48,12 +48,14 @@ Use following commands to use me (*blush*):
 )
 
 
+@run_async
 def start(update: Update, context: CallbackContext):
     # start message
     log(update, func_name="start")
     update.message.reply_markdown(START_TEXT)
 
 
+@run_async
 def list_modules(update: Update, context: CallbackContext):
     log(update, "list modules")
     update.effective_message.reply_markdown(
@@ -61,6 +63,7 @@ def list_modules(update: Update, context: CallbackContext):
     )
 
 
+@run_async
 def help(update: Update, context: CallbackContext):
     # display help message
     log(update, func_name="help")
@@ -81,6 +84,7 @@ def help(update: Update, context: CallbackContext):
     update.message.reply_markdown(text_blob)
 
 
+@run_async
 def talk(update: Update, context: CallbackContext):
     # this cat meows
     log(update, func_name="talk")
