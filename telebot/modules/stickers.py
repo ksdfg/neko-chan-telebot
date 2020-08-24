@@ -571,11 +571,11 @@ def del_sticker(update: Update, context: CallbackContext):
 
 
 __help__ = r"""
-- /stickerid `<reply>` : reply to a sticker to me to tell you its file ID.
-- /getsticker `<reply>` : reply to a sticker to me to upload its raw PNG file.
+- /stickerid `<reply>` : reply to a sticker (animated or non animated) to me to tell you its file ID.
+- /getsticker `<reply>` : reply to a sticker (non animated) to me to upload its raw PNG file.
 - /kang `<reply> [<emojis>]` : reply to a sticker (animated or non animated) or a picture to add it to your pack. Won't do anything if you have an exception set in the chat.
-- /migratepack `<reply>` : reply to a sticker to migrate the entire sticker set it belongs to into your pack(s). Won't do anything if you have an exception set in the chat.
-- /delsticker `<reply>` : reply to a sticker belonging to a pack made by me to remove it from said pack.
+- /migratepack `<reply>` : reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s). Won't do anything if you have an exception set in the chat.
+- /delsticker `<reply>` : reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from said pack.
 """
 
 __mod_name__ = "Stickers"
