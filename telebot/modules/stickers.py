@@ -465,11 +465,43 @@ def migrate(update: Update, context: CallbackContext):
         os.remove(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png")
 
 
+@run_async
+def del_sticker(update: Update, context: CallbackContext):
+    log(update, "del_sticker")
+
+    if update.effective_chat.id in get_command_exception_chats("migratepack"):
+        return
+
+    # check if there's anything to delete
+    if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
+        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
+        return
+
+    # check if the bot has perms to delete the sticker
+    sticker = update.effective_message.reply_to_message.sticker
+    set_name = sticker.set_name
+    if context.bot.username not in set_name:
+        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
+        return
+
+    # get sticker set info (for better replies)
+    set_title = context.bot.get_sticker_set(set_name).title
+
+    # delete the sticker
+    try:
+        context.bot.delete_sticker_from_set(sticker.file_id)
+    except BadRequest:
+        update.effective_message.reply_text("Telegram seems to be high on catnip at the moment, try again in a while!")
+
+    update.effective_message.reply_markdown(f"Deleted that sticker from [{set_title}](t.me/addstickers/{set_name}).")
+
+
 __help__ = r"""
 - /stickerid `<reply>` : reply to a sticker to me to tell you its file ID.
 - /getsticker `<reply>` : reply to a sticker to me to upload its raw PNG file.
 - /kang `<reply> [<emojis>]` : reply to a sticker to add it to your pack. Won't do anything if you have an exception set in the chat.
 - /migratepack `<reply>` : reply to a sticker to migrate the entire sticker set it belongs to into your pack(s). Won't do anything if you have an exception set in the chat.
+- /delsticker `<reply>` : reply to a sticker belonging to a pack made by me to remove it from said pack.
 """
 
 __mod_name__ = "Stickers"
@@ -478,3 +510,4 @@ dispatcher.add_handler(CommandHandler("stickerid", sticker_id))
 dispatcher.add_handler(CommandHandler("getsticker", get_sticker))
 dispatcher.add_handler(CommandHandler('kang', kang))
 dispatcher.add_handler(CommandHandler('migratepack', migrate))
+dispatcher.add_handler(CommandHandler('delsticker', del_sticker))

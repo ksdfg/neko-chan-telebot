@@ -106,7 +106,6 @@ COMMANDS = [
     BotCommand(command='modules', description="List all the active modules"),
     BotCommand(command='help', description="[<module>] : Display the help text to understand how to use this bot"),
     BotCommand(command='kang', description="<reply> [<emoji>] : reply to a sticker to add it to your pack"),
-    BotCommand(command="addfilter", description="<trigger> [<content>|<reply>] : add a filter"),
 ]
 
 if __name__ == "__main__":
