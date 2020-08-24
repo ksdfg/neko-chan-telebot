@@ -94,9 +94,9 @@ def owo(update: Update, context: CallbackContext):
 
 
 __help__ = """
-- /mock <reply> : MoCk LikE sPOnGEbob
-- /zalgofy <reply> : cͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ
-- /owo <reply> : translate normie to moe weeb
+- /mock `<reply>` : MoCk LikE sPOnGEbob
+- /zalgofy `<reply>` : cͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ
+- /owo `<reply>` : translate normie to moe weeb
 """
 
 __mod_name__ = "memes"

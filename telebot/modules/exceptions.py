@@ -55,8 +55,8 @@ def del_exception(update: Update, context: CallbackContext):
 __help__ = """
 Adding an exception for a command in your chat will change it's behaviour. How it will change depends on the command.
 - /listexceptions : list all exceptions in chat
-- /addexceptions <commands list> : Add exceptions for given commands (space separated)
-- /delexceptions <commands list> : Delete exceptions for given commands (space separated)
+- /addexceptions `<commands list>` : Add exceptions for given commands (space separated)
+- /delexceptions `<commands list>` : Delete exceptions for given commands (space separated)
 """
 
 __mod_name__ = "Exceptions"

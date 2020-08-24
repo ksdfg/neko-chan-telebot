@@ -40,9 +40,9 @@ HELP_TEXT = (
     + """
 Use following commands to use me (*blush*):
 
-- /help [<modules list>] : Recursion ftw
+- /help `[<modules list>]` : Recursion ftw
 - /start : Turn me on
-- /talk [<word>] : Make me meow... if you tell me what to meow then I'll do that too
+- /talk `[<word>]` : Make me meow... if you tell me what to meow then I'll do that too
 - /modules : Let me tell you what all I can do to please you
 """
 )
@@ -99,7 +99,7 @@ def talk(update: Update, context: CallbackContext):
 # set bot commands
 COMMANDS = [
     BotCommand(command='talk', description="[<word>] : Say <word> (or meow, if not given) rendum number of times"),
-    BotCommand(command='modules', description=": List all the active modules"),
+    BotCommand(command='modules', description="List all the active modules"),
     BotCommand(command='help', description="[<module>] : Display the help text to understand how to use this bot"),
     BotCommand(command='kang', description="<reply> [<emoji>] : reply to a sticker to add it to your pack"),
     BotCommand(command="addfilter", description="<trigger> [<content>|<reply>] : add a filter"),
