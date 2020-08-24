@@ -330,6 +330,9 @@ def kang(update: Update, context: CallbackContext):
 def migrate(update: Update, context: CallbackContext):
     log(update, "migrate pack")
 
+    if update.effective_chat.id in get_command_exception_chats("migratepack"):
+        return
+
     # check if there is a sticker to kang set from
     if (
         not update.effective_message.reply_to_message
