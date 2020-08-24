@@ -40,9 +40,10 @@ HELP_TEXT = (
     + """
 Use following commands to use me (*blush*):
 
-- /help : Recursion ftw
+- /help [<modules list>] : Recursion ftw
 - /start : Turn me on
 - /talk [<word>] : Make me meow... if you tell me what to meow then I'll do that too
+- /modules : Let me tell you what all I can do to please you
 """
 )
 
@@ -53,6 +54,13 @@ def start(update: Update, context: CallbackContext):
     update.message.reply_markdown(START_TEXT)
 
 
+def list_modules(update: Update, context: CallbackContext):
+    log(update, "list modules")
+    update.effective_message.reply_markdown(
+        "The list of Active Modules is as follows :\n\n`" + "`\n`".join(imported_mods.keys()) + "`"
+    )
+
+
 def help(update: Update, context: CallbackContext):
     # display help message
     log(update, func_name="help")
@@ -61,13 +69,13 @@ def help(update: Update, context: CallbackContext):
     # add help strings of all imported modules too
     for mod_name, mod in imported_mods.items():
         if mod.__help__:
-            if (context.args and mod_name.lower() in map(lambda x: x.lower(), context.args)) or not context.args:
+            if context.args and mod_name.lower() in map(lambda x: x.lower(), context.args):
                 text_blob += f"\n`{mod_name}`\n{mod.__help__}"
 
     text_blob += (
-        "\n\nAll arguments that are mentioned as list are just space separated words\n\n"
+        "\n\nAll arguments that are mentioned as list are just space separated words.\n\n"
         "If you want to see help for just some select modules, "
-        "run /help followed by the module names, space separated"
+        "run /help followed by the module names, space separated."
     )
 
     update.message.reply_markdown(text_blob)
@@ -90,9 +98,10 @@ def talk(update: Update, context: CallbackContext):
 
 # set bot commands
 COMMANDS = [
+    BotCommand(command='talk', description="[<word>] : Say <word> (or meow, if not given) rendum number of times"),
+    BotCommand(command='modules', description=": List all the active modules"),
     BotCommand(command='help', description="[<module>] : Display the help text to understand how to use this bot"),
-    BotCommand(command='talk', description="[<word>] : Say <word> (or meow, if not given) rendum number of times."),
-    BotCommand(command='kang', description="<reply> [<emoji>] : reply to a sticker to add it to your pack."),
+    BotCommand(command='kang', description="<reply> [<emoji>] : reply to a sticker to add it to your pack"),
     BotCommand(command="addfilter", description="<trigger> [<content>|<reply>] : add a filter"),
 ]
 
@@ -101,6 +110,7 @@ if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("talk", talk))
     dispatcher.add_handler(CommandHandler("help", help))
+    dispatcher.add_handler(CommandHandler("modules", list_modules))
 
     updater.bot.set_my_commands(COMMANDS)
 
