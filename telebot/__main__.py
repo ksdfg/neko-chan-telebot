@@ -62,7 +62,7 @@ def help(update: Update, context: CallbackContext):
     for mod_name, mod in imported_mods.items():
         if mod.__help__:
             if (context.args and mod_name.lower() in map(lambda x: x.lower(), context.args)) or not context.args:
-                text_blob += f"\n`{mod_name}`{mod.__help__}"
+                text_blob += f"\n`{mod_name}`\n{mod.__help__}"
 
     text_blob += (
         "\n\nAll arguments that are mentioned as list are just space separated words\n\n"

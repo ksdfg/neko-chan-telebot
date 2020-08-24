@@ -465,8 +465,8 @@ def migrate(update: Update, context: CallbackContext):
 __help__ = r"""
 - /stickerid <reply> : reply to a sticker to me to tell you its file ID.
 - /getsticker <reply> : reply to a sticker to me to upload its raw PNG file.
-- /kang <reply> \[<emojis>] : reply to a sticker to add it to your pack.
-- /migratepack <reply> : reply to a sticker to migrate the entire sticker set it belongs to into your pack(s)
+- /kang <reply> \[<emojis>] : reply to a sticker to add it to your pack. Won't do anything if you have an exception set in the chat.
+- /migratepack <reply> : reply to a sticker to migrate the entire sticker set it belongs to into your pack(s). Won't do anything if you have an exception set in the chat.
 """
 
 __mod_name__ = "Stickers"
