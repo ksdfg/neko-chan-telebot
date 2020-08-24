@@ -537,6 +537,8 @@ def migrate(update: Update, context: CallbackContext):
     # don't want rendum files on server
     if os.path.isfile(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png"):
         os.remove(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png")
+    if os.path.isfile(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs"):
+        os.remove(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs")
 
 
 @run_async
