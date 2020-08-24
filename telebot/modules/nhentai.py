@@ -111,7 +111,7 @@ def sauce(update: Update, context: CallbackContext):
 
 
 __help__ = """
-- /sauce <digits>: Read a doujin from nhentai.net in telegram instant preview by giving it's 5/6 digit code. 
+- /sauce <digits list>: Read a doujin from nhentai.net in telegram instant preview by giving it's 5/6 digit code. 
 You can give multiple codes, and it will fetch all those doujins. 
 If you don't have an exception set for your chat, it'll send it to you in your private chat.
 """

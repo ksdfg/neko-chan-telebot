@@ -142,8 +142,8 @@ def reply(update: Update, context: CallbackContext):
 
 __help__ = """
 /filters : list all active filters in the chat
-/addfilter : add a filter
-/delfilters : delete active filters; give all filters to delete seperated by a space
+/addfilter <trigger> [<content>|<reply>] : add a filter
+/delfilters <triggers list> : delete active filters; give all filters to delete seperated by a space
 """
 
 __mod_name__ = "Filters"

@@ -42,7 +42,7 @@ Use following commands to use me (*blush*):
 
 - /help : Recursion ftw
 - /start : Turn me on
-- /talk : Make me meow
+- /talk [<word>] : Make me meow... if you tell me what to meow then I'll do that too
 """
 )
 
@@ -65,7 +65,8 @@ def help(update: Update, context: CallbackContext):
                 text_blob += f"\n`{mod_name}`{mod.__help__}"
 
     text_blob += (
-        "\n\nIf you want to see help for just some select modules, "
+        "\n\nAll arguments that are mentioned as list are just space separated words\n\n"
+        "If you want to see help for just some select modules, "
         "run /help followed by the module names, space separated"
     )
 
