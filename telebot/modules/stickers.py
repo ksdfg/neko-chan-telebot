@@ -289,10 +289,10 @@ def kang(update: Update, context: CallbackContext):
         os.remove("kang_sticker.png")
 
 
-__help__ = """
+__help__ = r"""
 - /stickerid <reply> : reply to a sticker to me to tell you its file ID.
 - /getsticker <reply> : reply to a sticker to me to upload its raw PNG file.
-- /kang <reply> [<emojis>] : reply to a sticker to add it to your pack.
+- /kang <reply> \[<emojis>] : reply to a sticker to add it to your pack.
 """
 
 __mod_name__ = "Stickers"
