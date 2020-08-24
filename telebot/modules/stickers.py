@@ -57,16 +57,23 @@ def get_sticker(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Please reply to a sticker for me to upload its PNG.")
 
 
-def _get_pack_num_and_name(user: User, bot: Bot):
+def _get_pack_num_and_name(user: User, bot: Bot, is_animated: bool = False):
     pack_num = 0
-    pack_name = "a" + str(user.id) + "_by_" + bot.username
+    pack_name = "a" + str(pack_num) + "_" + str(user.id)
+    if is_animated:
+        pack_name += "_animated"
+    pack_name += "_by_" + bot.username
+    max_stickers = 50 if is_animated else 120
 
     try:
         sticker_set = bot.get_sticker_set(pack_name)
-        while len(sticker_set.stickers) >= 120:
+        while len(sticker_set.stickers) >= max_stickers:
             try:
                 pack_num += 1
-                pack_name = "a" + str(pack_num) + "_" + str(user.id) + "_by_" + bot.username
+                pack_name = "a" + str(pack_num) + "_" + str(user.id)
+                if is_animated:
+                    pack_name += "_animated"
+                pack_name += "_by_" + bot.username
                 sticker_set = bot.get_sticker_set(pack_name)
             except TelegramError:
                 break
@@ -101,14 +108,20 @@ def _resize(kang_sticker):
     return im
 
 
-def _make_pack(msg, user, png_sticker, emoji, bot, pack_name, pack_num):
+def _make_pack(msg, user, sticker, emoji, bot, pack_name, pack_num, is_animated: bool = False):
     name = user.first_name
     name = name[:50]
 
     try:
         extra_version = " " + str(pack_num) if pack_num > 0 else ""
-        success = bot.create_new_sticker_set(
-            user.id, pack_name, f"{name}'s kang pack" + extra_version, png_sticker=png_sticker, emojis=emoji
+        success = (
+            bot.create_new_sticker_set(
+                user.id, pack_name, f"{name}'s animated kang pack" + extra_version, tgs_sticker=sticker, emojis=emoji,
+            )
+            if is_animated
+            else bot.create_new_sticker_set(
+                user.id, pack_name, f"{name}'s kang pack" + extra_version, png_sticker=sticker, emojis=emoji,
+            )
         )
 
     except TelegramError as e:
@@ -150,14 +163,59 @@ def kang(update: Update, context: CallbackContext):
     bot = context.bot
 
     # get sticker pack of user
-    pack_num, pack_name = _get_pack_num_and_name(user, bot)
+    try:
+        is_animated = msg.reply_to_message.sticker.is_animated
+    except AttributeError:
+        is_animated = False
+    pack_num, pack_name = _get_pack_num_and_name(user, bot, is_animated)
 
     rendum_str = uuid4()
     kang_sticker = f"{user.id}_{rendum_str}_kang_sticker.png"
 
     # If user has replied to some message
-    if msg.reply_to_message:
+    if is_animated:
+        # download sticker
+        sticker = msg.reply_to_message.sticker
+        context.bot.get_file(sticker.file_id).download(f"{update.effective_user.id}_{rendum_str}_kang_sticker.tgs")
 
+        # add to pack
+        try:
+            bot.add_sticker_to_set(
+                user_id=user.id,
+                name=pack_name,
+                tgs_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.tgs', 'rb'),
+                emojis=sticker.emoji,
+            )
+            msg.reply_markdown(
+                f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + f"\nEmoji is: {sticker.emoji}"
+            )
+
+        except TelegramError as e:
+            if e.message == "Stickerset_invalid":
+                _make_pack(
+                    msg,
+                    user,
+                    open(f'{user.id}_{rendum_str}_kang_sticker.tgs', 'rb'),
+                    sticker.emoji,
+                    bot,
+                    pack_name,
+                    pack_num,
+                    is_animated,
+                )
+
+            elif e.message == "Invalid sticker emojis":
+                msg.reply_text("Invalid emoji(s).")
+
+            elif e.message == "Stickers_too_much":
+                msg.reply_text("Meowtastic news! This loser just maxed out his pack size. Press F to pay respecc.")
+
+            elif e.message == "Internal Server Error: sticker set not found (500)":
+                msg.reply_markdown(
+                    f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + "\n"
+                    "Emoji is:" + " " + sticker.emoji
+                )
+
+    elif msg.reply_to_message:
         # get sticker file
         if msg.reply_to_message.sticker:
             file_id = msg.reply_to_message.sticker.file_id
@@ -325,6 +383,8 @@ def kang(update: Update, context: CallbackContext):
 
     if os.path.isfile(f"{user.id}_{rendum_str}_kang_sticker.png"):
         os.remove(f"{user.id}_{rendum_str}_kang_sticker.png")
+    if os.path.isfile(f"{user.id}_{rendum_str}_kang_sticker.tgs"):
+        os.remove(f"{user.id}_{rendum_str}_kang_sticker.tgs")
 
 
 @run_async
@@ -499,7 +559,7 @@ def del_sticker(update: Update, context: CallbackContext):
 __help__ = r"""
 - /stickerid `<reply>` : reply to a sticker to me to tell you its file ID.
 - /getsticker `<reply>` : reply to a sticker to me to upload its raw PNG file.
-- /kang `<reply> [<emojis>]` : reply to a sticker to add it to your pack. Won't do anything if you have an exception set in the chat.
+- /kang `<reply> [<emojis>]` : reply to a sticker (animated or non animated) or a picture to add it to your pack. Won't do anything if you have an exception set in the chat.
 - /migratepack `<reply>` : reply to a sticker to migrate the entire sticker set it belongs to into your pack(s). Won't do anything if you have an exception set in the chat.
 - /delsticker `<reply>` : reply to a sticker belonging to a pack made by me to remove it from said pack.
 """
