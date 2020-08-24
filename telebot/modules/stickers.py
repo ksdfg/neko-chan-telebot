@@ -395,11 +395,7 @@ def migrate(update: Update, context: CallbackContext):
         return
 
     # check if there is a sticker to kang set from
-    if (
-        not update.effective_message.reply_to_message
-        or not update.effective_message.reply_to_message.sticker
-        or update.effective_message.reply_to_message.sticker.is_animated
-    ):
+    if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
         update.effective_message.reply_text(
             "Please reply to a non animated sticker that belongs to a pack you want to migrate"
         )
@@ -424,27 +420,36 @@ def migrate(update: Update, context: CallbackContext):
     og_stickers_set = context.bot.get_sticker_set(og_set_name)
     og_set_title = og_stickers_set.title
     stickers = og_stickers_set.stickers
+    is_animated = stickers[0].is_animated
 
     # get the pack to migrate the stickers into
-    pack_num, pack_name = _get_pack_num_and_name(update.effective_user, context.bot)
+    pack_num, pack_name = _get_pack_num_and_name(update.effective_user, context.bot, is_animated)
     appended_packs = [pack_name]  # list of packs the stickers were migrated into
+
+    rendum_str = uuid4()
 
     try:
         sticker_pack = context.bot.get_sticker_set(pack_name)
     except BadRequest:
         # download sticker
-        context.bot.get_file(stickers[0].file_id).download(f"{update.effective_user.id}_{uuid4()}_migrate_sticker.png")
+        file = (
+            f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs"
+            if is_animated
+            else f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png"
+        )
+        context.bot.get_file(stickers[0].file_id).download(file)
 
         # make pack
         try:
             _make_pack(
                 None,
                 update.effective_user,
-                open(f"{update.effective_user.id}_{uuid4()}_migrate_sticker.png", 'rb'),
+                open(file, 'rb'),
                 stickers[0].emoji,
                 context.bot,
                 pack_name,
                 pack_num,
+                is_animated,
             )
         # we don't want to send a message, hence passed msg as None to _make_pack
         # this leads to an AttributeError being raised
@@ -454,19 +459,24 @@ def migrate(update: Update, context: CallbackContext):
         stickers = stickers[1:]  # because the first sticker is already in the new pack now
         sticker_pack = context.bot.get_sticker_set(pack_name)
 
-    rendum_str = uuid4()
+    max_stickers = 50 if is_animated else 120
 
     for sticker in stickers:
         # download sticker
-        context.bot.get_file(sticker.file_id).download(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png")
+        file = (
+            f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs"
+            if is_animated
+            else f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png"
+        )
+        context.bot.get_file(sticker.file_id).download(file)
 
         # if current pack can still fit in more stickers
-        if len(sticker_pack.stickers) < 120:
+        if len(sticker_pack.stickers) < max_stickers:
             try:
                 context.bot.add_sticker_to_set(
                     user_id=update.effective_user.id,
                     name=pack_name,
-                    png_sticker=open(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png", 'rb'),
+                    tgs_sticker=open(file, 'rb'),
                     emojis=sticker.emoji,
                 )
             except BadRequest:
@@ -490,7 +500,10 @@ def migrate(update: Update, context: CallbackContext):
         else:
             # new pack info
             pack_num += 1
-            pack_name = "a" + str(pack_num) + "_" + str(update.effective_user.id) + "_by_" + context.bot.username
+            pack_name = "a" + str(pack_num) + "_" + str(update.effective_user.id)
+            if is_animated:
+                pack_name += "_animated"
+            pack_name += "_by_" + context.bot.username
             appended_packs.append(pack_name)
 
             # make new pack
@@ -498,11 +511,12 @@ def migrate(update: Update, context: CallbackContext):
                 _make_pack(
                     None,
                     update.effective_user,
-                    open(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png", 'rb'),
+                    open(file, 'rb'),
                     sticker.emoji,
                     context.bot,
                     pack_name,
                     pack_num,
+                    is_animated,
                 )
             # we don't want to send a message, hence passed msg as None to _make_pack
             # this leads to an AttributeError being raised
