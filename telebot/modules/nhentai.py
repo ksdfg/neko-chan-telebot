@@ -57,8 +57,8 @@ def get_info(digits):
     )
 
 
-def get_content(content, id):
-    info = content[id].find_all("span", {"class": "name"})
+def get_content(content, _id):
+    info = content[_id].find_all("span", {"class": "name"})
 
     items = []
     for i in range(len(info)):
@@ -74,7 +74,12 @@ def get_content(content, id):
 
 
 @run_async
-def sauce(update: Update, context: CallbackContext):
+def sauce(update: Update, context: CallbackContext) -> None:
+    """
+    Fetch the doujin for all the sauces given by user, make telegraph article and send it to user for easy reading
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "sauce")
 
     # check if any args were given
@@ -87,12 +92,15 @@ def sauce(update: Update, context: CallbackContext):
 
     # iterate over each given sauce and fetch the doujin
     for digits in context.args:
+        # get basic info
         title, data, image_tags = get_info(digits)
 
+        # create telegraph article for the doujin
         telegraph = Telegraph()
         telegraph.create_account(short_name='neko-chan-telebot')
         article_path = telegraph.create_page(title, html_content=image_tags)['path']
 
+        # add details to the reply to be sent to the user
         text_blob = f"<code>{digits}</code>\n<a href='https://telegra.ph/{article_path}'>{title}</a>"
         for key, value in data.items():
             if value:
@@ -104,6 +112,7 @@ def sauce(update: Update, context: CallbackContext):
         else:
             context.bot.send_message(chat_id=update.effective_user.id, text=text_blob, parse_mode=ParseMode.HTML)
 
+    # if called from a chat without exception in it, then send him a reminder to check it
     if not exception and update.effective_chat.type != "private":
         update.message.reply_markdown(
             f"[Let's enjoy this together in our private chat...](https://t.me/{context.bot.username}"
