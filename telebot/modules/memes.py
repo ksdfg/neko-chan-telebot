@@ -1,17 +1,8 @@
-from asyncio import new_event_loop
-from io import BytesIO
-from os import remove
-from pathlib import Path
-from random import choice
 from random import choice, randint
 from re import sub
-from uuid import uuid4
 
-from PIL import Image
-from deeppyer import deepfry
-from emoji import emojize
 from spongemock.spongemock import mock as mock_text
-from telegram import Update, Message
+from telegram import Update
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler, run_async
 from zalgo_text.zalgo import zalgo
@@ -181,47 +172,12 @@ def vapor(update: Update, context: CallbackContext):
         update.effective_message.reply_to_message.reply_markdown(f"`{aesthetic_text}`")
 
 
-async def _fry(image: Image, msg: Message, file: str):
-    image = await deepfry(img=image, flares=False)
-
-    bio = BytesIO()
-    bio.name = 'image.jpeg'
-    image.save(bio, 'JPEG')
-
-    bio.seek(0)
-    msg.reply_photo(bio)
-    if Path(file).is_file():
-        remove(file)
-
-
-@run_async
-def fry(update: Update, context: CallbackContext):
-    log(update, "deepfry")
-
-    file = f"{uuid4()}_fry.png"
-
-    if update.effective_message.reply_to_message and update.effective_message.reply_to_message.photo:
-        context.bot.get_file(update.effective_message.reply_to_message.photo[-1].file_id).download(file)
-    elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.sticker:
-        context.bot.get_file(update.effective_message.reply_to_message.sticker.file_id).download(file)
-    else:
-        update.effective_message.reply_text(
-            emojize("Gimme something proper to deepfry before I deepfry your catnip :pouting_cat_face:")
-        )
-        return
-
-    loop = new_event_loop()
-    loop.run_until_complete(_fry(Image.open("sticker.png"), update.effective_message.reply_to_message, file))
-    loop.close()
-
-
 __help__ = """
 - /mock `<reply>` : MoCk LikE sPOnGEbob
 - /zalgofy `<reply>` : cͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ
 - /owo `<reply>` : translate normie to moe weeb
 - /stretch `<reply>` : talk like the sloth from zootopia
 - /vapor `[<reply>|<message>]` : ｖａｐｏｒｗａｖｅ ａｅｓｔｈｅｔｉｃｓ
-- /deepfry `<reply photo|sticker>` : deepfried meme pics for the american kitties
 """
 
 __mod_name__ = "memes"
@@ -232,4 +188,3 @@ dispatcher.add_handler(CommandHandler("zalgofy", zalgofy))
 dispatcher.add_handler(CommandHandler("owo", owo))
 dispatcher.add_handler(CommandHandler("stretch", stretch))
 dispatcher.add_handler(CommandHandler("vapor", vapor))
-dispatcher.add_handler(CommandHandler("deepfry", fry))
