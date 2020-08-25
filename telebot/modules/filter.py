@@ -120,22 +120,22 @@ def reply(update: Update, context: CallbackContext):
 
         if search(pattern, text, flags=IGNORECASE):
             log(update, f"reply to filter trigger `{trigger}`")
-            _filter = get_filter(update.effective_chat.id, trigger)
+            content, filter_type = get_filter(update.effective_chat.id, trigger)
 
-            if _filter.filter_type == "text":
-                msg.reply_markdown(_filter.content)
-            elif _filter.filter_type == "sticker":
-                msg.reply_sticker(_filter.content)
-            elif _filter.filter_type == "document":
-                msg.reply_document(_filter.content)
-            elif _filter.filter_type == "photo":
-                msg.reply_photo(_filter.content)
-            elif _filter.filter_type == "audio":
-                msg.reply_audio(_filter.content)
-            elif _filter.filter_type == "voice":
-                msg.reply_voice(_filter.content)
-            elif _filter.filter_type == "video":
-                msg.reply_video(_filter.content)
+            if filter_type == "text":
+                msg.reply_markdown(content)
+            elif filter_type == "sticker":
+                msg.reply_sticker(content)
+            elif filter_type == "document":
+                msg.reply_document(content)
+            elif filter_type == "photo":
+                msg.reply_photo(content)
+            elif filter_type == "audio":
+                msg.reply_audio(content)
+            elif filter_type == "voice":
+                msg.reply_voice(content)
+            elif filter_type == "video":
+                msg.reply_video(content)
 
             break
 
