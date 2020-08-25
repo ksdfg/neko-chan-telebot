@@ -1,14 +1,17 @@
 from asyncio import new_event_loop
 from io import BytesIO
 from os import remove
+from os.path import join
 from pathlib import Path
-from random import choice
 from random import choice, randint
 from re import sub
+from uuid import uuid4
 
 from PIL import Image
+from cv2.cv2 import CascadeClassifier, cvtColor, COLOR_BGR2GRAY
 from deeppyer import deepfry
 from emoji import emojize
+from numpy import array
 from spongemock.spongemock import mock as mock_text
 from telegram import Update, Message
 from telegram.error import BadRequest
@@ -235,8 +238,8 @@ def vapor(update: Update, context: CallbackContext):
         update.effective_message.reply_to_message.reply_markdown(f"`{aesthetic_text}`")
 
 
-async def _fry(image: Image, msg: Message):
-    image = await deepfry(img=image)
+async def _fry(image: Image, msg: Message, file: str):
+    image = await deepfry(img=image, flares=False)
 
     bio = BytesIO()
     bio.name = 'image.jpeg'
@@ -244,17 +247,18 @@ async def _fry(image: Image, msg: Message):
 
     bio.seek(0)
     msg.reply_photo(bio)
-    if Path("sticker.png").is_file():
-        remove("sticker.png")
+    if Path(file).is_file():
+        remove(file)
 
 
 @bot_action("deepfry")
 def fry(update: Update, context: CallbackContext):
+    file = f"{uuid4()}_fry.png"
+
     if update.effective_message.reply_to_message and update.effective_message.reply_to_message.photo:
-        image = Image.open(update.effective_message.reply_to_message.photo[-1].get_file().download_as_bytearray())
+        context.bot.get_file(update.effective_message.reply_to_message.photo[-1].file_id).download(file)
     elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.sticker:
-        context.bot.get_file(update.effective_message.reply_to_message.sticker.file_id).download('sticker.png')
-        image = Image.open("sticker.png")
+        context.bot.get_file(update.effective_message.reply_to_message.sticker.file_id).download(file)
     else:
         update.effective_message.reply_text(
             emojize("Gimme something proper to deepfry before I deepfry your catnip :pouting_cat_face:")
@@ -262,7 +266,7 @@ def fry(update: Update, context: CallbackContext):
         return
 
     loop = new_event_loop()
-    loop.run_until_complete(_fry(image, update.effective_message.reply_to_message))
+    loop.run_until_complete(_fry(Image.open(file), update.effective_message.reply_to_message, file))
     loop.close()
 
 
