@@ -221,10 +221,7 @@ __help__ = """
 - /owo `<reply>` : translate normie to moe weeb
 - /stretch `<reply>` : talk like the sloth from zootopia
 - /vapor `[<reply>|<message>]` : ｖａｐｏｒｗａｖｅ ａｅｓｔｈｅｔｉｃｓ
-/mock <reply> : MoCk LikE sPOnGEbob
-/zalgofy <reply> : cͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ
-/owo <reply> : translate normie to moe weeb
-/deepfry <reply photo|sticker> : deepfried memes for the american kitties
+- /deepfry `<reply photo|sticker>` : deepfried meme pics for the american kitties
 """
 
 __mod_name__ = "memes"
