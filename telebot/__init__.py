@@ -24,7 +24,7 @@ class Config:
         self.NO_LOAD = no_load
 
 
-def log(update: Update, func_name: str, extra_text: str = ""):
+def log(update: Update, func_name: str, extra_text: str = "") -> None:
     """
     Function to log bot activity
     :param update: Update object to retrieve info from
