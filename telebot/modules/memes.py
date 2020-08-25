@@ -54,27 +54,6 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
         update.effective_message.reply_text("Gimme a message to zalgofy before I claw your tits off...")
 
 
-# list of all kaomojis to use in owo
-kaomoji = [
-    "```\n(・`ω´・)\n```",
-    "```\n;;w;;\n```",
-    "```\nowo\n```",
-    "```\nUwU\n```",
-    "```\n>w<\n```",
-    "```\n^w^\n```",
-    "```\n" + r"\(^o\) (/o^)/" + "\n```",
-    "```\n( ^ _ ^)∠☆\n```",
-    "```\n(ô_ô)\n```",
-    "```\n~:o\n```",
-    "```\n;____;\n```",
-    "```\n(*^*)\n```",
-    "```\n(>_\n```",
-    "```\n(♥_♥)\n```",
-    "```\n*(^O^)*\n```",
-    "```\n((+_+))\n```",
-]
-
-
 @run_async
 def owo(update: Update, context: CallbackContext) -> None:
     """
@@ -89,6 +68,26 @@ def owo(update: Update, context: CallbackContext) -> None:
             "Gommenye, I don't nyaruhodo what normie text you want to henshin into the moe weeb dialect"
         )
         return
+
+    # list of all kaomojis to use in owo
+    kaomoji = [
+        "```\n(・`ω´・)\n```",
+        "```\n;;w;;\n```",
+        "```\nowo\n```",
+        "```\nUwU\n```",
+        "```\n>w<\n```",
+        "```\n^w^\n```",
+        "```\n" + r"\(^o\) (/o^)/" + "\n```",
+        "```\n( ^ _ ^)∠☆\n```",
+        "```\n(ô_ô)\n```",
+        "```\n~:o\n```",
+        "```\n;____;\n```",
+        "```\n(*^*)\n```",
+        "```\n(>_\n```",
+        "```\n(♥_♥)\n```",
+        "```\n*(^O^)*\n```",
+        "```\n((+_+))\n```",
+    ]
 
     try:
         # replace certain characters and add a kaomoji
@@ -141,11 +140,44 @@ def stretch(update: Update, context: CallbackContext):
         )
 
 
+@run_async
+def vapor(update: Update, context: CallbackContext):
+    """
+    Make a message look more ａｅｓｔｈｅｔｉｃ
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    log(update, "vapor")
+
+    if not context.args and not (
+        update.effective_message.reply_to_message and update.effective_message.reply_to_message.text_markdown
+    ):
+        update.effective_message.reply_text(
+            "If you're not gonna give me something to meme then bring some catnip atleast..."
+        )
+        return
+
+    # get content to vaporwave
+    if context.args:
+        text = " ".join(context.args)
+    else:
+        text = update.effective_message.reply_to_message.text
+
+    aesthetic_text = text.translate(dict((i, i + 0xFEE0) for i in range(0x21, 0x7F)))  # make text more ａｅｓｔｈｅｔｉｃ
+
+    # reply with more ａｅｓｔｈｅｔｉｃｓ
+    if context.args:
+        update.effective_message.reply_markdown(f"`{aesthetic_text}`")
+    else:
+        update.effective_message.reply_to_message.reply_markdown(f"`{aesthetic_text}`")
+
+
 __help__ = """
 - /mock `<reply>` : MoCk LikE sPOnGEbob
 - /zalgofy `<reply>` : cͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ
 - /owo `<reply>` : translate normie to moe weeb
 - /stretch `<reply>` : talk like the sloth from zootopia
+- /vapor `[<reply>|<message>]` : ｖａｐｏｒｗａｖｅ ａｅｓｔｈｅｔｉｃｓ
 """
 
 __mod_name__ = "memes"
@@ -155,3 +187,4 @@ dispatcher.add_handler(CommandHandler("mock", mock))
 dispatcher.add_handler(CommandHandler("zalgofy", zalgofy))
 dispatcher.add_handler(CommandHandler("owo", owo))
 dispatcher.add_handler(CommandHandler("stretch", stretch))
+dispatcher.add_handler(CommandHandler("vapor", vapor))
