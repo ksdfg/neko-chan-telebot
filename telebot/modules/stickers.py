@@ -1,13 +1,14 @@
 import math
 import os
 from os import remove
+from typing import Tuple, IO
 from urllib.request import urlretrieve
 from uuid import uuid4
 
 from PIL import Image
 from decouple import config
 from emoji import emojize
-from telegram import Update, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton, Bot, User
+from telegram import Update, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton, Bot, User, Message
 from telegram.error import BadRequest
 from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
@@ -17,7 +18,12 @@ from telebot.modules.sql.exceptions_sql import get_command_exception_chats
 
 
 @run_async
-def sticker_id(update: Update, context: CallbackContext):
+def sticker_id(update: Update, context: CallbackContext) -> None:
+    """
+    Reply with the file ID of a given sticker
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "sticker id")
 
     rep_msg = update.effective_message.reply_to_message
@@ -28,7 +34,12 @@ def sticker_id(update: Update, context: CallbackContext):
 
 
 @run_async
-def get_sticker(update: Update, context: CallbackContext):
+def get_sticker(update: Update, context: CallbackContext) -> None:
+    """
+    Reply with the PNG image as a document for a given sticker
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "get sticker")
 
     rep_msg = update.effective_message.reply_to_message
@@ -57,17 +68,28 @@ def get_sticker(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Please reply to a sticker for me to upload its PNG.")
 
 
-def _get_pack_num_and_name(user: User, bot: Bot, is_animated: bool = False):
+def _get_pack_num_and_name(user: User, bot: Bot, is_animated: bool = False) -> Tuple[int, str]:
+    """
+    get free pack into which we can add stickers
+    :param user: the user whose packs we're fetching
+    :param bot: the bot to ue to fetch these
+    :param is_animated: True if it is an animated stickers pack, else False
+    :return: the pack number and the pack name
+    """
+    # default pack number and name of the first pack
     pack_num = 0
     pack_name = "a" + str(pack_num) + "_" + str(user.id)
     if is_animated:
         pack_name += "_animated"
     pack_name += "_by_" + bot.username
-    max_stickers = 50 if is_animated else 120
+
+    max_stickers = 50 if is_animated else 120  # max number of stickers possible in a pack
 
     try:
-        sticker_set = bot.get_sticker_set(pack_name)
+        sticker_set = bot.get_sticker_set(pack_name)  # fetch the sticker pack
+
         while len(sticker_set.stickers) >= max_stickers:
+            # since fetched pack is full, get next pack
             try:
                 pack_num += 1
                 pack_name = "a" + str(pack_num) + "_" + str(user.id)
@@ -76,56 +98,90 @@ def _get_pack_num_and_name(user: User, bot: Bot, is_animated: bool = False):
                 pack_name += "_by_" + bot.username
                 sticker_set = bot.get_sticker_set(pack_name)
             except TelegramError:
+                # if the next pack doesn't exist yet, then this is the one to use
                 break
 
     except TelegramError:
+        # if user hasn't made any pack yet
         pass
 
     return pack_num, pack_name
 
 
-def _resize(kang_sticker):
-    im = Image.open(kang_sticker)
+def _resize(kang_sticker: str) -> Image:
+    """
+    resize an image to fit the required dimensions for a sticker
+    :param kang_sticker: file name where the image is stored
+    :return: Image object of the resized image
+    """
+    im: Image = Image.open(kang_sticker)
+
     maxsize = (512, 512)
     if (im.width and im.height) < 512:
+        # if the image is smaller than the required sticker size
         size1 = im.width
         size2 = im.height
+
         if im.width > im.height:
+            # if width is bigger than height, then set width to 512 and scale height accordingly
             scale = 512 / size1
             size1new = 512
             size2new = size2 * scale
         else:
+            # if height is bigger than width, then set height to 512 and scale width accordingly
             scale = 512 / size2
             size1new = size1 * scale
             size2new = 512
-        size1new = math.floor(size1new)
-        size2new = math.floor(size2new)
-        size_new = (size1new, size2new)
+
+        # set image to new size
+        size_new = (math.floor(size1new), math.floor(size2new))
         im = im.resize(size_new)
+
     else:
+        # if image is bigger than sticker size, directly set thumbnail to fit in 512x512
         im.thumbnail(maxsize)
 
     return im
 
 
-def _make_pack(msg, user, sticker, emoji, bot, pack_name, pack_num, is_animated: bool = False):
-    name = user.first_name
-    name = name[:50]
+def _make_pack(
+    msg: Message,
+    user: User,
+    sticker: IO,
+    emoji: str,
+    bot: Bot,
+    pack_name: str,
+    pack_num: int,
+    is_animated: bool = False,
+) -> None:
+    """
+    Make a new sticker pack
+    :param msg: message to reply to on success or failure
+    :param user: user to which the pack must belong
+    :param sticker: sticker to add into the new sticker pack
+    :param emoji: emojis for the above sticker
+    :param bot: bot to use to create the bot
+    :param pack_name: name of the new pack
+    :param pack_num: number of the new pack
+    :param is_animated: True if it's an animated stickers pack, else False
+    """
+    name = user.first_name[:50]
 
     try:
+        # add an extra number to pack title if this isn't the first pack of the user
         extra_version = " " + str(pack_num) if pack_num > 0 else ""
-        success = (
-            bot.create_new_sticker_set(
+
+        # create the pack
+        if is_animated:
+            success = bot.create_new_sticker_set(
                 user.id, pack_name, f"{name}'s animated kang pack" + extra_version, tgs_sticker=sticker, emojis=emoji,
             )
-            if is_animated
-            else bot.create_new_sticker_set(
+        else:
+            success = bot.create_new_sticker_set(
                 user.id, pack_name, f"{name}'s kang pack" + extra_version, png_sticker=sticker, emojis=emoji,
             )
-        )
 
     except TelegramError as e:
-
         if e.message == "Sticker set name is already occupied":
             msg.reply_markdown(f"Your pack can be found [here](t.me/addstickers/{pack_name})")
 
@@ -140,19 +196,25 @@ def _make_pack(msg, user, sticker, emoji, bot, pack_name, pack_num, is_animated:
 
         return
 
+    # send result to user
     if success:
         msg.reply_markdown(f"Sticker pack successfully created. Get it [here](t.me/addstickers/{pack_name})")
         print(f"created pack {pack_name}")
-
     else:
         msg.reply_text("Failed to create sticker pack. Possibly due to blek mejik.")
         print(f"failed to create {pack_name}")
 
 
 @run_async
-def kang(update: Update, context: CallbackContext):
+def kang(update: Update, context: CallbackContext) -> None:
+    """
+    Add a sticker to user's pack
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "kang")
 
+    # check for exception, but skip exception if user is a superuser
     if update.effective_user.id not in config(
         "SUPERUSERS", cast=lambda x: map(int, x.split(","))
     ) and update.effective_chat.id in get_command_exception_chats("kang"):
@@ -169,22 +231,20 @@ def kang(update: Update, context: CallbackContext):
         is_animated = False
     pack_num, pack_name = _get_pack_num_and_name(user, bot, is_animated)
 
+    # file name to download sticker file as
     rendum_str = uuid4()
-    kang_sticker = f"{user.id}_{rendum_str}_kang_sticker.png"
+    kang_sticker = f"{user.id}_{rendum_str}_kang_sticker." + "tgs" if is_animated else "png"
 
     # If user has replied to some message
     if is_animated:
         # download sticker
         sticker = msg.reply_to_message.sticker
-        context.bot.get_file(sticker.file_id).download(f"{update.effective_user.id}_{rendum_str}_kang_sticker.tgs")
+        context.bot.get_file(sticker.file_id).download(kang_sticker)
 
         # add to pack
         try:
             bot.add_sticker_to_set(
-                user_id=user.id,
-                name=pack_name,
-                tgs_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.tgs', 'rb'),
-                emojis=sticker.emoji,
+                user_id=user.id, name=pack_name, tgs_sticker=open(kang_sticker, 'rb'), emojis=sticker.emoji,
             )
             msg.reply_markdown(
                 f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + f"\nEmoji is: {sticker.emoji}"
@@ -193,14 +253,7 @@ def kang(update: Update, context: CallbackContext):
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
                 _make_pack(
-                    msg,
-                    user,
-                    open(f'{user.id}_{rendum_str}_kang_sticker.tgs', 'rb'),
-                    sticker.emoji,
-                    bot,
-                    pack_name,
-                    pack_num,
-                    is_animated,
+                    msg, user, open(kang_sticker, 'rb'), sticker.emoji, bot, pack_name, pack_num, is_animated,
                 )
 
             elif e.message == "Invalid sticker emojis":
@@ -228,8 +281,7 @@ def kang(update: Update, context: CallbackContext):
             return
 
         # download sticker file
-        kang_file = bot.get_file(file_id)
-        kang_file.download(f'{user.id}_{rendum_str}_kang_sticker.png')
+        bot.get_file(file_id).download(kang_sticker)
 
         # get emoji(s) for sticker
         if context.args:
@@ -239,18 +291,16 @@ def kang(update: Update, context: CallbackContext):
         else:
             sticker_emoji = "🤔"
 
-        # resize image and add to sticker pack
+        # resize image
+        im = _resize(kang_sticker)
+
+        if not msg.reply_to_message.sticker:
+            im.save(kang_sticker, "PNG")
+
+        # add to sticker pack
         try:
-            im = _resize(kang_sticker)
-
-            if not msg.reply_to_message.sticker:
-                im.save(kang_sticker, "PNG")
-
             bot.add_sticker_to_set(
-                user_id=user.id,
-                name=pack_name,
-                png_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
-                emojis=sticker_emoji,
+                user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
             )
             msg.reply_markdown(
                 f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + f"\nEmoji is: {sticker_emoji}"
@@ -263,22 +313,13 @@ def kang(update: Update, context: CallbackContext):
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
                 _make_pack(
-                    msg,
-                    user,
-                    open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
-                    sticker_emoji,
-                    bot,
-                    pack_name,
-                    pack_num,
+                    msg, user, open(kang_sticker, 'rb'), sticker_emoji, bot, pack_name, pack_num,
                 )
 
             elif e.message == "Sticker_png_dimensions":
                 im.save(kang_sticker, "PNG")
                 bot.add_sticker_to_set(
-                    user_id=user.id,
-                    name=pack_name,
-                    png_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
-                    emojis=sticker_emoji,
+                    user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
                 )
                 msg.reply_markdown(
                     f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})"
@@ -298,24 +339,23 @@ def kang(update: Update, context: CallbackContext):
                 )
 
     elif context.args:
+        # get the emoji to use as sticker and the emojis to set to said sticker
         try:
-            try:
-                url_emoji = msg.text.split(" ")
-                png_sticker = url_emoji[1]
-                sticker_emoji = url_emoji[2]
-            except IndexError:
-                sticker_emoji = "🤔"
+            png_sticker = context.args[0]
+            sticker_emoji = context.args[1]
+        except IndexError:
+            sticker_emoji = "🤔"
 
-            urlretrieve(png_sticker, kang_sticker)
-            im = _resize(kang_sticker)
-            im.save(kang_sticker, "PNG")
+        # fetch the image for the emoji
+        urlretrieve(png_sticker, kang_sticker)
+        im = _resize(kang_sticker)
+        im.save(kang_sticker, "PNG")
 
-            msg.reply_photo(photo=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'))
+        # add to pack
+        try:
+            msg.reply_photo(photo=open(kang_sticker, 'rb'))
             bot.add_sticker_to_set(
-                user_id=user.id,
-                name=pack_name,
-                png_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
-                emojis=sticker_emoji,
+                user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
             )
             msg.reply_markdown(
                 f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + f"\nEmoji is: {sticker_emoji}"
@@ -328,22 +368,13 @@ def kang(update: Update, context: CallbackContext):
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
                 _make_pack(
-                    msg,
-                    user,
-                    open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
-                    sticker_emoji,
-                    bot,
-                    pack_name,
-                    pack_num,
+                    msg, user, open(kang_sticker, 'rb'), sticker_emoji, bot, pack_name, pack_num,
                 )
 
             elif e.message == "Sticker_png_dimensions":
                 im.save(kang_sticker, "PNG")
                 bot.add_sticker_to_set(
-                    user_id=user.id,
-                    name=pack_name,
-                    png_sticker=open(f'{user.id}_{rendum_str}_kang_sticker.png', 'rb'),
-                    emojis=sticker_emoji,
+                    user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
                 )
                 msg.reply_markdown(
                     f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})"
@@ -368,6 +399,7 @@ def kang(update: Update, context: CallbackContext):
     else:
         reply = "Please reply to a sticker, or image to kang it!"
 
+        # list all user packs
         try:
             first_pack_name = "a" + str(user.id) + "_by_" + bot.username
             bot.get_sticker_set(first_pack_name)
@@ -381,14 +413,18 @@ def kang(update: Update, context: CallbackContext):
 
         msg.reply_markdown(reply)
 
-    if os.path.isfile(f"{user.id}_{rendum_str}_kang_sticker.png"):
-        os.remove(f"{user.id}_{rendum_str}_kang_sticker.png")
-    if os.path.isfile(f"{user.id}_{rendum_str}_kang_sticker.tgs"):
-        os.remove(f"{user.id}_{rendum_str}_kang_sticker.tgs")
+    # delete stray files
+    if os.path.isfile(kang_sticker):
+        os.remove(kang_sticker)
 
 
 @run_async
-def migrate(update: Update, context: CallbackContext):
+def migrate(update: Update, context: CallbackContext) -> None:
+    """
+    Migrate all stickers from a given pack into user's pack(s)
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "migrate pack")
 
     if update.effective_chat.id in get_command_exception_chats("migratepack"):
@@ -427,16 +463,16 @@ def migrate(update: Update, context: CallbackContext):
     appended_packs = [pack_name]  # list of packs the stickers were migrated into
 
     rendum_str = uuid4()
+    file = (
+        f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs"
+        if is_animated
+        else f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png"
+    )
 
     try:
         sticker_pack = context.bot.get_sticker_set(pack_name)
     except BadRequest:
         # download sticker
-        file = (
-            f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs"
-            if is_animated
-            else f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png"
-        )
         context.bot.get_file(stickers[0].file_id).download(file)
 
         # make pack
@@ -463,11 +499,6 @@ def migrate(update: Update, context: CallbackContext):
 
     for sticker in stickers:
         # download sticker
-        file = (
-            f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs"
-            if is_animated
-            else f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png"
-        )
         context.bot.get_file(sticker.file_id).download(file)
 
         # if current pack can still fit in more stickers
@@ -485,11 +516,12 @@ def migrate(update: Update, context: CallbackContext):
                     _make_pack(
                         None,
                         update.effective_user,
-                        open(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png", 'rb'),
+                        open(file, 'rb'),
                         sticker.emoji,
                         context.bot,
                         pack_name,
                         pack_num,
+                        is_animated,
                     )
                 # we don't want to send a message, hence passed msg as None to _make_pack
                 # this leads to an AttributeError being raised
@@ -535,14 +567,17 @@ def migrate(update: Update, context: CallbackContext):
     update.effective_message.reply_markdown(reply)
 
     # don't want rendum files on server
-    if os.path.isfile(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png"):
-        os.remove(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.png")
-    if os.path.isfile(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs"):
-        os.remove(f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs")
+    if os.path.isfile(file):
+        os.remove(file)
 
 
 @run_async
-def del_sticker(update: Update, context: CallbackContext):
+def del_sticker(update: Update, context: CallbackContext) -> None:
+    """
+    Delete a sticker form one of the user's packs
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "del_sticker")
 
     if update.effective_chat.id in get_command_exception_chats("migratepack"):
