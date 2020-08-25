@@ -11,14 +11,24 @@ from telebot import dispatcher, log
 
 
 @run_async
-def runs(update: Update, context: CallbackContext):
+def runs(update: Update, context: CallbackContext) -> None:
+    """
+    Insulting reply whenever someone uses /runs
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "runs")
     update.effective_message.reply_markdown("I'm a cute kitty, and here we have a fat pussy.")
     update.effective_chat.send_sticker("CAACAgUAAxkBAAIJK19CjPoyyX9QwwHfNOZMnqww1hxXAALfAAPd6BozJDBFCIENpGkbBA")
 
 
 @run_async
-def mock(update: Update, context: CallbackContext):
+def mock(update: Update, context: CallbackContext) -> None:
+    """
+    Mock a message like spongebob, and reply
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "mock")
 
     if update.effective_message.reply_to_message:
@@ -28,7 +38,12 @@ def mock(update: Update, context: CallbackContext):
 
 
 @run_async
-def zalgofy(update: Update, context: CallbackContext):
+def zalgofy(update: Update, context: CallbackContext) -> None:
+    """
+    Corrupt the way the text looks, and reply
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "zalgofy")
 
     if update.effective_message.reply_to_message:
@@ -39,7 +54,8 @@ def zalgofy(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Gimme a message to zalgofy before I claw your tits off...")
 
 
-faces = [
+# list of all kaomojis to use in owo
+kaomoji = [
     "```\n(・`ω´・)\n```",
     "```\n;;w;;\n```",
     "```\nowo\n```",
@@ -60,7 +76,12 @@ faces = [
 
 
 @run_async
-def owo(update: Update, context: CallbackContext):
+def owo(update: Update, context: CallbackContext) -> None:
+    """
+    Change a message to look like it was said by a moe weeb
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "owo")
 
     if not update.effective_message.reply_to_message:
@@ -70,6 +91,7 @@ def owo(update: Update, context: CallbackContext):
         return
 
     try:
+        # replace certain characters and add a kaomoji
         reply_text = sub(r'[rl]', "w", update.effective_message.reply_to_message.text_markdown)
         reply_text = sub(r'[ｒｌ]', "ｗ", reply_text)
         reply_text = sub(r'[RL]', 'W', reply_text)
@@ -78,15 +100,17 @@ def owo(update: Update, context: CallbackContext):
         reply_text = sub(r'ｎ([ａｅｉｏｕ])', r'ｎｙ\1', reply_text)
         reply_text = sub(r'N([aeiouAEIOU])', r'Ny\1', reply_text)
         reply_text = sub(r'Ｎ([ａｅｉｏｕＡＥＩＯＵ])', r'Ｎｙ\1', reply_text)
-        reply_text = sub(r'!+', ' ' + choice(faces), reply_text)
-        reply_text = sub(r'！+', ' ' + choice(faces), reply_text)
+        reply_text = sub(r'!+', ' ' + choice(kaomoji), reply_text)
+        reply_text = sub(r'！+', ' ' + choice(kaomoji), reply_text)
         reply_text = reply_text.replace("ove", "uv")
         reply_text = reply_text.replace("ｏｖｅ", "ｕｖ")
-        reply_text += "\n" + choice(faces)
+        reply_text += "\n" + choice(kaomoji)
 
+        # reply to the original message
         update.effective_message.reply_to_message.reply_markdown(reply_text)
 
     except BadRequest:
+        # in case we messed up markdown while replacing characters and adding kaomoji
         update.effective_message.reply_text(
             "Gommenye, I over-owo'd myself.... please try again. "
             "If it still doesn't work, then this must be the language of god's you're trying to translate...."
