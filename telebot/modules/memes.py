@@ -1,4 +1,4 @@
-from random import choice
+from random import choice, randint
 from re import sub
 
 from spongemock.spongemock import mock as mock_text
@@ -117,10 +117,35 @@ def owo(update: Update, context: CallbackContext) -> None:
         )
 
 
+@run_async
+def stretch(update: Update, context: CallbackContext):
+    """
+    Stretch the vowels in a message by a random count
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    log(update, "stretch")
+
+    if not update.effective_message.reply_to_message:
+        update.effective_message.reply_text(
+            "If you're not gonna give me a message to meme, at least give me some catnip..."
+        )
+
+    else:
+        update.effective_message.reply_to_message.reply_markdown(
+            sub(
+                r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])',
+                (r'\1' * randint(3, 10)),
+                update.effective_message.reply_to_message.text_markdown,
+            )
+        )
+
+
 __help__ = """
 - /mock `<reply>` : MoCk LikE sPOnGEbob
 - /zalgofy `<reply>` : cͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ
 - /owo `<reply>` : translate normie to moe weeb
+- /stretch `<reply>` : talk like the sloth from zootopia
 """
 
 __mod_name__ = "memes"
@@ -129,3 +154,4 @@ dispatcher.add_handler(CommandHandler("runs", runs))
 dispatcher.add_handler(CommandHandler("mock", mock))
 dispatcher.add_handler(CommandHandler("zalgofy", zalgofy))
 dispatcher.add_handler(CommandHandler("owo", owo))
+dispatcher.add_handler(CommandHandler("stretch", stretch))
