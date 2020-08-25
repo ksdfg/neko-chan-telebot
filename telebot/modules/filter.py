@@ -10,24 +10,37 @@ from telebot.modules.sql.filter_sql import get_triggers_for_chat, add_filter, ge
 
 
 @run_async
-def list_filters(update: Update, context: CallbackContext):
+def list_filters(update: Update, context: CallbackContext) -> None:
+    """
+    List all the filter triggers in a chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "filters")
 
+    # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
 
     filters = get_triggers_for_chat(update.effective_chat.id)
-
     if filters:
-        update.message.reply_markdown("Active filters in this chat are as follows -\n`" + "`\n`".join(filters) + "`")
+        update.message.reply_markdown(
+            "Active filter triggers in this chat are as follows -\n`" + "`\n`".join(filters) + "`"
+        )
     else:
         update.message.reply_markdown(emojize("No active filters in this chat :crying_cat_face:"))
 
 
 @run_async
-def add_filter_handler(update: Update, context: CallbackContext):
+def add_filter_handler(update: Update, context: CallbackContext) -> None:
+    """
+    Add a filter in a chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "addfilter")
 
+    # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
 
@@ -82,17 +95,25 @@ def add_filter_handler(update: Update, context: CallbackContext):
         msg.reply_markdown("This cat isn't a random reply generator, baka! Give some content to reply with......")
         return
 
+    # add filter in DB
     msg.reply_markdown(add_filter(**kwargs))
 
 
 @run_async
-def del_filter_handler(update: Update, context: CallbackContext):
+def del_filter_handler(update: Update, context: CallbackContext) -> None:
+    """
+    Delete a filter from the chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
     log(update, "del filter")
 
+    # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
 
     if context.args:
+        # iterate over the triggers given and delete them from DB
         for trigger in context.args:
             update.effective_message.reply_markdown(del_filter(chat=update.effective_chat.id, trigger=trigger))
     else:
@@ -102,7 +123,13 @@ def del_filter_handler(update: Update, context: CallbackContext):
 
 
 @run_async
-def reply(update: Update, context: CallbackContext):
+def reply(update: Update, context: CallbackContext) -> None:
+    """
+    Reply when a filter is triggered
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
 
@@ -116,12 +143,15 @@ def reply(update: Update, context: CallbackContext):
     triggers = get_triggers_for_chat(update.effective_chat.id)
 
     for trigger in triggers:
-        pattern = r"( |^|[^\w])" + escape(trigger) + r"( |$|[^\w])"
+        pattern = r"( |^|[^\w])" + escape(trigger) + r"( |$|[^\w])"  # regex for text containing the trigger
 
         if search(pattern, text, flags=IGNORECASE):
             log(update, f"reply to filter trigger `{trigger}`")
+
+            # get content and type to reply in response to trigger
             content, filter_type = get_filter(update.effective_chat.id, trigger)
 
+            # send reply according to type
             if filter_type == "text":
                 msg.reply_markdown(content)
             elif filter_type == "sticker":
