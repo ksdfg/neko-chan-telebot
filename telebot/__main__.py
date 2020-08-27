@@ -46,7 +46,7 @@ Use following commands to use me (*blush*):
 - /start : Turn me on
 - /talk `[<word>]` : Make me meow... if you tell me what to meow then I'll do that too
 - /modules : Let me tell you what all I can do to please you
-- /id : In case the pleasure was too string, I'll tell you who and where you are
+- /id : In case the pleasure was too strong, I'll tell you who and where you are
 """
 )
 
