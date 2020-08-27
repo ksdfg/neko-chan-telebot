@@ -46,6 +46,7 @@ Use following commands to use me (*blush*):
 - /start : Turn me on
 - /talk `[<word>]` : Make me meow... if you tell me what to meow then I'll do that too
 - /modules : Let me tell you what all I can do to please you
+- /id : In case the pleasure was too string, I'll tell you who and where you are
 """
 )
 
@@ -122,12 +123,27 @@ def talk(update: Update, context: CallbackContext) -> None:
     update.message.reply_markdown(f"`{spem}`")
 
 
+@run_async
+def get_id(update: Update, context: CallbackContext) -> None:
+    """
+    Function to get chat and user ID
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    log(update, "id")
+
+    update.effective_message.reply_markdown(
+        f"Your ID is :\n`{update.effective_user.id}`\n\nThe chat ID is :\n`{update.effective_chat.id}`"
+    )
+
+
 # set bot commands
 COMMANDS = [
     BotCommand(command='talk', description="[<word>] : Say <word> (or meow, if not given) rendum number of times"),
     BotCommand(command='modules', description="List all the active modules"),
     BotCommand(command='help', description="[<module>] : Display the help text to understand how to use this bot"),
-    BotCommand(command='kang', description="<reply> [<emoji>] : reply to a sticker to add it to your pack"),
+    BotCommand(command='kang', description="<reply> [<emoji>] : Reply to a sticker to add it to your pack"),
+    BotCommand(command='id', description="Get the user and chat ID"),
 ]
 
 if __name__ == "__main__":
@@ -136,6 +152,7 @@ if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("talk", talk))
     dispatcher.add_handler(CommandHandler("help", help))
     dispatcher.add_handler(CommandHandler("modules", list_modules))
+    dispatcher.add_handler(CommandHandler("id", get_id))
 
     updater.bot.set_my_commands(COMMANDS)  # set bot commands to be displayed
 
