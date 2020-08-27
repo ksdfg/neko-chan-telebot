@@ -29,7 +29,7 @@ def sticker_id(update: Update, context: CallbackContext) -> None:
 
     rep_msg = update.effective_message.reply_to_message
     if rep_msg and rep_msg.sticker:
-        update.effective_message.reply_markdown("Sticker ID:\n```" + escape_markdown(rep_msg.sticker.file_id) + "```",)
+        update.effective_message.reply_markdown("Sticker ID:\n```" + escape_markdown(rep_msg.sticker.file_id) + "```")
     else:
         update.effective_message.reply_text("Please reply to a sticker to get its ID.")
 
@@ -181,11 +181,11 @@ def _make_pack(
         # create the pack
         if is_animated:
             success = bot.create_new_sticker_set(
-                user.id, pack_name, f"{name}'s animated kang pack" + extra_version, tgs_sticker=sticker, emojis=emoji,
+                user.id, pack_name, f"{name}'s animated kang pack" + extra_version, tgs_sticker=sticker, emojis=emoji
             )
         else:
             success = bot.create_new_sticker_set(
-                user.id, pack_name, f"{name}'s kang pack" + extra_version, png_sticker=sticker, emojis=emoji,
+                user.id, pack_name, f"{name}'s kang pack" + extra_version, png_sticker=sticker, emojis=emoji
             )
 
     except TelegramError as e:
@@ -266,7 +266,7 @@ def kang(update: Update, context: CallbackContext) -> None:
         # add to pack
         try:
             bot.add_sticker_to_set(
-                user_id=user.id, name=pack_name, tgs_sticker=open(kang_sticker, 'rb'), emojis=sticker.emoji,
+                user_id=user.id, name=pack_name, tgs_sticker=open(kang_sticker, 'rb'), emojis=sticker.emoji
             )
             msg.reply_markdown(
                 f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
@@ -275,9 +275,7 @@ def kang(update: Update, context: CallbackContext) -> None:
 
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
-                _make_pack(
-                    msg, user, open(kang_sticker, 'rb'), sticker.emoji, bot, pack_name, pack_num, is_animated,
-                )
+                _make_pack(msg, user, open(kang_sticker, 'rb'), sticker.emoji, bot, pack_name, pack_num, is_animated)
 
             elif e.message == "Invalid sticker emojis":
                 msg.reply_text("Invalid emoji(s).")
@@ -323,7 +321,7 @@ def kang(update: Update, context: CallbackContext) -> None:
         # add to sticker pack
         try:
             bot.add_sticker_to_set(
-                user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
+                user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji
             )
             msg.reply_markdown(
                 f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
@@ -336,14 +334,12 @@ def kang(update: Update, context: CallbackContext) -> None:
 
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
-                _make_pack(
-                    msg, user, open(kang_sticker, 'rb'), sticker_emoji, bot, pack_name, pack_num,
-                )
+                _make_pack(msg, user, open(kang_sticker, 'rb'), sticker_emoji, bot, pack_name, pack_num)
 
             elif e.message == "Sticker_png_dimensions":
                 im.save(kang_sticker, "PNG")
                 bot.add_sticker_to_set(
-                    user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
+                    user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji
                 )
                 msg.reply_markdown(
                     f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
@@ -379,7 +375,7 @@ def kang(update: Update, context: CallbackContext) -> None:
         try:
             msg.reply_photo(photo=open(kang_sticker, 'rb'))
             bot.add_sticker_to_set(
-                user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
+                user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji
             )
             msg.reply_markdown(
                 f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
@@ -392,14 +388,12 @@ def kang(update: Update, context: CallbackContext) -> None:
 
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
-                _make_pack(
-                    msg, user, open(kang_sticker, 'rb'), sticker_emoji, bot, pack_name, pack_num,
-                )
+                _make_pack(msg, user, open(kang_sticker, 'rb'), sticker_emoji, bot, pack_name, pack_num)
 
             elif e.message == "Sticker_png_dimensions":
                 im.save(kang_sticker, "PNG")
                 bot.add_sticker_to_set(
-                    user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
+                    user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji
                 )
                 msg.reply_markdown(
                     f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
