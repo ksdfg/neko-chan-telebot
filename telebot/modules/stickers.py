@@ -79,7 +79,7 @@ def _get_packs(user: User, bot: Bot, is_animated: bool = False) -> List[Tuple[in
     """
     # default pack number and name of the first pack
     pack_num = 0
-    pack_name = "a" + str(pack_num) + "_" + str(user.id)
+    pack_name = "a" + str(user.id)
     if is_animated:
         pack_name += "_animated"
     pack_name += "_by_" + bot.username
@@ -244,7 +244,7 @@ def kang(update: Update, context: CallbackContext) -> None:
     else:
         # default pack number and name of the first pack
         pack_num = 0
-        pack_name = "a" + str(pack_num) + "_" + str(user.id)
+        pack_name = "a" + str(user.id)
         if is_animated:
             pack_name += "_animated"
         pack_name += "_by_" + bot.username
@@ -467,11 +467,10 @@ def migrate(update: Update, context: CallbackContext) -> None:
     if packs:
         pack_num, pack = packs[-1]
         pack_name = pack.name
-        pack_title = pack.title
     else:
         # default pack number and name of the first pack
         pack_num = 0
-        pack_name = "a" + str(pack_num) + "_" + str(update.effective_user.id)
+        pack_name = "a" + str(update.effective_user.id)
         if is_animated:
             pack_name += "_animated"
         pack_name += "_by_" + update.effective_user.username
