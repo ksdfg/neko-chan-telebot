@@ -625,9 +625,35 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
     update.effective_message.reply_markdown(f"Deleted that sticker from [{set_title}](t.me/addstickers/{set_name}).")
 
 
+@run_async
+def packs(update: Update, context: CallbackContext):
+    """
+    List all the packs of a user
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    log(update, "packs")
+
+    # get all user packs
+    packs = _get_packs(update.effective_user, context.bot, False) + _get_packs(update.effective_user, context.bot, True)
+
+    if packs:
+        reply = "Here's all your meowtastic packs!\n"
+        for _, pack in packs:
+            reply += f"\n[{pack.title}](t.me/addstickers/{pack.name})"
+
+        update.effective_message.reply_markdown(reply)
+
+    else:
+        update.effective_message.reply_text(
+            emojize("You have no packs yet! kang or migrate to make one :grinning_cat_face_with_smiling_eyes:")
+        )
+
+
 __help__ = r"""
 - /stickerid `<reply>` : reply to a sticker (animated or non animated) to me to tell you its file ID.
 - /getsticker `<reply>` : reply to a sticker (non animated) to me to upload its raw PNG file.
+- /packs : list out all of your packs
 - /kang `<reply> [<emojis>]` : reply to a sticker (animated or non animated) or a picture to add it to your pack. Won't do anything if you have an exception set in the chat.
 - /migratepack `<reply>` : reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s). Won't do anything if you have an exception set in the chat.
 - /delsticker `<reply>` : reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from said pack.
@@ -640,3 +666,4 @@ dispatcher.add_handler(CommandHandler("getsticker", get_sticker))
 dispatcher.add_handler(CommandHandler('kang', kang))
 dispatcher.add_handler(CommandHandler('migratepack', migrate))
 dispatcher.add_handler(CommandHandler('delsticker', del_sticker))
+dispatcher.add_handler(CommandHandler('packs', packs))
