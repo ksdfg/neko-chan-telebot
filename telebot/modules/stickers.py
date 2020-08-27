@@ -1,14 +1,15 @@
 import math
 import os
+from collections import namedtuple
 from os import remove
-from typing import Tuple, IO
+from typing import Tuple, IO, List
 from urllib.request import urlretrieve
 from uuid import uuid4
 
 from PIL import Image
 from decouple import config
 from emoji import emojize
-from telegram import Update, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton, Bot, User, Message
+from telegram import Update, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton, Bot, User, Message, StickerSet
 from telegram.error import BadRequest
 from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
@@ -68,13 +69,13 @@ def get_sticker(update: Update, context: CallbackContext) -> None:
         update.effective_message.reply_text("Please reply to a sticker for me to upload its PNG.")
 
 
-def _get_pack_num_and_name(user: User, bot: Bot, is_animated: bool = False) -> Tuple[int, str]:
+def _get_packs(user: User, bot: Bot, is_animated: bool = False) -> List[Tuple[int, StickerSet]]:
     """
     get free pack into which we can add stickers
     :param user: the user whose packs we're fetching
     :param bot: the bot to ue to fetch these
     :param is_animated: True if it is an animated stickers pack, else False
-    :return: the pack number and the pack name
+    :return: List of tuples, with each tuple containing the pack number and the pack's StickerSet object
     """
     # default pack number and name of the first pack
     pack_num = 0
@@ -83,10 +84,14 @@ def _get_pack_num_and_name(user: User, bot: Bot, is_animated: bool = False) -> T
         pack_name += "_animated"
     pack_name += "_by_" + bot.username
 
+    # list of all the user's packs
+    packs: List[Tuple[int, StickerSet]] = []
+
     max_stickers = 50 if is_animated else 120  # max number of stickers possible in a pack
 
     try:
         sticker_set = bot.get_sticker_set(pack_name)  # fetch the sticker pack
+        packs.append((pack_num, sticker_set))  # append pack to list
 
         while len(sticker_set.stickers) >= max_stickers:
             # since fetched pack is full, get next pack
@@ -96,7 +101,9 @@ def _get_pack_num_and_name(user: User, bot: Bot, is_animated: bool = False) -> T
                 if is_animated:
                     pack_name += "_animated"
                 pack_name += "_by_" + bot.username
+
                 sticker_set = bot.get_sticker_set(pack_name)
+                packs.append((pack_num, sticker_set))  # append pack to list
             except TelegramError:
                 # if the next pack doesn't exist yet, then this is the one to use
                 break
@@ -105,7 +112,7 @@ def _get_pack_num_and_name(user: User, bot: Bot, is_animated: bool = False) -> T
         # if user hasn't made any pack yet
         pass
 
-    return pack_num, pack_name
+    return packs
 
 
 def _resize(kang_sticker: str) -> Image:
@@ -229,7 +236,22 @@ def kang(update: Update, context: CallbackContext) -> None:
         is_animated = msg.reply_to_message.sticker.is_animated
     except AttributeError:
         is_animated = False
-    pack_num, pack_name = _get_pack_num_and_name(user, bot, is_animated)
+    packs = _get_packs(user, bot, is_animated)
+    if packs:
+        pack_num, pack = packs[-1]
+        pack_name = pack.name
+        pack_title = pack.title
+    else:
+        # default pack number and name of the first pack
+        pack_num = 0
+        pack_name = "a" + str(pack_num) + "_" + str(user.id)
+        if is_animated:
+            pack_name += "_animated"
+        pack_name += "_by_" + bot.username
+        pack_title = f"{user.id}'s "
+        if is_animated:
+            pack_title += "animated "
+        pack_title += "kang pack"
 
     # file name to download sticker file as
     rendum_str = uuid4()
@@ -247,7 +269,8 @@ def kang(update: Update, context: CallbackContext) -> None:
                 user_id=user.id, name=pack_name, tgs_sticker=open(kang_sticker, 'rb'), emojis=sticker.emoji,
             )
             msg.reply_markdown(
-                f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + f"\nEmoji is: {sticker.emoji}"
+                f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
+                + f"\nEmoji is: {sticker.emoji}"
             )
 
         except TelegramError as e:
@@ -264,8 +287,8 @@ def kang(update: Update, context: CallbackContext) -> None:
 
             elif e.message == "Internal Server Error: sticker set not found (500)":
                 msg.reply_markdown(
-                    f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + "\n"
-                    "Emoji is:" + " " + sticker.emoji
+                    f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
+                    + f"\nEmoji is : {sticker.emoji}"
                 )
 
     elif msg.reply_to_message:
@@ -303,7 +326,8 @@ def kang(update: Update, context: CallbackContext) -> None:
                 user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
             )
             msg.reply_markdown(
-                f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + f"\nEmoji is: {sticker_emoji}"
+                f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
+                + f"\nEmoji is: {sticker_emoji}"
             )
 
         except OSError:
@@ -322,7 +346,7 @@ def kang(update: Update, context: CallbackContext) -> None:
                     user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
                 )
                 msg.reply_markdown(
-                    f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})"
+                    f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
                     + f"\nEmoji is: {sticker_emoji}"
                 )
 
@@ -334,14 +358,14 @@ def kang(update: Update, context: CallbackContext) -> None:
 
             elif e.message == "Internal Server Error: sticker set not found (500)":
                 msg.reply_markdown(
-                    f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + "\n"
-                    "Emoji is:" + " " + sticker_emoji
+                    f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
+                    + f"\nEmoji is : {sticker_emoji}"
                 )
 
     elif context.args:
         # get the emoji to use as sticker and the emojis to set to said sticker
+        png_sticker = context.args[0]
         try:
-            png_sticker = context.args[0]
             sticker_emoji = context.args[1]
         except IndexError:
             sticker_emoji = "🤔"
@@ -358,7 +382,8 @@ def kang(update: Update, context: CallbackContext) -> None:
                 user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
             )
             msg.reply_markdown(
-                f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + f"\nEmoji is: {sticker_emoji}"
+                f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
+                + f"\nEmoji is: {sticker_emoji}"
             )
 
         except OSError:
@@ -377,11 +402,8 @@ def kang(update: Update, context: CallbackContext) -> None:
                     user_id=user.id, name=pack_name, png_sticker=open(kang_sticker, 'rb'), emojis=sticker_emoji,
                 )
                 msg.reply_markdown(
-                    f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})"
-                    + "\n"
-                    + "Emoji is:"
-                    + " "
-                    + sticker_emoji
+                    f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
+                    + f"\nEmoji is : {sticker_emoji}"
                 )
 
             elif e.message == "Invalid sticker emojis":
@@ -392,26 +414,12 @@ def kang(update: Update, context: CallbackContext) -> None:
 
             elif e.message == "Internal Server Error: sticker set not found (500)":
                 msg.reply_markdown(
-                    f"Sticker successfully added to [pack](t.me/addstickers/{pack_name})" + "\n"
-                    "Emoji is:" + " " + sticker_emoji
+                    f"Sticker successfully added to [{pack_title}](t.me/addstickers/{pack_name})"
+                    + f"\nEmoji is : {sticker_emoji}"
                 )
 
     else:
-        reply = "Please reply to a sticker, or image to kang it!"
-
-        # list all user packs
-        try:
-            first_pack_name = "a" + str(user.id) + "_by_" + bot.username
-            bot.get_sticker_set(first_pack_name)
-            reply += f"\nOh, by the way. here are your packs:\n[pack](t.me/addstickers/{first_pack_name})\n"
-            if pack_num > 0:
-                for i in range(1, pack_num + 1):
-                    reply += f"[pack{i}](t.me/addstickers/{pack_name})\n"
-
-        except TelegramError:
-            pass
-
-        msg.reply_markdown(reply)
+        msg.reply_markdown("Please reply to a sticker, or image to kang it!")
 
     # delete stray files
     if os.path.isfile(kang_sticker):
@@ -432,17 +440,13 @@ def migrate(update: Update, context: CallbackContext) -> None:
 
     # check if there is a sticker to kang set from
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
-        update.effective_message.reply_text(
-            "Please reply to a non animated sticker that belongs to a pack you want to migrate"
-        )
+        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate!")
         return
 
     # get original set name
     og_set_name = update.effective_message.reply_to_message.sticker.set_name
     if og_set_name is None:
-        update.effective_message.reply_text(
-            "Please reply to a non animated sticker that belongs to a pack you want to migrate"
-        )
+        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate!")
         return
 
     # check if the sticker set already belongs to this bot
@@ -459,9 +463,24 @@ def migrate(update: Update, context: CallbackContext) -> None:
     is_animated = stickers[0].is_animated
 
     # get the pack to migrate the stickers into
-    pack_num, pack_name = _get_pack_num_and_name(update.effective_user, context.bot, is_animated)
-    appended_packs = [pack_name]  # list of packs the stickers were migrated into
+    packs = _get_packs(update.effective_user, context.bot, is_animated)
+    if packs:
+        pack_num, pack = packs[-1]
+        pack_name = pack.name
+        pack_title = pack.title
+    else:
+        # default pack number and name of the first pack
+        pack_num = 0
+        pack_name = "a" + str(pack_num) + "_" + str(update.effective_user.id)
+        if is_animated:
+            pack_name += "_animated"
+        pack_name += "_by_" + update.effective_user.username
+        pack_title = f"{update.effective_user.id}'s "
+        if is_animated:
+            pack_title += "animated "
+        pack_title += "kang pack"
 
+    # name of the file in which we locally store sticker
     rendum_str = uuid4()
     file = (
         f"{update.effective_user.id}_{rendum_str}_migrate_sticker.tgs"
@@ -494,6 +513,8 @@ def migrate(update: Update, context: CallbackContext) -> None:
 
         stickers = stickers[1:]  # because the first sticker is already in the new pack now
         sticker_pack = context.bot.get_sticker_set(pack_name)
+
+    appended_packs = [sticker_pack]  # list of packs the stickers were migrated into
 
     max_stickers = 50 if is_animated else 120
 
@@ -536,7 +557,6 @@ def migrate(update: Update, context: CallbackContext) -> None:
             if is_animated:
                 pack_name += "_animated"
             pack_name += "_by_" + context.bot.username
-            appended_packs.append(pack_name)
 
             # make new pack
             try:
@@ -556,14 +576,12 @@ def migrate(update: Update, context: CallbackContext) -> None:
                 pass
 
             sticker_pack = context.bot.get_sticker_set(pack_name)
+            appended_packs.append(sticker_pack)
 
     # send success reply to the user
-    reply = (
-        f"Done! Pack [{og_set_title}](t.me/addstickers/{og_set_name}) was migrated into :-"
-        + f"\n[pack](t.me/addstickers/{appended_packs[0]})"
-    )
-    for index, pack in enumerate(appended_packs[1:]):
-        reply += f"\n[pack {index + 1}](t.me/addstickers/{pack})"
+    reply = f"Done! Pack [{og_set_title}](t.me/addstickers/{og_set_name}) was migrated into :-"
+    for pack in appended_packs:
+        reply += f"\n[{pack.title}](t.me/addstickers/{pack.name})"
     update.effective_message.reply_markdown(reply)
 
     # don't want rendum files on server
