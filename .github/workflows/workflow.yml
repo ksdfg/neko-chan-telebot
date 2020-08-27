@@ -10,4 +10,5 @@ jobs:
     - uses: actions/checkout@master
     - run: |
           pip install black
+          black --version
           black --check .
