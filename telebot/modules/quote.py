@@ -91,7 +91,6 @@ def get_sticker(update: Update, context: CallbackContext):
                     color=(11, 8, 26),
                 )
                 draw = ImageDraw.Draw(img)
-                print(lines)
             else:
                 line_width_bold = font_bold.getsize(str(name))[0]
                 line_width_normal = font_normal.getsize(str(lines[0]))[0]
@@ -113,6 +112,7 @@ def get_sticker(update: Update, context: CallbackContext):
             return img
 
         def mask_circle_transparent(img, offset=0):
+            # mask the background of circular profile pic thumbnail
             offset = 0 * 2 + offset
             mask = Image.new("L", img.size, 0)
             draw = ImageDraw.Draw(mask)
@@ -128,6 +128,7 @@ def get_sticker(update: Update, context: CallbackContext):
             return result
 
         def get_ico_thumbnail(dp_name):
+            # get circular profile pic
             im = Image.open(dp_name)
             size = 100, 100
             result = mask_circle_transparent(im)
@@ -135,10 +136,12 @@ def get_sticker(update: Update, context: CallbackContext):
             return result
 
         def get_concat_h(img1, img2):
+            # concat both images
             dst = Image.new("RGB", (img1.width + img2.width + 15, max(img1.height, img2.height)))
             dst.putalpha(0)
             dst.paste(img1, (0, 0))
             dst.paste(img2, (img1.width + 15, 0))
+            # save image in webp format
             dst.save(
                 f"{update.effective_message.reply_to_message.from_user.id}_final.webp",
                 "webp",
@@ -146,6 +149,7 @@ def get_sticker(update: Update, context: CallbackContext):
             )
             get_concat_h(dp, body)
 
+        # get base directory
         BASE_DIR = getcwd()
         dp = get_ico_thumbnail(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
         body = draw_text(name, text)
@@ -153,11 +157,15 @@ def get_sticker(update: Update, context: CallbackContext):
 
     name, text = get_message_data(rep_msg)
     get_raw_sticker(name, text)
+
+    # send generated image as sticker
     context.bot.send_sticker(
         chat_id=rep_msg.chat.id,
         sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.webp", "rb"),
         reply_to_message_id=update.effective_message.message_id,
     )
+
+    # remove stored images
     remove(f"{update.effective_message.reply_to_message.from_user.id}_final.webp")
     remove(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
 
