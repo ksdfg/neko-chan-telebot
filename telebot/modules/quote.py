@@ -124,6 +124,31 @@ def get_sticker(update: Update, context: CallbackContext):
             )
             return img
 
+        def mask_circle_transparent(img, blur_radius, offset=0):
+            offset = blur_radius * 2 + offset
+            mask = Image.new("L", img.size, 0)
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse(
+                (offset, offset, img.size[0] - offset, img.size[1] - offset),
+                fill=255,
+            )
+            mask = mask.filter(ImageFilter.GaussianBlur(blur_radius))
+
+            result = img.copy()
+            result.putalpha(mask)
+
+            return result
+
+        def get_ico_thumbnail(dp_name):
+            im = Image.open(dp_name)
+            size = 100, 100
+            result = mask_circle_transparent(im, 0)
+            result.thumbnail(size)
+            result.save(f"{update.effective_message.reply_to_message.from_user.id}_dp.png")
+            return result
+
+        BASE_DIR = getcwd()
+        dp = get_ico_thumbnail(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
         body = draw_text(name, text)
 
     name, text = get_message_data(rep_msg)
@@ -134,7 +159,12 @@ def get_sticker(update: Update, context: CallbackContext):
         sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_text.png", "rb"),
         reply_to_message_id=update.effective_message.message_id,
     )
-    remove(f"{update.effective_message.reply_to_message.from_user.id}_text.webp")
+    context.bot.send_sticker(
+        chat_id=rep_msg.chat.id,
+        sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_dp.png", "rb"),
+        reply_to_message_id=update.effective_message.message_id,
+    )
+    remove(f"{update.effective_message.reply_to_message.from_user.id}_text.png")
     remove(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
 
 
