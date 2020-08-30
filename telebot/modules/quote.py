@@ -118,21 +118,21 @@ def get_sticker(update: Update, context: CallbackContext):
                 # update the y position so that we can use it for next line
                 y = y + line_height_normal + 5
             # save the image
-            img.save(
-                f"{update.effective_message.reply_to_message.from_user.id}_text.png",
-                optimize=True,
-            )
+            # img.save(
+            #     f"{update.effective_message.reply_to_message.from_user.id}_text.png",
+            #     optimize=True,
+            # )
             return img
 
-        def mask_circle_transparent(img, blur_radius, offset=0):
-            offset = blur_radius * 2 + offset
+        def mask_circle_transparent(img, offset=0):
+            offset = 0 * 2 + offset
             mask = Image.new("L", img.size, 0)
             draw = ImageDraw.Draw(mask)
             draw.ellipse(
                 (offset, offset, img.size[0] - offset, img.size[1] - offset),
                 fill=255,
             )
-            mask = mask.filter(ImageFilter.GaussianBlur(blur_radius))
+            mask = mask.filter(ImageFilter.GaussianBlur(0))
 
             result = img.copy()
             result.putalpha(mask)
@@ -142,29 +142,37 @@ def get_sticker(update: Update, context: CallbackContext):
         def get_ico_thumbnail(dp_name):
             im = Image.open(dp_name)
             size = 100, 100
-            result = mask_circle_transparent(im, 0)
+            result = mask_circle_transparent(im)
             result.thumbnail(size)
-            result.save(f"{update.effective_message.reply_to_message.from_user.id}_dp.png")
+            # result.save(f"{update.effective_message.reply_to_message.from_user.id}_dp.png")
             return result
+
+        def get_concat_h(img1, img2):
+            dst = Image.new("RGB", (img1.width + img2.width + 15, max(img1.height, img2.height)))
+            dst.putalpha(0)
+            dst.paste(img1, (0, 0))
+            dst.paste(img2, (img1.width + 15, 0))
+            dst.save(
+                f"{update.effective_message.reply_to_message.from_user.id}_final.webp",
+                "webp",
+                lossless=True,
+            )
+            get_concat_h(dp, body)
 
         BASE_DIR = getcwd()
         dp = get_ico_thumbnail(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
         body = draw_text(name, text)
+        get_concat_h(dp, body)
 
     name, text = get_message_data(rep_msg)
     get_raw_sticker(name, text)
     # update.effective_message.reply_text(str(name + "\n" + text + "\n" + profile_pic))
     context.bot.send_sticker(
         chat_id=rep_msg.chat.id,
-        sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_text.png", "rb"),
+        sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.webp", "rb"),
         reply_to_message_id=update.effective_message.message_id,
     )
-    context.bot.send_sticker(
-        chat_id=rep_msg.chat.id,
-        sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_dp.png", "rb"),
-        reply_to_message_id=update.effective_message.message_id,
-    )
-    remove(f"{update.effective_message.reply_to_message.from_user.id}_text.png")
+    remove(f"{update.effective_message.reply_to_message.from_user.id}_final.webp")
     remove(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
 
 
