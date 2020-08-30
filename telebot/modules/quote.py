@@ -44,7 +44,6 @@ def get_sticker(update: Update, context: CallbackContext):
             # and return
             if font.getsize(text)[0] <= max_width:
                 lines = text.split("\n")
-                print(lines)
                 # lines.append(text)
             else:
                 # split the line by spaces to get words
@@ -67,12 +66,6 @@ def get_sticker(update: Update, context: CallbackContext):
 
         def draw_text(name, text):
             max_width = 400
-            # img = Image.new("RGB", (400, 120), color=(11, 8, 26))
-            # open the background file
-            # size() returns a tuple of (width, height)
-            # image_size = img.size
-            # print(image_size)
-            # draw = ImageDraw.Draw(img)
             # create the ImageFont instance
             font_file_path_normal = join(BASE_DIR, "LucidaGrande.ttf")
             font_normal = ImageFont.truetype(font_file_path_normal, size=30, encoding="unic")
@@ -86,7 +79,7 @@ def get_sticker(update: Update, context: CallbackContext):
             x = 20
             y = 60
 
-            # get scalable weidth and height
+            # get scalable width and height
 
             if len(lines) > 1:
                 img = Image.new(
@@ -117,11 +110,6 @@ def get_sticker(update: Update, context: CallbackContext):
                 draw.text((x, y), line, (255, 255, 255), font_normal)
                 # update the y position so that we can use it for next line
                 y = y + line_height_normal + 5
-            # save the image
-            # img.save(
-            #     f"{update.effective_message.reply_to_message.from_user.id}_text.png",
-            #     optimize=True,
-            # )
             return img
 
         def mask_circle_transparent(img, offset=0):
@@ -144,7 +132,6 @@ def get_sticker(update: Update, context: CallbackContext):
             size = 100, 100
             result = mask_circle_transparent(im)
             result.thumbnail(size)
-            # result.save(f"{update.effective_message.reply_to_message.from_user.id}_dp.png")
             return result
 
         def get_concat_h(img1, img2):
@@ -166,7 +153,6 @@ def get_sticker(update: Update, context: CallbackContext):
 
     name, text = get_message_data(rep_msg)
     get_raw_sticker(name, text)
-    # update.effective_message.reply_text(str(name + "\n" + text + "\n" + profile_pic))
     context.bot.send_sticker(
         chat_id=rep_msg.chat.id,
         sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.webp", "rb"),
