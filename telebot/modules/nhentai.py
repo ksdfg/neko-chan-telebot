@@ -7,7 +7,7 @@ from telegram.ext import CommandHandler, run_async, CallbackContext
 from telegraph import Telegraph
 
 from telebot import dispatcher, log
-from telebot.modules.sql.exceptions_sql import get_command_exception_chats
+from telebot.modules.db.exceptions import get_command_exception_chats
 
 
 def get_info(digits):
