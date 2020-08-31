@@ -1,17 +1,16 @@
-from telegram.ext import CommandHandler, run_async, CallbackContext
-from telegram import (
-    Update,
-    UserProfilePhotos,
-    Sticker,
-)
-from telebot import dispatcher
-from PIL import ImageFont, ImageDraw, Image, ImageFilter
-from os import getcwd, remove
+from os import remove
 from os.path import join
-import glob
+from pathlib import Path
+
+from PIL import ImageFont, ImageDraw, Image, ImageFilter
+from telegram import Update
+from telegram.ext import CommandHandler, CallbackContext
+
+from telebot import dispatcher
 
 
 def get_sticker(update: Update, context: CallbackContext):
+    context.bot.send_chat_action(update.effective_chat.id, 'upload_photo')
     rep_msg = update.effective_message.reply_to_message
 
     def get_message_data(rep_msg):  # Get required data of the message to be quoted
@@ -36,79 +35,64 @@ def get_sticker(update: Update, context: CallbackContext):
         return name, text
 
     def get_raw_sticker(name, text):
-        def text_wrap(text, font, max_width):
-            lines = []
+        def text_wrap(text: str, font: ImageFont, max_width: int) -> str:
+            """
+            Get properly formatted text
+            :param text: The base message text
+            :param font: font to be used for the format
+            :param max_width: maximum width of the rendered text
+            :return: The formatted text as a string
+            """
+            text_blob = ""
 
-            # If the width of the text is smaller than image width
-            # we don't need to split it, just add it to the lines array
-            # and return
-            if font.getsize(text)[0] <= max_width:
-                lines = text.split("\n")
-                # lines.append(text)
-            else:
-                # split the line by spaces to get words
-                words = text.split(" ")
-                i = 0
-                # append every word to a line while its width is shorter than image width
-                while i < len(words):
-                    line = ""
-                    while i < len(words) and font.getsize(line + words[i])[0] <= max_width:
-                        line = line + words[i] + " "
-                        i += 1
-                    if not line:
-                        line = words[i]
-                        i += 1
-                    # when the line gets longer than the max width do not append the word,
-                    # add the line to the lines array
-                    lines.append(line)
+            for line in text.split("\n"):
+                # for each line
+                line_text = ""
+                for word in line.split(" "):
+                    if font.getsize(line_text + word)[0] > max_width:
+                        # append current line to the text_blob, and shift current word to next line
+                        text_blob += line_text.strip() + "\n"
+                        line_text = word
+                    else:
+                        # append current word to the line
+                        line_text += " " + word
 
-            return lines
+                # append current line to the text blob
+                text_blob += line_text.strip() + "\n"
+
+            return text_blob.strip()
 
         def draw_text(name, text):
             max_width = 400
-            # create the ImageFont instance
-            font_file_path_normal = join(BASE_DIR, "LucidaGrande.ttf")
-            font_normal = ImageFont.truetype(font_file_path_normal, size=30, encoding="unic")
-            font_file_path_bold = join(BASE_DIR, "LucidaGrandeBold.ttf")
-            font_bold = ImageFont.truetype(font_file_path_bold, size=30, encoding="unic")
 
-            # get shorter lines
-            lines = text_wrap(text, font_normal, max_width)
-            line_height_normal = font_normal.getsize(str(lines[0]))[1]
-            line_height_bold = font_bold.getsize(str(name))[1]
-            x = 20
-            y = 60
+            # create the ImageFont instances
+            font_normal = ImageFont.truetype(join(BASE_DIR, 'Fonts', "LucidaGrande.ttf"), size=30, encoding="unic")
+            font_bold = ImageFont.truetype(join(BASE_DIR, 'Fonts', "LucidaGrandeBold.ttf"), size=30, encoding="unic")
+
+            # get text_blob
+            text_blob = text_wrap(text, font_normal, max_width)
+
+            # get width and height of name and text blob
+            line_width_bold, line_height_bold = font_bold.getsize(name)
+            line_width, line_height = font_normal.getsize_multiline(text_blob)
 
             # get scalable width and height
+            img = Image.new(
+                "RGB",
+                (
+                    max(line_width_bold, line_width) + 40,
+                    25 + line_height_bold + 45 + line_height + 25,
+                ),
+                color=(11, 8, 26),
+            )
+            draw = ImageDraw.Draw(img)
 
-            if len(lines) > 1:
-                img = Image.new(
-                    "RGB",
-                    (
-                        max_width + 40,
-                        70 + (len(lines) * line_height_normal) + line_height_bold,
-                    ),
-                    color=(11, 8, 26),
-                )
-                draw = ImageDraw.Draw(img)
-            else:
-                line_width_bold = font_bold.getsize(str(name))[0]
-                line_width_normal = font_normal.getsize(str(lines[0]))[0]
-                img = Image.new(
-                    "RGB",
-                    (max(line_width_bold, line_width_normal) + 40, 120),
-                    color=(11, 8, 26),
-                )
-                draw = ImageDraw.Draw(img)
-                print(lines)
-
-            # get username
+            # put username
             draw.text((20, 25), name, (0, 153, 38), font_bold)
-            for line in lines:
-                # draw the line on the image
-                draw.text((x, y), line, (255, 255, 255), font_normal)
-                # update the y position so that we can use it for next line
-                y = y + line_height_normal + 5
+
+            # put text
+            draw.multiline_text((20, 15 + line_height_bold + 45), text_blob, (255, 255, 255), font_normal)
+
             return img
 
         def mask_circle_transparent(img, offset=0):
@@ -144,13 +128,12 @@ def get_sticker(update: Update, context: CallbackContext):
             # save image in webp format
             dst.save(
                 f"{update.effective_message.reply_to_message.from_user.id}_final.webp",
-                "webp",
+                "WEBP",
                 lossless=True,
             )
-            get_concat_h(dp, body)
 
         # get base directory
-        BASE_DIR = getcwd()
+        BASE_DIR = Path(__file__).parent.absolute()
         dp = get_ico_thumbnail(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
         body = draw_text(name, text)
         get_concat_h(dp, body)
@@ -159,11 +142,7 @@ def get_sticker(update: Update, context: CallbackContext):
     get_raw_sticker(name, text)
 
     # send generated image as sticker
-    context.bot.send_sticker(
-        chat_id=rep_msg.chat.id,
-        sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.webp", "rb"),
-        reply_to_message_id=update.effective_message.message_id,
-    )
+    rep_msg.reply_sticker(sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.webp", "rb"))
 
     # remove stored images
     remove(f"{update.effective_message.reply_to_message.from_user.id}_final.webp")
