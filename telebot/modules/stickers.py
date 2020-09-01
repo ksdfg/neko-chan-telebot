@@ -11,7 +11,7 @@ from decouple import config
 from emoji import emojize
 from telegram import Update, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton, Bot, User, Message, StickerSet
 from telegram.error import BadRequest
-from telegram.ext import run_async, CallbackContext, CommandHandler
+from telegram.ext import run_async, CallbackContext, CommandHandler, ConversationHandler, MessageHandler, Filters
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher, log
@@ -643,6 +643,110 @@ def packs(update: Update, context: CallbackContext):
         )
 
 
+# dict of user - sticker to reorder
+reorder = {}
+
+
+@run_async
+def reorder1(update: Update, context: CallbackContext):
+    """
+    First step in reordering sticker in pack - take input of sticker who's position is to be changed
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    :return: 0 if successful to move on to next step, else -1 (ConversationHandler.END)
+    """
+    log(update, "reorder step 1")
+
+    # check if there is a sticker to kang set from
+    if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
+        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
+        return ConversationHandler.END
+
+    # check if the bot has perms to delete the sticker
+    sticker = update.effective_message.reply_to_message.sticker
+    set_name = sticker.set_name
+    if context.bot.username not in set_name:
+        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
+        return ConversationHandler.END
+
+    # if sticker position is given as arg, then set position and fugg off
+    try:
+        context.bot.set_sticker_position_in_set(
+            update.effective_message.reply_to_message.sticker.file_id, int(context.args[0])
+        )
+        update.effective_message.reply_markdown(
+            f"I have updated [{context.bot.get_sticker_set(set_name).title}](t.me/addstickers/{set_name})!"
+        )
+        return ConversationHandler.END
+    except:
+        pass
+
+    # store sticker to reorder
+    reorder[update.effective_user.id] = update.effective_message.reply_to_message.sticker.file_id
+
+    update.effective_message.reply_markdown(
+        "Please send the sticker that is going to be on the `left` of this sticker __after__ the reorder, or /cancel to stop"
+    )
+
+    return 0
+
+
+@run_async
+def reorder2(update: Update, context: CallbackContext):
+    """
+    Last step in reordering sticker in pack - take input of sticker which is now gonna be on the left of the reordered sticker
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    :return: 0, if wrong input is made, else -1 (ConversationHandler.END)
+    """
+    log(update, "reorder step 2")
+
+    # check if there is a sticker to kang set from
+    if not update.effective_message.sticker:
+        update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
+        return 0
+
+    # check if the bot has perms to delete the sticker
+    sticker = update.effective_message.sticker
+    set_name = sticker.set_name
+    if context.bot.username not in set_name:
+        update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
+        return 0
+
+    # get position of sticker in sticker pack
+    index = 0
+    pack = context.bot.get_sticker_set(set_name)
+    for i, s in enumerate(pack.stickers):
+        if s.file_id == sticker.file_id:
+            index = i
+
+    # set sticker position
+    context.bot.set_sticker_position_in_set(reorder[update.effective_user.id], index + 1)
+    del reorder[update.effective_user.id]
+    update.effective_message.reply_markdown(
+        f"I have updated [{context.bot.get_sticker_set(set_name).title}](t.me/addstickers/{set_name})!"
+    )
+
+    return ConversationHandler.END
+
+
+@run_async
+def reorder_cancel(update: Update, context: CallbackContext):
+    """
+    Last step in reordering sticker in pack - take input of sticker which is now gonna be on the left of the reordered sticker
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    :return: 0, if wrong input is made, else -1 (ConversationHandler.END)
+    """
+    log(update, "reorder cancel")
+
+    # set sticker position
+    del reorder[update.effective_user.id]
+    update.effective_message.reply_text(f"Don't wake me up from my nap before you make up your mind!")
+
+    return ConversationHandler.END
+
+
 __help__ = r"""
 - /stickerid `<reply>` : reply to a sticker (animated or non animated) to me to tell you its file ID.
 - /getsticker `<reply>` : reply to a sticker (non animated) to me to upload its raw PNG file.
@@ -650,6 +754,7 @@ __help__ = r"""
 - /kang `<reply> [<emojis>]` : reply to a sticker (animated or non animated) or a picture to add it to your pack. Won't do anything if you have an exception set in the chat.
 - /migratepack `<reply>` : reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s). Won't do anything if you have an exception set in the chat.
 - /delsticker `<reply>` : reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from said pack.
+- /reorder `<reply>` [<new position>] : reply to a sticker (animated or non animated) belonging to a pack made by me to change it's position (index starting from 0) in the pack.
 """
 
 __mod_name__ = "Stickers"
@@ -660,3 +765,10 @@ dispatcher.add_handler(CommandHandler('kang', kang))
 dispatcher.add_handler(CommandHandler('migratepack', migrate))
 dispatcher.add_handler(CommandHandler('delsticker', del_sticker))
 dispatcher.add_handler(CommandHandler('packs', packs))
+dispatcher.add_handler(
+    ConversationHandler(
+        entry_points=[CommandHandler("reorder", reorder1)],
+        states={0: [MessageHandler(Filters.sticker, reorder2)]},
+        fallbacks=[CommandHandler("cancel", reorder_cancel)],
+    )
+)
