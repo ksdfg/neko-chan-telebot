@@ -97,7 +97,7 @@ def add_note_in_chat(update: Update, context: CallbackContext):
         name, content = msg.text_markdown.split(None, 2)[1:]
     except ValueError:
         try:
-            name = msg.text.split()[1]
+            name = context.args[0]
             content = None
         except IndexError:
             msg.reply_markdown("No name, No content....\n\nYou could've at least come with some catnip\n`._.`")
@@ -148,6 +148,29 @@ def add_note_in_chat(update: Update, context: CallbackContext):
     msg.reply_markdown(add_note(**kwargs))
 
 
+@run_async
+def del_note_in_chat(update: Update, context: CallbackContext):
+    """
+    Delete a note from the chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # check for exception
+    if update.effective_chat.id in get_command_exception_chats("notes"):
+        return
+
+    log(update, "del note")
+
+    if context.args:
+        # iterate over the triggers given and delete them from DB
+        for name in context.args:
+            update.effective_message.reply_markdown(del_note(chat=update.effective_chat.id, name=name))
+    else:
+        update.effective_message.reply_markdown(
+            "Oi, you can't make me forget something without reminding me of what to forget, baka!"
+        )
+
+
 __help__ = """
 - /get <note name>: get the note with this note name
 - `#<note name>`: same as /get
@@ -155,7 +178,7 @@ __help__ = """
  
 *Admin only:*
 - /save `<note name> <reply|note data>`: saves replied message or `note data` as a note with name `note name`.
-- /clear <note name>: clear note with this name
+- /clear <note names list>: clear note with this name
 
 ***If you add an exception for `notes` in the chat, it will make sure that none of these commands do anything. Adding exceptions for individual commands has no effect.***
 """
@@ -167,3 +190,4 @@ dispatcher.add_handler(MessageHandler(Filters.regex(r"^#[^\s]+$"), fetch_note))
 dispatcher.add_handler(CommandHandler("notes", notes_for_chat))
 dispatcher.add_handler(CommandHandler("saved", notes_for_chat))
 dispatcher.add_handler(CommandHandler("save", add_note_in_chat))
+dispatcher.add_handler(CommandHandler("clear", del_note_in_chat))
