@@ -16,7 +16,7 @@ class Note(DynamicDocument):
 # create helper functions to be used to interact with the model
 
 
-def get_notes_for_chat(chat) -> List[str]:
+def get_notes_for_chat(chat: int) -> List[str]:
     """
     Get all the names of the notes in given chat
     :param chat: chat ID whose notes we're fetching
@@ -28,7 +28,7 @@ def get_notes_for_chat(chat) -> List[str]:
         return []
 
 
-def get_note(chat, name) -> Tuple[Optional[str], Optional[str]]:
+def get_note(chat: int, name: str) -> Tuple[Optional[str], Optional[str]]:
     """
     Get the content and content type of the given note
     :param chat: chat ID the note is in
@@ -75,7 +75,7 @@ def add_note(chat: int, name: str, content: str, content_type: str) -> str:
         )
 
 
-def del_note(chat, name) -> str:
+def del_note(chat: int, name: str) -> str:
     """
     Delete a note in a chat
     :param chat: chat ID in which the note currently exists
