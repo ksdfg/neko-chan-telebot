@@ -429,9 +429,6 @@ def migrate(update: Update, context: CallbackContext) -> None:
     """
     log(update, "migrate pack")
 
-    if update.effective_chat.id in get_command_exception_chats("migratepack"):
-        return
-
     # check if there is a sticker to kang set from
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate!")
@@ -590,9 +587,6 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
     :param context: object containing data about the command call.
     """
     log(update, "del_sticker")
-
-    if update.effective_chat.id in get_command_exception_chats("migratepack"):
-        return
 
     # check if there's anything to delete
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
@@ -755,6 +749,8 @@ __help__ = r"""
 - /migratepack `<reply>` : reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s). Won't do anything if you have an exception set in the chat.
 - /delsticker `<reply>` : reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from said pack.
 - /reorder `<reply>` [<new position>] : reply to a sticker (animated or non animated) belonging to a pack made by me to change it's position (index starting from 0) in the pack.
+
+**Adding exeptions to `kang` will stop the bot from responding to that command**
 """
 
 __mod_name__ = "Stickers"
