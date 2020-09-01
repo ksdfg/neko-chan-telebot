@@ -715,7 +715,7 @@ def reorder2(update: Update, context: CallbackContext):
             index = i
 
     # set sticker position
-    context.bot.set_sticker_position_in_set(reorder[update.effective_user.id], index + 1)
+    context.bot.set_sticker_position_in_set(reorder[update.effective_user.id], index)
     del reorder[update.effective_user.id]
     update.effective_message.reply_markdown(
         f"I have updated [{context.bot.get_sticker_set(set_name).title}](t.me/addstickers/{set_name})!"
