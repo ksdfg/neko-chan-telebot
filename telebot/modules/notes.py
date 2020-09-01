@@ -1,9 +1,10 @@
+from emoji import emojize
 from telegram import Update
 from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import log, dispatcher
 from telebot.modules.db.exceptions import get_command_exception_chats
-from telebot.modules.db.notes import get_note
+from telebot.modules.db.notes import get_note, get_notes_for_chat
 
 
 @run_async
@@ -49,6 +50,34 @@ def fetch_note(update: Update, context: CallbackContext):
         update.effective_message.reply_video(content)
 
 
+@run_async
+def notes_for_chat(update: Update, context: CallbackContext):
+    """
+    List out all the notes in a chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # check exception
+    if update.effective_chat.id in get_command_exception_chats("notes"):
+        return
+
+    log(update, "notes")
+
+    # get list of notes for the chat
+    notes = get_notes_for_chat(update.effective_chat.id)
+
+    if notes:
+        reply = "I remember all this -"
+        for note in notes:
+            reply += f"\n`{note}`"
+        reply += emojize("\n\nPraise me lots! :grinning_cat_face:")
+
+        update.effective_message.reply_markdown(reply)
+
+    else:
+        update.effective_message.reply_text("No one told me to remember anything, so I got high on catnip instead.....")
+
+
 __help__ = """
 - /get <note name>: get the note with this note name
 - #<note name>: same as /get
@@ -65,3 +94,5 @@ __mod_name__ = "Notes"
 
 dispatcher.add_handler(CommandHandler("get", fetch_note))
 dispatcher.add_handler(MessageHandler(Filters.regex(r"^#[^\s]+$"), fetch_note))
+dispatcher.add_handler(CommandHandler("notes", notes_for_chat))
+dispatcher.add_handler(CommandHandler("saved", notes_for_chat))
