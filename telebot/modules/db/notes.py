@@ -1,5 +1,6 @@
 from typing import List, Tuple, Optional
 
+from emoji import emojize
 from mongoengine import StringField, DynamicDocument, IntField
 
 
@@ -64,7 +65,7 @@ def add_note(chat: int, name: str, content: str, content_type: str) -> str:
             # if no note exists for given name in given chat, then make one
             Note(chat=chat, name=name, content=content, content_type=content_type).save()
 
-        return (
+        return emojize(
             f"Ok, I'll remember this note as `{name}`....\n"
             "unless I need to free memory to store more cat videos :grinning_cat_face:"
         )
