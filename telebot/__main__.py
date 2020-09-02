@@ -19,11 +19,12 @@ for module_name in ALL_MODULES:
     imported_module = importlib.import_module("telebot.modules." + module_name)
 
     # add imported module to the dict of modules, to be used later
-    key = imported_module.__mod_name__ if imported_module.__mod_name__ else imported_module.__name__
-    imported_mods[key] = imported_module
+    if not hasattr(imported_module, "__mod_name__"):
+        imported_module.__mod_name__ = imported_module.__name__.split(".")[-1]
+    imported_mods[imported_module.__mod_name__.lower()] = imported_module
 
 # log all imported modules
-print("Imported modules :", sorted(imported_mods.keys()))
+print("Imported modules :", sorted(mod.__mod_name__ for mod in imported_mods.values()))
 
 
 # default reply strings
@@ -71,7 +72,9 @@ def list_modules(update: Update, context: CallbackContext) -> None:
     """
     log(update, "list modules")
     update.effective_message.reply_markdown(
-        "The list of Active Modules is as follows :\n\n`" + "`\n`".join(imported_mods.keys()) + "`"
+        "The list of Active Modules is as follows :\n\n`"
+        + "`\n`".join(mod.__mod_name__ for mod in imported_mods.values())
+        + "`"
     )
 
 
@@ -86,10 +89,12 @@ def help(update: Update, context: CallbackContext) -> None:
 
     text_blob = HELP_TEXT
     # add help strings of all imported modules too
-    for mod_name, mod in imported_mods.items():
-        if mod.__help__:
-            if context.args and mod_name.lower() in map(lambda x: x.lower(), context.args):
-                text_blob += f"\n`{mod_name}`\n{mod.__help__}"
+    for module in context.args:
+        try:
+            mod = imported_mods[module.lower()]
+            text_blob += f"\n`{mod.__mod_name__}`\n{mod.__help__}"
+        except KeyError:
+            continue
 
     # Add informational footer
     text_blob += (
