@@ -30,7 +30,7 @@ print("Imported modules :", sorted(imported_mods.keys()))
 
 START_TEXT = emojize(
     f"""
-Hello, everynyan! :cat:
+NyaHello World! :cat:
 
 I'm `{updater.bot.first_name}`, a cute little bot that does rendum shit rn.
 """,

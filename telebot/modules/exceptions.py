@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import CommandHandler, run_async, CallbackContext
 
 from telebot import dispatcher, log
-from telebot.modules.sql.exceptions_sql import (
+from telebot.modules.db.exceptions import (
     add_command_exception_chats,
     del_command_exception_chats,
     get_exceptions_for_chat,

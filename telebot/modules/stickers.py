@@ -15,7 +15,7 @@ from telegram.ext import run_async, CallbackContext, CommandHandler, Conversatio
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher, log
-from telebot.modules.sql.exceptions_sql import get_command_exception_chats
+from telebot.modules.db.exceptions import get_command_exception_chats
 
 
 @run_async

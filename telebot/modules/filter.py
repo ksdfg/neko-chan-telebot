@@ -5,8 +5,8 @@ from telegram import Update
 from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import dispatcher, log
-from telebot.modules.sql.exceptions_sql import get_command_exception_chats
-from telebot.modules.sql.filter_sql import get_triggers_for_chat, add_filter, get_filter, del_filter
+from telebot.modules.db.exceptions import get_command_exception_chats
+from telebot.modules.db.filter import get_triggers_for_chat, add_filter, get_filter, del_filter
 
 
 @run_async
