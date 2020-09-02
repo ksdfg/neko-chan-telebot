@@ -16,11 +16,11 @@ def list_filters(update: Update, context: CallbackContext) -> None:
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "filters")
-
     # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
+
+    log(update, "filters")
 
     filters = get_triggers_for_chat(update.effective_chat.id)
     if filters:
@@ -38,11 +38,11 @@ def add_filter_handler(update: Update, context: CallbackContext) -> None:
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "addfilter")
-
     # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
+
+    log(update, "addfilter")
 
     # for ease of reference
     msg = update.effective_message
@@ -106,11 +106,11 @@ def del_filter_handler(update: Update, context: CallbackContext) -> None:
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "del filter")
-
     # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
+
+    log(update, "del filter")
 
     if context.args:
         # iterate over the triggers given and delete them from DB

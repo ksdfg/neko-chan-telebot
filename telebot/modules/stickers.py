@@ -219,13 +219,13 @@ def kang(update: Update, context: CallbackContext) -> None:
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "kang")
-
     # check for exception, but skip exception if user is a superuser
     if update.effective_user.id not in config(
         "SUPERUSERS", cast=lambda x: map(int, x.split(","))
     ) and update.effective_chat.id in get_command_exception_chats("kang"):
         return
+
+    log(update, "kang")
 
     msg = update.effective_message
     user = update.effective_user
