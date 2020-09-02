@@ -189,14 +189,18 @@ def del_note_in_chat(update: Update, context: CallbackContext):
 
 __help__ = """
 - /get <note name>: get the note with this note name
+
 - `#<note name>`: same as /get
+
 - /notes or /saved: list all saved notes in this chat
  
 ***Admin only :***
+
 - /save `<note name> <reply|note data>`: saves replied message or `note data` as a note with name `note name`.
+
 - /clear <note names list>: clear note with this name
 
-***If you add an exception for `notes` in the chat, it will make sure that none of these commands do anything. Adding exceptions for individual commands has no effect.***
+If you add an exception for `notes` in the chat, it will make sure that none of these commands do anything. Adding exceptions for individual commands has no effect.
 """
 
 __mod_name__ = "Notes"

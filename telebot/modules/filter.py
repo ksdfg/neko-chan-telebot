@@ -172,10 +172,12 @@ def reply(update: Update, context: CallbackContext) -> None:
 
 __help__ = """
 - /filters : list all active filters in the chat
+
 - /addfilter `<trigger> [<content>|<reply>]` : add a filter
+
 - /delfilters `<triggers list>` : delete active filters; give all filters to delete seperated by a space.
 
-**If you add an exception for `filter` in the chat, it will make sure that none of these commands do anything. Adding exceptions for individual commands has no effect.**
+If you add an exception for `filter` in the chat, it will make sure that none of these commands do anything. Adding exceptions for individual commands has no effect.
 """
 
 __mod_name__ = "Filters"
