@@ -89,6 +89,14 @@ def add_note_in_chat(update: Update, context: CallbackContext):
     if update.effective_chat.id in get_command_exception_chats("notes"):
         return
 
+    # check if user is admin
+    if (
+        not update.effective_chat.get_member(update.effective_user.id).status in ('administrator', 'creator')
+        and update.effective_chat.type != "private"
+    ):
+        update.effective_message.reply_text("Get some admin privileges before you try to order me around, baka!")
+        return
+
     # for ease of reference
     msg = update.effective_message
 
@@ -159,6 +167,14 @@ def del_note_in_chat(update: Update, context: CallbackContext):
     if update.effective_chat.id in get_command_exception_chats("notes"):
         return
 
+    # check if user is admin
+    if (
+        not update.effective_chat.get_member(update.effective_user.id).status in ('administrator', 'creator')
+        and update.effective_chat.type != "private"
+    ):
+        update.effective_message.reply_text("Get some admin privileges before you try to order me around, baka!")
+        return
+
     log(update, "del note")
 
     if context.args:
@@ -176,7 +192,7 @@ __help__ = """
 - `#<note name>`: same as /get
 - /notes or /saved: list all saved notes in this chat
  
-*Admin only:*
+***Admin only :***
 - /save `<note name> <reply|note data>`: saves replied message or `note data` as a note with name `note name`.
 - /clear <note names list>: clear note with this name
 
