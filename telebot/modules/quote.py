@@ -62,6 +62,20 @@ def get_sticker(update: Update, context: CallbackContext):
 
             return text_blob.strip()
 
+        def add_corners(img):
+            rad = 30
+            circle = Image.new("L", (rad * 2, rad * 2), 0)
+            draw = ImageDraw.Draw(circle)
+            draw.ellipse((0, 0, rad * 2, rad * 2), fill=255)
+            alpha = Image.new("L", img.size, 255)
+            w, h = img.size
+            alpha.paste(circle.crop((0, 0, rad, rad)), (0, 0))
+            alpha.paste(circle.crop((0, rad, rad, rad * 2)), (0, h - rad))
+            alpha.paste(circle.crop((rad, 0, rad * 2, rad)), (w - rad, 0))
+            alpha.paste(circle.crop((rad, rad, rad * 2, rad * 2)), (w - rad, h - rad))
+            img.putalpha(alpha)
+            return img
+
         def draw_text(name, text):
             max_width = 400
 
@@ -93,7 +107,9 @@ def get_sticker(update: Update, context: CallbackContext):
             # put text
             draw.multiline_text((20, 15 + line_height_bold + 45), text_blob, (255, 255, 255), font_normal)
 
-            return img
+            result = add_corners(img)
+
+            return result
 
         def mask_circle_transparent(img, offset=0):
             # mask the background of circular profile pic thumbnail
