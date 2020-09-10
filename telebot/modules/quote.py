@@ -1,3 +1,4 @@
+import random
 from os import remove
 from os.path import join
 from pathlib import Path
@@ -90,6 +91,17 @@ def get_sticker(update: Update, context: CallbackContext):
             line_width_bold, line_height_bold = font_bold.getsize(name)
             line_width, line_height = font_normal.getsize_multiline(text_blob)
 
+            head_tg = [
+                (238, 73, 40),
+                (65, 169, 3),
+                (224, 150, 2),
+                (15, 148, 237),
+                (143, 59, 247),
+                (252, 67, 128),
+                (0, 161, 196),
+                (235, 112, 2),
+            ]
+
             # get scalable width and height
             img = Image.new(
                 "RGB",
@@ -102,7 +114,7 @@ def get_sticker(update: Update, context: CallbackContext):
             draw = ImageDraw.Draw(img)
 
             # put username
-            draw.text((20, 25), name, (0, 153, 38), font_bold)
+            draw.text((20, 25), name, random.choice(head_tg), font_bold)
 
             # put text
             draw.multiline_text((20, 15 + line_height_bold + 45), text_blob, (255, 255, 255), font_normal)
