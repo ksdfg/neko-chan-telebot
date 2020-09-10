@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+from functools import wraps
+from typing import Callable
 
 from emoji import emojize
 from telegram import Update, ChatPermissions
@@ -9,9 +11,41 @@ from telebot.functions import check_user_admin, check_bot_admin
 from telebot.modules.db.exceptions import get_command_exception_chats
 
 
+def can_restrict(func: Callable):
+    """
+    Wrapper function for checking if user and bot has perms required for muting and un-muting
+    :param func: The function this wraps over
+    """
+
+    @wraps(func)
+    def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
+        if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats(
+            "mute"
+        ):
+            # check bot
+            if not update.effective_chat.get_member(context.bot.id).can_restrict_members:
+                update.effective_message.reply_markdown(
+                    "Ask your sugar daddy to give me perms required to use the method `CanRestrictMembers`."
+                )
+                return
+
+            # check user
+            if not update.effective_chat.get_member(update.effective_user.id).can_restrict_members:
+                update.effective_message.reply_markdown(
+                    "Ask your sugar daddy to give you perms required to use the method `CanRestrictMembers`."
+                )
+                return
+
+        else:
+            func(update, context, *args, **kwargs)
+
+    return wrapper
+
+
 @run_async
 @check_user_admin
 @check_bot_admin
+@can_restrict
 def mute(update: Update, context: CallbackContext):
     """
     Mute a user, temporarily or permanently
@@ -20,19 +54,6 @@ def mute(update: Update, context: CallbackContext):
     """
     bot = update.effective_chat.get_member(context.bot.id)
     user = update.effective_chat.get_member(update.effective_user.id)
-
-    # check if user and bot have permissions to mute users
-    if update.effective_chat.id not in get_command_exception_chats("mute"):
-        if not bot.can_restrict_members:
-            update.effective_message.reply_markdown(
-                "Ask your sugar daddy to give me perms required to use the method `CanRestrictMembers`."
-            )
-            return
-        if not user.can_restrict_members:
-            update.effective_message.reply_markdown(
-                "Ask your sugar daddy to give you perms required to use the method `CanRestrictMembers`."
-            )
-            return
 
     # kwargs to pass to the restrict_chat_member function call
     kwargs = {
