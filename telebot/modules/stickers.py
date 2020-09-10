@@ -14,7 +14,8 @@ from telegram.error import BadRequest
 from telegram.ext import run_async, CallbackContext, CommandHandler, ConversationHandler, MessageHandler, Filters
 from telegram.utils.helpers import escape_markdown
 
-from telebot import dispatcher, log
+from telebot import dispatcher
+from telebot.functions import log
 from telebot.modules.db.exceptions import get_command_exception_chats
 
 

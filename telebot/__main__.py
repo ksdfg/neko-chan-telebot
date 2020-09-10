@@ -6,7 +6,8 @@ from mongoengine import connect
 from telegram import Update, BotCommand
 from telegram.ext import CallbackContext, CommandHandler, run_async
 
-from telebot import updater, config, log, dispatcher
+from telebot import updater, config, dispatcher
+from telebot.functions import log
 from telebot.modules import ALL_MODULES
 
 # Import all modules

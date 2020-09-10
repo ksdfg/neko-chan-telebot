@@ -1,27 +1,35 @@
 from telegram import Update
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import run_async, CallbackContext, CommandHandler
 
+from telebot import dispatcher
+from telebot.functions import check_user_admin, check_bot_admin
 from telebot.modules.db.exceptions import get_command_exception_chats
 
 
 @run_async
+@check_user_admin
+@check_bot_admin
 def mute(update: Update, context: CallbackContext):
     """
     Mute a user, temporarily or permanently
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    # check if user is admin
+    bot = update.effective_chat.get_member(context.bot.id)
     user = update.effective_chat.get_member(update.effective_user.id)
-    if user.status not in ('administrator', 'creator') and update.effective_chat.type != "private":
-        update.effective_message.reply_text("Get some admin privileges before you try to order me around, baka!")
-        return
 
-    if update.effective_chat.id not in get_command_exception_chats("mute") and not user.can_restric_members:
-        update.effective_message.reply_markdown(
-            "Ask your sugar daddy to give you perms required to use the method `CanRestrictMembers`."
-        )
-        return
+    # check if user and bot have permissions to mute users
+    if update.effective_chat.id not in get_command_exception_chats("mute"):
+        if not bot.can_restrict_members:
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give me perms required to use the method `CanRestrictMembers`."
+            )
+            return
+        if not user.can_restrict_members:
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give you perms required to use the method `CanRestrictMembers`."
+            )
+            return
 
 
 __help__ = """
@@ -31,3 +39,5 @@ __help__ = """
 """
 
 __mod_name__ = "Muting"
+
+dispatcher.add_handler(CommandHandler("mute", mute))

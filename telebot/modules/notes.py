@@ -2,7 +2,8 @@ from emoji import emojize
 from telegram import Update
 from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
 
-from telebot import log, dispatcher
+from telebot import dispatcher
+from telebot.functions import log, check_user_admin
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.notes import get_note, get_notes_for_chat, add_note, del_note
 
@@ -77,6 +78,7 @@ def notes_for_chat(update: Update, context: CallbackContext):
 
 
 @run_async
+@check_user_admin
 def add_note_in_chat(update: Update, context: CallbackContext):
     """
     Add a note in the chat
@@ -85,14 +87,6 @@ def add_note_in_chat(update: Update, context: CallbackContext):
     """
     # check exception
     if update.effective_chat.id in get_command_exception_chats("notes"):
-        return
-
-    # check if user is admin
-    if (
-        not update.effective_chat.get_member(update.effective_user.id).status in ('administrator', 'creator')
-        and update.effective_chat.type != "private"
-    ):
-        update.effective_message.reply_text("Get some admin privileges before you try to order me around, baka!")
         return
 
     # for ease of reference
@@ -155,6 +149,7 @@ def add_note_in_chat(update: Update, context: CallbackContext):
 
 
 @run_async
+@check_user_admin
 def del_note_in_chat(update: Update, context: CallbackContext):
     """
     Delete a note from the chat
@@ -163,14 +158,6 @@ def del_note_in_chat(update: Update, context: CallbackContext):
     """
     # check for exception
     if update.effective_chat.id in get_command_exception_chats("notes"):
-        return
-
-    # check if user is admin
-    if (
-        not update.effective_chat.get_member(update.effective_user.id).status in ('administrator', 'creator')
-        and update.effective_chat.type != "private"
-    ):
-        update.effective_message.reply_text("Get some admin privileges before you try to order me around, baka!")
         return
 
     log(update, "del note")

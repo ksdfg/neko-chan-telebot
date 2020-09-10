@@ -7,7 +7,8 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler, run_async
 from zalgo_text.zalgo import zalgo
 
-from telebot import dispatcher, log
+from telebot import dispatcher
+from telebot.functions import log
 
 
 @run_async
