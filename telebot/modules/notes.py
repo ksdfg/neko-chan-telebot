@@ -32,9 +32,7 @@ def fetch_note(update: Update, context: CallbackContext):
     content, content_type = get_note(update.effective_chat.id, name)
 
     # send reply according to type
-    if content is None:
-        update.effective_message.reply_text("No such note in my memory...")
-    elif content_type == "text":
+    if content_type == "text":
         update.effective_message.reply_markdown(content)
     elif content_type == "sticker":
         update.effective_message.reply_sticker(content)
