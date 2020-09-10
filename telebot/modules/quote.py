@@ -189,15 +189,23 @@ def get_sticker(update: Update, context: CallbackContext):
         body = draw_text(name, text, assigned_color)
         get_concat_h(dp, body)
 
-    name, text, assigned_color = get_message_data(rep_msg)
-    get_raw_sticker(name, text, assigned_color)
+    try:
+        name, text, assigned_color = get_message_data(rep_msg)
+        get_raw_sticker(name, text, assigned_color)
 
-    # send generated image as sticker
-    rep_msg.reply_sticker(sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.webp", "rb"))
+        # send generated image as sticker
+        rep_msg.reply_sticker(
+            sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.webp", "rb")
+        )
 
-    # remove stored images
-    remove(f"{update.effective_message.reply_to_message.from_user.id}_final.webp")
-    remove(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
+        # remove stored images
+        remove(f"{update.effective_message.reply_to_message.from_user.id}_final.webp")
+        remove(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
+
+    except AttributeError:
+        update.effective_message.reply_text(
+            "Please reply to a message to get its quote.\nThis cat can't read your mind"
+        )
 
 
 __help__ = """
