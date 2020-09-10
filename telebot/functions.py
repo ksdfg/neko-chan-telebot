@@ -1,9 +1,10 @@
-# Some Helper Functions
 from collections import Callable
 from functools import wraps
 
 from telegram import Update
 from telegram.ext import CallbackContext
+
+# Some Helper Functions
 
 
 def check_user_admin(func: Callable):

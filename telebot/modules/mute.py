@@ -1,4 +1,7 @@
-from telegram import Update
+from datetime import datetime, timedelta
+
+from emoji import emojize
+from telegram import Update, ChatPermissions
 from telegram.ext import run_async, CallbackContext, CommandHandler
 
 from telebot import dispatcher
@@ -31,11 +34,65 @@ def mute(update: Update, context: CallbackContext):
             )
             return
 
+    # kwargs to pass to the restrict_chat_member function call
+    kwargs = {
+        'chat_id': update.effective_chat.id,
+        'permissions': ChatPermissions(
+            can_send_messages=False,
+            can_send_media_messages=False,
+            can_send_other_messages=False,
+            can_send_polls=False,
+            can_add_web_page_previews=False,
+            can_change_info=user.can_change_info,
+            can_invite_users=user.can_invite_users,
+            can_pin_messages=user.can_pin_messages,
+        ),
+    }
+
+    # get user to mute
+    if update.effective_message.reply_to_message:
+        kwargs['user_id'] = update.effective_message.reply_to_message.from_user
+        # check if user is trying to mute an admin
+        if update.effective_chat.get_member(kwargs['user_id']).status not in ('administrator', 'creator'):
+            update.effective_message.reply_text("I can't mute an admin, baka!")
+    else:
+        update.effective_message.reply_text("Reply to a message by the user you want to mute...")
+        return
+
+    if context.args:
+        # get datetime till when we have to mute user
+        try:
+            time, unit = float(context.args[0][:-1]), context.args[0][-1]
+            if unit == 'd':
+                kwargs['until_date'] = datetime.now() + timedelta(days=time)
+            elif unit == 'h':
+                kwargs['until_date'] = datetime.now() + timedelta(hours=time)
+            elif unit == 'm':
+                kwargs['until_date'] = datetime.now() + timedelta(minutes=time)
+            else:
+                update.effective_message.reply_markdown(
+                    "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
+                )
+                return
+        except ValueError:
+            update.effective_message.reply_text("Time needs to be a number, baka!")
+            return
+
+    context.bot.restrict_chat_member(**kwargs)
+
+    reply = (
+        f"Sewed up @{update.effective_message.reply_to_message.from_user.username}'s mouth :smiling_face_with_horns:"
+        + "\nIf you want to be un-muted, bribe an admin with some catnip to do it for you..."
+    )
+    if 'until_time' in kwargs.keys():
+        reply += f" or wait till `{kwargs['until_date'].strftime('%c')}`"
+    update.effective_message.reply_markdown(emojize(reply))
+
 
 __help__ = """
 ***Admin only :***
-- /mute `<userhandle> [x<m|h|d>]`: mutes a user for x time, or until they are unmuted. (via handle, or reply). m = minutes, h = hours, d = days.
-- /unmute `<userhandle>`: unmutes a user. Can also be used as a reply, muting the replied to user.
+- /mute `<reply> [x<m|h|d>]`: mutes a user (whose message you are replying to) for x time, or until they are unmuted. m = minutes, h = hours, d = days.
+- /unmute `<reply>`: unmutes a user (whose message you are replying to)
 """
 
 __mod_name__ = "Muting"
