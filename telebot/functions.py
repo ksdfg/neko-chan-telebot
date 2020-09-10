@@ -9,7 +9,7 @@ from telegram.ext import CallbackContext
 
 def check_user_admin(func: Callable):
     """
-    Wrapper function for checking if user has perms required for muting and un-muting
+    Wrapper function for checking if user is admin
     :param func: The function this wraps over
     """
 
@@ -29,7 +29,7 @@ def check_user_admin(func: Callable):
 
 def check_bot_admin(func: Callable):
     """
-    Wrapper function for checking if bot has perms required for muting and un-muting
+    Wrapper function for checking if bot is admin
     :param func: The function this wraps over
     """
 
