@@ -57,7 +57,7 @@ def mute(update: Update, context: CallbackContext):
 
     # get user to mute
     if update.effective_message.reply_to_message:
-        kwargs['user_id'] = update.effective_message.reply_to_message.from_user
+        kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
         # check if user is trying to mute an admin
         user = update.effective_chat.get_member(kwargs['user_id'])
         if user.status in ('administrator', 'creator'):
@@ -107,6 +107,46 @@ def mute(update: Update, context: CallbackContext):
     if 'until_time' in kwargs.keys():
         reply += f" or wait till `{kwargs['until_date'].strftime('%c')}`"
     update.effective_message.reply_markdown(emojize(reply))
+
+
+@run_async
+@check_user_admin
+@check_bot_admin
+@can_restrict
+def unmute(update: Update, context: CallbackContext):
+    """
+    Unmute a muted user
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # kwargs to pass to the restrict_chat_member function call
+    kwargs = {'chat_id': update.effective_chat.id}
+
+    # get user to mute
+    if update.effective_message.reply_to_message:
+        kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
+    else:
+        update.effective_message.reply_text("Reply to a message by the user you want to unmute...")
+        return
+
+    # set muted permissions
+    user = update.effective_chat.get_member(kwargs['user_id'])
+    kwargs['permissions'] = ChatPermissions(
+        can_send_messages=True,
+        can_send_media_messages=True,
+        can_send_other_messages=True,
+        can_send_polls=True,
+        can_add_web_page_previews=True,
+        can_change_info=user.can_change_info,
+        can_invite_users=user.can_invite_users,
+        can_pin_messages=user.can_pin_messages,
+    )
+
+    # unmute member
+    context.bot.restrict_chat_member(**kwargs)
+    update.effective_message.reply_text(
+        f"@{update.effective_message.reply_to_message.from_user.username} can now go nyan nyan"
+    )
 
 
 __help__ = """
