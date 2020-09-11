@@ -6,7 +6,8 @@ from telegram import Update, ParseMode
 from telegram.ext import CommandHandler, run_async, CallbackContext
 from telegraph import Telegraph
 
-from telebot import dispatcher, log
+from telebot import dispatcher
+from telebot.functions import log
 from telebot.modules.db.exceptions import get_command_exception_chats
 
 

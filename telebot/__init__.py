@@ -1,5 +1,4 @@
 from decouple import config
-from telegram import Update
 from telegram.ext import Updater
 
 
@@ -22,23 +21,6 @@ class Config:
 
         self.LOAD = load
         self.NO_LOAD = no_load
-
-
-def log(update: Update, func_name: str, extra_text: str = "") -> None:
-    """
-    Function to log bot activity
-    :param update: Update object to retrieve info from
-    :param func_name: name of the function being called
-    :param extra_text: any extra text to be logged
-    :return: None
-    """
-    chat = "private chat"
-    if update.effective_chat.type != "private":
-        chat = update.effective_chat.title
-
-    print(update.effective_user.username, "called function", func_name, "from", chat)
-    if extra_text:
-        print(extra_text)
 
 
 # create config object

@@ -4,7 +4,8 @@ from emoji import emojize
 from telegram import Update
 from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
 
-from telebot import dispatcher, log
+from telebot import dispatcher
+from telebot.functions import log
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.filter import get_triggers_for_chat, add_filter, get_filter, del_filter
 
