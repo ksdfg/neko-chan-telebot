@@ -13,6 +13,7 @@ from telebot import dispatcher
 def get_sticker(update: Update, context: CallbackContext):
     context.bot.send_chat_action(update.effective_chat.id, 'upload_photo')
     rep_msg = update.effective_message.reply_to_message
+    curr_msg = update.effective_message
 
     def generate_temp_profile(name, assigned_color):
         BASE_DIR = Path(__file__).parent.absolute()
@@ -198,7 +199,9 @@ def get_sticker(update: Update, context: CallbackContext):
         get_raw_sticker(name, text, assigned_color)
 
         # send generated image as sticker
-        rep_msg.reply_sticker(sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.png", "rb"))
+        curr_msg.reply_sticker(
+            sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.png", "rb")
+        )
 
         # remove stored images
         remove(f"{update.effective_message.reply_to_message.from_user.id}_final.png")
