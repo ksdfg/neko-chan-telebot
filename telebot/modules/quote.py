@@ -176,10 +176,14 @@ def get_sticker(update: Update, context: CallbackContext):
             dst.putalpha(0)
             dst.paste(img1, (0, 0))
             dst.paste(img2, (img1.width + 15, 0))
+            basewidth = 512
+            wpercent = basewidth / float(dst.size[0])
+            hsize = int((float(dst.size[1]) * float(wpercent)))
+            dst = dst.resize((basewidth, hsize), Image.ANTIALIAS)
             # save image in webp format
             dst.save(
-                f"{update.effective_message.reply_to_message.from_user.id}_final.webp",
-                "WEBP",
+                f"{update.effective_message.reply_to_message.from_user.id}_final.png",
+                "PNG",
                 lossless=True,
             )
 
@@ -194,12 +198,10 @@ def get_sticker(update: Update, context: CallbackContext):
         get_raw_sticker(name, text, assigned_color)
 
         # send generated image as sticker
-        rep_msg.reply_sticker(
-            sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.webp", "rb")
-        )
+        rep_msg.reply_sticker(sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.png", "rb"))
 
         # remove stored images
-        remove(f"{update.effective_message.reply_to_message.from_user.id}_final.webp")
+        remove(f"{update.effective_message.reply_to_message.from_user.id}_final.png")
         remove(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
 
     except AttributeError:
