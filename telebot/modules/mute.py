@@ -52,33 +52,32 @@ def mute(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    bot = update.effective_chat.get_member(context.bot.id)
-    user = update.effective_chat.get_member(update.effective_user.id)
-
     # kwargs to pass to the restrict_chat_member function call
-    kwargs = {
-        'chat_id': update.effective_chat.id,
-        'permissions': ChatPermissions(
-            can_send_messages=False,
-            can_send_media_messages=False,
-            can_send_other_messages=False,
-            can_send_polls=False,
-            can_add_web_page_previews=False,
-            can_change_info=user.can_change_info,
-            can_invite_users=user.can_invite_users,
-            can_pin_messages=user.can_pin_messages,
-        ),
-    }
+    kwargs = {'chat_id': update.effective_chat.id}
 
     # get user to mute
     if update.effective_message.reply_to_message:
         kwargs['user_id'] = update.effective_message.reply_to_message.from_user
         # check if user is trying to mute an admin
-        if update.effective_chat.get_member(kwargs['user_id']).status not in ('administrator', 'creator'):
+        user = update.effective_chat.get_member(kwargs['user_id'])
+        if user.status in ('administrator', 'creator'):
             update.effective_message.reply_text("I can't mute an admin, baka!")
+            return
     else:
         update.effective_message.reply_text("Reply to a message by the user you want to mute...")
         return
+
+    # set muted permissions
+    kwargs['permissions'] = ChatPermissions(
+        can_send_messages=False,
+        can_send_media_messages=False,
+        can_send_other_messages=False,
+        can_send_polls=False,
+        can_add_web_page_previews=False,
+        can_change_info=user.can_change_info,
+        can_invite_users=user.can_invite_users,
+        can_pin_messages=user.can_pin_messages,
+    )
 
     if context.args:
         # get datetime till when we have to mute user
