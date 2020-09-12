@@ -3,7 +3,7 @@ from functools import wraps
 from typing import Callable
 
 from emoji import emojize
-from telegram import Update, ChatPermissions, MessageEntity
+from telegram import Update, ChatPermissions, MessageEntity, ChatMember
 from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
@@ -118,6 +118,7 @@ def mute(update: Update, context: CallbackContext):
         )
         if 'until_date' in kwargs.keys():
             reply += f" or wait till `{kwargs['until_date'].strftime('%c')} UTC`"
+
         update.effective_message.reply_markdown(emojize(reply))
     else:
         update.effective_message.reply_text("Couldn't save record in db....")
@@ -195,7 +196,7 @@ def ban(update: Update, context: CallbackContext):
     # kwargs to pass to the ban_chat_member function call
     kwargs = {'chat_id': update.effective_chat.id}
 
-    # get user to mute
+    # get user to ban
     if update.effective_message.reply_to_message:
         kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
 
@@ -203,11 +204,13 @@ def ban(update: Update, context: CallbackContext):
         if kwargs['user_id'] == context.bot.id:
             update.effective_message.reply_markdown(f"Try to {action} me again, I'll meow meow your buttocks.")
             return
-        # check if user is trying to mute an admin
+
+        # check if user is trying to ban an admin
         user = update.effective_chat.get_member(kwargs['user_id'])
         if user.status in ('administrator', 'creator'):
-            update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just ban __you__.")
+            update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just {action} __you__.")
             return
+
     else:
         update.effective_message.reply_text(f"Reply to a message by the user you want to {action}...")
         return
@@ -250,22 +253,82 @@ def ban(update: Update, context: CallbackContext):
     update.effective_message.reply_markdown(emojize(reply))
 
 
+@run_async
+@check_user_admin
+@check_bot_admin
+def promote(update: Update, context: CallbackContext):
+    """
+    Promote a user to give him admin rights
+    :param update:
+    :param context:
+    :return:
+    """
+    # check if bot can promote users
+    if (
+        update.effective_chat.type != "private"
+        and not update.effective_chat.get_member(context.bot.id).can_promote_members
+    ):
+        update.effective_message.reply_markdown(
+            "Ask your sugar daddy to give me perms required to use the method `CanPromoteMembers`."
+        )
+        return
+
+    log(update, "promote")
+
+    # get member to promote
+    if update.effective_message.reply_to_message:
+        user_id = update.effective_message.reply_to_message.from_user.id
+        # check if user is trying to mute an admin
+        if update.effective_chat.get_member(user_id).status in ('administrator', 'creator'):
+            update.effective_message.reply_markdown(
+                "Thanks for trying to promote an admin. Maybe bring me some catnip you're high on next time?"
+            )
+            return
+    else:
+        update.effective_message.reply_text(f"Reply to a message by the user you want to promote...")
+        return
+
+    # get bot member object to check it's perms
+    bot: ChatMember = update.effective_chat.get_member(context.bot.id)
+
+    # promote member
+    context.bot.promote_chat_member(
+        chat_id=update.effective_chat.id,
+        user_id=user_id,
+        can_change_info=bot.can_change_info,
+        can_post_messages=bot.can_post_messages,
+        can_edit_messages=bot.can_edit_messages,
+        can_delete_messages=bot.can_delete_messages,
+        can_invite_users=bot.can_invite_users,
+        can_restrict_members=bot.can_restrict_members,
+        can_pin_messages=bot.can_pin_messages,
+        can_promote_members=bot.can_promote_members,
+    )
+
+    update.effective_message.reply_text(
+        f"Everyone say NyaHello to @{update.effective_message.reply_to_message.from_user.username}, our new admin"
+    )
+
+
 __help__ = """
 ***Admin only :***
 
-- /mute `<reply> [x<m|h|d>]`: mutes a user (whose message you are replying to) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
+- /promote `<reply>` : promotes a user (whose message you are replying to) to admin
+
+- /mute `<reply> [x<m|h|d>]` : mutes a user (whose message you are replying to) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
 
 - /unmute `<reply|username>`: un-mutes a user (whose username you've given as argument, or whose message you are replying to)
 
 - /ban `<reply> [x<m|h|d>]`: ban a user from the chat (whose message you are replying to) for x time, or until they are added back. m = minutes, h = hours, d = days.
 
-- /kick `<reply> [x<m|h|d>]`: kick a user from the chat (whose message you are replying to) for x time, or until they are added back. m = minutes, h = hours, d = days.
+- /kick `<reply> [x<m|h|d>]` : kick a user from the chat (whose message you are replying to) for x time, or until they are added back. m = minutes, h = hours, d = days.
 
 If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the individual permissions.
 """
 
 __mod_name__ = "Admin"
 
+dispatcher.add_handler(CommandHandler("promote", promote))
 dispatcher.add_handler(CommandHandler("mute", mute))
 dispatcher.add_handler(CommandHandler("unmute", unmute))
 dispatcher.add_handler(CommandHandler("ban", ban))
