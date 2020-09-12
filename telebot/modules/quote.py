@@ -1,4 +1,5 @@
 import random
+from math import floor
 from os import remove
 from os.path import join, isfile
 from pathlib import Path
@@ -237,11 +238,33 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
             dst.putalpha(0)
             dst.paste(img1, (0, 0))
             dst.paste(img2, (img1.width + 15, 0))
+
             # rebase image to fit into telegram's sticker's dimension rules
-            basewidth = 512
-            wpercent = basewidth / float(dst.size[0])
-            hsize = int((float(dst.size[1]) * float(wpercent)))
-            dst = dst.resize((basewidth, hsize), Image.ANTIALIAS)
+            maxsize = (512, 512)
+            if (dst.width and dst.height) < 512:
+                # if the image is smaller than the required sticker size
+                size1 = dst.width
+                size2 = dst.height
+
+                if dst.width > dst.height:
+                    # if width is bigger than height, then set width to 512 and scale height accordingly
+                    scale = 512 / size1
+                    size1new = 512
+                    size2new = size2 * scale
+                else:
+                    # if height is bigger than width, then set height to 512 and scale width accordingly
+                    scale = 512 / size2
+                    size1new = size1 * scale
+                    size2new = 512
+
+                # set image to new size
+                size_new = (floor(size1new), floor(size2new))
+                dst = dst.resize(size_new)
+
+            else:
+                # if image is bigger than sticker size, directly set thumbnail to fit in 512x512
+                dst.thumbnail(maxsize)
+
             # save image in png format
             dst.save(
                 f"{file_name}_final.png",

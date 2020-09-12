@@ -307,8 +307,7 @@ def promote(update: Update, context: CallbackContext):
     )
 
     update.effective_message.reply_text(
-        f"Everyone say NyaHello to @{escape_markdown(update.effective_message.reply_to_message.from_user.username)}, "
-        f"our new admin"
+        f"Everyone say NyaHello to @{update.effective_message.reply_to_message.from_user.username}, " f"our new admin"
     )
 
 
