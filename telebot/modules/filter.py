@@ -59,6 +59,8 @@ def add_filter_handler(update: Update, context: CallbackContext) -> None:
             msg.reply_markdown("No trigger, No content....\n\nYou could've at least come with some catnip\n`._.`")
             return
 
+    trigger = trigger.replace(r"\_", "_").replace(r"\*", "*")
+
     # set kwargs to be passed to add_filter function
     kwargs = {'chat': update.effective_chat.id, 'trigger': trigger}
 
