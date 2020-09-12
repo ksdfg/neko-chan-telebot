@@ -5,6 +5,7 @@ from emoji import emojize
 from mongoengine import connect
 from telegram import Update, BotCommand
 from telegram.ext import CallbackContext, CommandHandler, run_async
+from telegram.utils.helpers import escape_markdown
 
 from telebot import updater, config, dispatcher
 from telebot.functions import log

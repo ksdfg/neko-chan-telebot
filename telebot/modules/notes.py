@@ -104,7 +104,7 @@ def add_note_in_chat(update: Update, context: CallbackContext):
             return
 
     # set kwargs to be passed to add_note function
-    kwargs = {'chat': update.effective_chat.id, 'name': name}
+    kwargs = {'chat': update.effective_chat.id, 'name': name.replace(r"\_", "_").replace(r"\*", "*")}
 
     # add content and content type to kwargs
 

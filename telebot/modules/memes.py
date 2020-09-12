@@ -5,6 +5,7 @@ from spongemock.spongemock import mock as mock_text
 from telegram import Update
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler, run_async
+from telegram.utils.helpers import escape_markdown
 from zalgo_text.zalgo import zalgo
 
 from telebot import dispatcher
@@ -72,22 +73,22 @@ def owo(update: Update, context: CallbackContext) -> None:
 
     # list of all kaomojis to use in owo
     kaomoji = [
-        "```\n(・`ω´・)\n```",
-        "```\n;;w;;\n```",
-        "```\nowo\n```",
-        "```\nUwU\n```",
-        "```\n>w<\n```",
-        "```\n^w^\n```",
-        "```\n" + r"\(^o\) (/o^)/" + "\n```",
-        "```\n( ^ _ ^)∠☆\n```",
-        "```\n(ô_ô)\n```",
-        "```\n~:o\n```",
-        "```\n;____;\n```",
-        "```\n(*^*)\n```",
-        "```\n(>_\n```",
-        "```\n(♥_♥)\n```",
-        "```\n*(^O^)*\n```",
-        "```\n((+_+))\n```",
+        escape_markdown("```\n(・`ω´・)\n```"),
+        escape_markdown("```\n;;w;;\n```"),
+        escape_markdown("```\nowo\n```"),
+        escape_markdown("```\nUwU\n```"),
+        escape_markdown("```\n>w<\n```"),
+        escape_markdown("```\n^w^\n```"),
+        escape_markdown("```\n" + r"\(^o\) (/o^)/" + "\n```"),
+        escape_markdown("```\n( ^ _ ^)∠☆\n```"),
+        escape_markdown("```\n(ô_ô)\n```"),
+        escape_markdown("```\n~:o\n```"),
+        escape_markdown("```\n;____;\n```"),
+        escape_markdown("```\n(*^*)\n```"),
+        escape_markdown("```\n(>_\n```"),
+        escape_markdown("```\n(♥_♥)\n```"),
+        escape_markdown("```\n*(^O^)*\n```"),
+        escape_markdown("```\n((+_+))\n```"),
     ]
 
     try:
