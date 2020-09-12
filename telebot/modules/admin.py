@@ -22,7 +22,7 @@ def can_restrict(func: Callable):
     @wraps(func)
     def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
         if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats(
-            "mute"
+            "admin"
         ):
             # check bot
             if not update.effective_chat.get_member(context.bot.id).can_restrict_members:
@@ -83,6 +83,7 @@ def mute(update: Update, context: CallbackContext):
         can_pin_messages=user.can_pin_messages,
     )
 
+    # noinspection DuplicatedCode
     if context.args:
         # get datetime till when we have to mute user
         try:
@@ -178,13 +179,82 @@ def unmute(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Couldn't remove record from db....")
 
 
+@run_async
+@check_user_admin
+@check_bot_admin
+@can_restrict
+def kick(update: Update, context: CallbackContext):
+    """
+    Kick a user from a chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    log(update, "kick")
+
+    # kwargs to pass to the kick_chat_member function call
+    kwargs = {'chat_id': update.effective_chat.id}
+
+    # get user to mute
+    if update.effective_message.reply_to_message:
+        kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
+
+        # check if user is trying to kick the bot
+        if kwargs['user_id'] == context.bot.id:
+            update.effective_message.reply_markdown("Try to kick me again, I'll meow meow your buttocks.")
+
+        # check if user is trying to mute an admin
+        user = update.effective_chat.get_member(kwargs['user_id'])
+        if user.status in ('administrator', 'creator'):
+            update.effective_message.reply_markdown("Try to kick an admin again, I might just kick __you__.")
+            return
+    else:
+        update.effective_message.reply_text("Reply to a message by the user you want to kick...")
+        return
+
+    # noinspection DuplicatedCode
+    if context.args:
+        # get datetime till when we have to kick user
+        try:
+            time, unit = float(context.args[0][:-1]), context.args[0][-1]
+            if unit == 'd':
+                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(days=time)
+            elif unit == 'h':
+                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(hours=time)
+            elif unit == 'm':
+                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(minutes=time)
+            else:
+                update.effective_message.reply_markdown(
+                    "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
+                )
+                return
+        except ValueError:
+            update.effective_message.reply_text("Time needs to be a number, baka!")
+            return
+
+    # kick user
+    context.bot.kick_chat_member(**kwargs)
+
+    # announce kick
+    reply = (
+        f"Kicked @{update.effective_message.reply_to_message.from_user.username} to the litter :smiling_face_with_horns:"
+        + "\nIf you want to be added again, bribe an admin with some catnip to add you..."
+    )
+    if 'until_date' in kwargs.keys():
+        reply += f" or join from the invite link `{kwargs['until_date'].strftime('%c')} UTC`"
+    update.effective_message.reply_markdown(emojize(reply))
+
+
 __help__ = """
 ***Admin only :***
-- /mute `<reply> [x<m|h|d>]`: mutes a user (whose message you are replying to) for x time, or until they are unmuted. m = minutes, h = hours, d = days.
-- /unmute `<reply|username>`: unmutes a user (whose username you've given as argument, or whose message you are replying to)
+- /mute `<reply> [x<m|h|d>]`: mutes a user (whose message you are replying to) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
+- /unmute `<reply|username>`: un-mutes a user (whose username you've given as argument, or whose message you are replying to)
+- /kick `<reply> [x<m|h|d>]`: kick a user from the chat (whose message you are replying to) for x time, or until they are added back. m = minutes, h = hours, d = days.
+
+Add an exception to `admin` to allow admins to execute commands even if they don't have the individual permissions.
 """
 
-__mod_name__ = "Muting"
+__mod_name__ = "Admin"
 
 dispatcher.add_handler(CommandHandler("mute", mute))
 dispatcher.add_handler(CommandHandler("unmute", unmute))
+dispatcher.add_handler(CommandHandler("kick", kick))
