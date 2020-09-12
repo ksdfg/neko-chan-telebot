@@ -242,8 +242,9 @@ def ban(update: Update, context: CallbackContext):
 
     # announce ban
     reply = (
-        f"{'Banned' if action == 'ban' else 'Kicked'} @{update.effective_message.reply_to_message.from_user.username}"
-        f" to the litter :smiling_face_with_horns:"
+        f"{'Banned' if action == 'ban' else 'Kicked'} "
+        f"@{escape_markdown(update.effective_message.reply_to_message.from_user.username)} to the litter "
+        f":smiling_face_with_horns:"
     )
     if action == "ban":
         reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
@@ -306,7 +307,8 @@ def promote(update: Update, context: CallbackContext):
     )
 
     update.effective_message.reply_text(
-        f"Everyone say NyaHello to @{update.effective_message.reply_to_message.from_user.username}, our new admin"
+        f"Everyone say NyaHello to @{escape_markdown(update.effective_message.reply_to_message.from_user.username)}, "
+        f"our new admin"
     )
 
 
