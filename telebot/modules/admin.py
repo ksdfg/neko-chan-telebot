@@ -3,7 +3,7 @@ from functools import wraps
 from typing import Callable
 
 from emoji import emojize
-from telegram import Update, ChatPermissions, MessageEntity
+from telegram import Update, ChatPermissions, MessageEntity, ChatMember
 from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
@@ -22,7 +22,7 @@ def can_restrict(func: Callable):
     @wraps(func)
     def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
         if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats(
-            "mute"
+            "admin"
         ):
             # check bot
             if not update.effective_chat.get_member(context.bot.id).can_restrict_members:
@@ -83,6 +83,7 @@ def mute(update: Update, context: CallbackContext):
         can_pin_messages=user.can_pin_messages,
     )
 
+    # noinspection DuplicatedCode
     if context.args:
         # get datetime till when we have to mute user
         try:
@@ -117,6 +118,7 @@ def mute(update: Update, context: CallbackContext):
         )
         if 'until_date' in kwargs.keys():
             reply += f" or wait till `{kwargs['until_date'].strftime('%c')} UTC`"
+
         update.effective_message.reply_markdown(emojize(reply))
     else:
         update.effective_message.reply_text("Couldn't save record in db....")
@@ -178,13 +180,158 @@ def unmute(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Couldn't remove record from db....")
 
 
+@run_async
+@check_user_admin
+@check_bot_admin
+@can_restrict
+def ban(update: Update, context: CallbackContext):
+    """
+    ban a user from a chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    action = "ban" if update.effective_message.text.split(None, 1)[0] == "/ban" else "kick"
+    log(update, action)
+
+    # kwargs to pass to the ban_chat_member function call
+    kwargs = {'chat_id': update.effective_chat.id}
+
+    # get user to ban
+    if update.effective_message.reply_to_message:
+        kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
+
+        # check if user is trying to ban the bot
+        if kwargs['user_id'] == context.bot.id:
+            update.effective_message.reply_markdown(f"Try to {action} me again, I'll meow meow your buttocks.")
+            return
+
+        # check if user is trying to ban an admin
+        user = update.effective_chat.get_member(kwargs['user_id'])
+        if user.status in ('administrator', 'creator'):
+            update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just {action} __you__.")
+            return
+
+    else:
+        update.effective_message.reply_text(f"Reply to a message by the user you want to {action}...")
+        return
+
+    # noinspection DuplicatedCode
+    if context.args:
+        # get datetime till when we have to ban user
+        try:
+            time, unit = float(context.args[0][:-1]), context.args[0][-1]
+            if unit == 'd':
+                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(days=time)
+            elif unit == 'h':
+                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(hours=time)
+            elif unit == 'm':
+                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(minutes=time)
+            else:
+                update.effective_message.reply_markdown(
+                    "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
+                )
+                return
+        except ValueError:
+            update.effective_message.reply_text("Time needs to be a number, baka!")
+            return
+
+    # ban user
+    context.bot.kick_chat_member(**kwargs)
+    if action == "kick" and 'until_date' not in kwargs.keys():
+        context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
+
+    # announce ban
+    reply = (
+        f"{'Banned' if action == 'ban' else 'Kicked'} "
+        f"@{escape_markdown(update.effective_message.reply_to_message.from_user.username)} to the litter "
+        f":smiling_face_with_horns:"
+    )
+    if action == "ban":
+        reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
+    if 'until_date' in kwargs.keys():
+        reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
+
+    update.effective_message.reply_markdown(emojize(reply))
+
+
+@run_async
+@check_user_admin
+@check_bot_admin
+def promote(update: Update, context: CallbackContext):
+    """
+    Promote a user to give him admin rights
+    :param update:
+    :param context:
+    :return:
+    """
+    # check if bot can promote users
+    if (
+        update.effective_chat.type != "private"
+        and not update.effective_chat.get_member(context.bot.id).can_promote_members
+    ):
+        update.effective_message.reply_markdown(
+            "Ask your sugar daddy to give me perms required to use the method `CanPromoteMembers`."
+        )
+        return
+
+    log(update, "promote")
+
+    # get member to promote
+    if update.effective_message.reply_to_message:
+        user_id = update.effective_message.reply_to_message.from_user.id
+        # check if user is trying to mute an admin
+        if update.effective_chat.get_member(user_id).status in ('administrator', 'creator'):
+            update.effective_message.reply_markdown(
+                "Thanks for trying to promote an admin. Maybe bring me some catnip you're high on next time?"
+            )
+            return
+    else:
+        update.effective_message.reply_text(f"Reply to a message by the user you want to promote...")
+        return
+
+    # get bot member object to check it's perms
+    bot: ChatMember = update.effective_chat.get_member(context.bot.id)
+
+    # promote member
+    context.bot.promote_chat_member(
+        chat_id=update.effective_chat.id,
+        user_id=user_id,
+        can_change_info=bot.can_change_info,
+        can_post_messages=bot.can_post_messages,
+        can_edit_messages=bot.can_edit_messages,
+        can_delete_messages=bot.can_delete_messages,
+        can_invite_users=bot.can_invite_users,
+        can_restrict_members=bot.can_restrict_members,
+        can_pin_messages=bot.can_pin_messages,
+        can_promote_members=bot.can_promote_members,
+    )
+
+    update.effective_message.reply_text(
+        f"Everyone say NyaHello to @{escape_markdown(update.effective_message.reply_to_message.from_user.username)}, "
+        f"our new admin"
+    )
+
+
 __help__ = """
 ***Admin only :***
-- /mute `<reply> [x<m|h|d>]`: mutes a user (whose message you are replying to) for x time, or until they are unmuted. m = minutes, h = hours, d = days.
-- /unmute `<reply|username>`: unmutes a user (whose username you've given as argument, or whose message you are replying to)
+
+- /promote `<reply>` : promotes a user (whose message you are replying to) to admin
+
+- /mute `<reply> [x<m|h|d>]` : mutes a user (whose message you are replying to) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
+
+- /unmute `<reply|username>`: un-mutes a user (whose username you've given as argument, or whose message you are replying to)
+
+- /ban `<reply> [x<m|h|d>]`: ban a user from the chat (whose message you are replying to) for x time, or until they are added back. m = minutes, h = hours, d = days.
+
+- /kick `<reply> [x<m|h|d>]` : kick a user from the chat (whose message you are replying to) for x time, or until they are added back. m = minutes, h = hours, d = days.
+
+If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the individual permissions.
 """
 
-__mod_name__ = "Muting"
+__mod_name__ = "Admin"
 
+dispatcher.add_handler(CommandHandler("promote", promote))
 dispatcher.add_handler(CommandHandler("mute", mute))
 dispatcher.add_handler(CommandHandler("unmute", unmute))
+dispatcher.add_handler(CommandHandler("ban", ban))
+dispatcher.add_handler(CommandHandler("kick", ban))
