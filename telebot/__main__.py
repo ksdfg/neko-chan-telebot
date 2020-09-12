@@ -35,7 +35,7 @@ START_TEXT = emojize(
     f"""
 NyaHello World! :cat:
 
-I'm `{escape_markdown(updater.bot.first_name)}`, a cute little bot that does rendum shit rn.
+I'm `{updater.bot.first_name}`, a cute little bot that does rendum shit rn.
 """,
     use_aliases=True,
 )
