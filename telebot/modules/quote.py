@@ -1,21 +1,36 @@
 import random
 from os import remove
-from os.path import join
+from os.path import join, isfile
 from pathlib import Path
+from typing import Tuple
+from uuid import uuid4
 
 from PIL import ImageFont, ImageDraw, Image, ImageFilter
-from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext
+from telegram import Update, Message
+from telegram.ext import CommandHandler, CallbackContext, run_async
 
 from telebot import dispatcher
+from telebot.functions import log
 
 
-def get_sticker(update: Update, context: CallbackContext):
-    context.bot.send_chat_action(update.effective_chat.id, 'upload_photo')
+def _message_to_sticker(update: Update, context: CallbackContext) -> str:
+    """
+    Function to make the sticker from message and save it on disk as png image
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    :return: name of file on disk
+    """
     rep_msg = update.effective_message.reply_to_message
-    curr_msg = update.effective_message
+
+    file_name = f"{update.effective_message.reply_to_message.from_user.id}_{uuid4()}"
 
     def generate_temp_profile(name, assigned_color):
+        """
+
+        :param name:
+        :param assigned_color:
+        :return:
+        """
         BASE_DIR = Path(__file__).parent.absolute()
         ls = name.split(" ")
         if len(ls) > 1:
@@ -30,11 +45,15 @@ def get_sticker(update: Update, context: CallbackContext):
         position = ((160 - text_width) / 2, (160 - text_height) / 2)
         draw.text(position, initials, (255, 255, 255), font=font_bold)
         img.save(
-            f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg",
+            f"{file_name}_dp.jpg",
         )
 
-    def get_message_data(rep_msg):  # Get required data of the message to be quoted
-
+    def get_message_data(rep_msg: Message) -> Tuple[str, str, Tuple[int, int, int]]:
+        """
+        Get required data of the message to be quoted
+        :param rep_msg:
+        :return:
+        """
         head_tg = [
             (238, 73, 40),
             (65, 169, 3),
@@ -58,19 +77,26 @@ def get_sticker(update: Update, context: CallbackContext):
             text = rep_msg.text
 
         try:
-            profile_pic = update.effective_message.reply_to_message.from_user.get_profile_photos().photos[0][
-                0
-            ]  # Get users Profile Photo
+            # Get users Profile Photo
+            profile_pic = update.effective_message.reply_to_message.from_user.get_profile_photos().photos[0][0]
 
             file_pp = context.bot.getFile(profile_pic)
-            file_pp.download(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
+            file_pp.download(f"{file_name}_dp.jpg")
 
         except IndexError:
             generate_temp_profile(name, assigned_color)
 
         return name, text, assigned_color
 
-    def get_raw_sticker(name, text, assigned_color):
+    def get_raw_sticker(name: str, text: str, assigned_color: Tuple[int, int, int]):
+        """
+
+        :param name:
+        :param text:
+        :param assigned_color:
+        :return:
+        """
+
         def text_wrap(text: str, font: ImageFont, max_width: int) -> str:
             """
             Get properly formatted text
@@ -98,7 +124,12 @@ def get_sticker(update: Update, context: CallbackContext):
 
             return text_blob.strip()
 
-        def add_corners(img):
+        def add_corners(img: Image) -> Image:
+            """
+
+            :param img:
+            :return:
+            """
             rad = 30
             circle = Image.new("L", (rad * 2, rad * 2), 0)
             draw = ImageDraw.Draw(circle)
@@ -112,7 +143,14 @@ def get_sticker(update: Update, context: CallbackContext):
             img.putalpha(alpha)
             return img
 
-        def draw_text(name, text, assigned_color):
+        def draw_text(name: str, text: str, assigned_color: Tuple[int, int, int]) -> Image:
+            """
+
+            :param name:
+            :param text:
+            :param assigned_color:
+            :return:
+            """
             max_width = 400
 
             # create the ImageFont instances
@@ -147,8 +185,13 @@ def get_sticker(update: Update, context: CallbackContext):
 
             return result
 
-        def mask_circle_transparent(img, offset=0):
-            # mask the background of circular profile pic thumbnail
+        def mask_circle_transparent(img: Image, offset: int = 0) -> Image:
+            """
+            mask the background of circular profile pic thumbnail
+            :param img:
+            :param offset:
+            :return:
+            """
             offset = 0 * 2 + offset
             mask = Image.new("L", img.size, 0)
             draw = ImageDraw.Draw(mask)
@@ -163,15 +206,25 @@ def get_sticker(update: Update, context: CallbackContext):
 
             return result
 
-        def get_ico_thumbnail(dp_name):
-            # get circular profile pic
+        def get_ico_thumbnail(dp_name: str) -> Image:
+            """
+            get circular profile pic
+            :param dp_name:
+            :return:
+            """
             im = Image.open(dp_name)
             size = 100, 100
             result = mask_circle_transparent(im)
             result.thumbnail(size)
             return result
 
-        def get_concat_h(img1, img2):
+        def get_concat_h(img1: Image, img2: Image):
+            """
+
+            :param img1:
+            :param img2:
+            :return:
+            """
             # concat both images
             dst = Image.new("RGB", (img1.width + img2.width + 15, max(img1.height, img2.height)))
             dst.putalpha(0)
@@ -183,40 +236,61 @@ def get_sticker(update: Update, context: CallbackContext):
             dst = dst.resize((basewidth, hsize), Image.ANTIALIAS)
             # save image in webp format
             dst.save(
-                f"{update.effective_message.reply_to_message.from_user.id}_final.png",
+                f"{file_name}_final.png",
                 "PNG",
                 lossless=True,
             )
 
         # get base directory
         BASE_DIR = Path(__file__).parent.absolute()
-        dp = get_ico_thumbnail(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
+
+        # make sticker
+        dp = get_ico_thumbnail(f"{file_name}_dp.jpg")
         body = draw_text(name, text, assigned_color)
         get_concat_h(dp, body)
 
+    # get message data and use it to generate sticker
+    name, text, assigned_color = get_message_data(rep_msg)
+    get_raw_sticker(name, text, assigned_color)
+
+    if isfile(f"{file_name}_dp.jpg"):
+        remove(f"{file_name}_dp.jpg")
+
+    return f"{file_name}_final.png"
+
+
+@run_async
+def quote(update: Update, context: CallbackContext):
+    """
+    convert message into quote and reply
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    log(update, "quote")
+
+    context.bot.send_chat_action(update.effective_chat.id, 'upload_photo')  # tell chat that a sticker is incoming
+
+    # make sticker and save on disk
     try:
-        name, text, assigned_color = get_message_data(rep_msg)
-        get_raw_sticker(name, text, assigned_color)
-
-        # send generated image as sticker
-        curr_msg.reply_sticker(
-            sticker=open(f"{update.effective_message.reply_to_message.from_user.id}_final.png", "rb")
-        )
-
-        # remove stored images
-        remove(f"{update.effective_message.reply_to_message.from_user.id}_final.png")
-        remove(f"{update.effective_message.reply_to_message.from_user.id}_dp.jpg")
-
+        file_name = _message_to_sticker(update, context)
     except AttributeError:
         update.effective_message.reply_text(
             "Please reply to a message to get its quote.\nThis cat can't read your mind"
         )
+        return
+
+    # send generated image as sticker
+    update.effective_message.reply_sticker(sticker=open(file_name, "rb"))
+
+    # remove stored image
+    if isfile(file_name):
+        remove(file_name)
 
 
 __help__ = """
-- /quote : Reply to a message to me to get it's sticker.
+- /quote `<reply>` : Reply to a message to get it's quote as a sticker.
 """
 
 __mod_name__ = "quote"
 
-dispatcher.add_handler(CommandHandler('quote', get_sticker))
+dispatcher.add_handler(CommandHandler('quote', quote))
