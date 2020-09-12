@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from telegram import Update, ParseMode
 from telegram.ext import CommandHandler, run_async, CallbackContext
+from telegram.utils.helpers import escape_markdown
 from telegraph import Telegraph
 
 from telebot import dispatcher
@@ -116,7 +117,7 @@ def sauce(update: Update, context: CallbackContext) -> None:
     # if called from a chat without exception in it, then send him a reminder to check it
     if not exception and update.effective_chat.type != "private":
         update.message.reply_markdown(
-            f"[Let's enjoy this together in our private chat...](https://t.me/{context.bot.username}"
+            f"[Let's enjoy this together in our private chat...](https://t.me/{escape_markdown(context.bot.username)}"
         )
 
 

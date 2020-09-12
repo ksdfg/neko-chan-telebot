@@ -5,6 +5,7 @@ from emoji import emojize
 from mongoengine import connect
 from telegram import Update, BotCommand
 from telegram.ext import CallbackContext, CommandHandler, run_async
+from telegram.utils.helpers import escape_markdown
 
 from telebot import updater, config, dispatcher
 from telebot.functions import log
@@ -34,7 +35,7 @@ START_TEXT = emojize(
     f"""
 NyaHello World! :cat:
 
-I'm `{updater.bot.first_name}`, a cute little bot that does rendum shit rn.
+I'm `{escape_markdown(updater.bot.first_name)}`, a cute little bot that does rendum shit rn.
 """,
     use_aliases=True,
 )

@@ -5,6 +5,7 @@ from typing import Callable
 from emoji import emojize
 from telegram import Update, ChatPermissions, MessageEntity
 from telegram.ext import run_async, CallbackContext, CommandHandler
+from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher
 from telebot.functions import check_user_admin, check_bot_admin, log
@@ -111,8 +112,8 @@ def mute(update: Update, context: CallbackContext):
         # mute member
         context.bot.restrict_chat_member(**kwargs)
         reply = (
-            f"Sewed up @{update.effective_message.reply_to_message.from_user.username}'s mouth :smiling_face_with_horns:"
-            + "\nIf you want to be un-muted, bribe an admin with some catnip to do it for you..."
+            f"Sewed up @{escape_markdown(update.effective_message.reply_to_message.from_user.username)}'s mouth "
+            f":smiling_face_with_horns:\nIf you want to be un-muted, bribe an admin with some catnip to do it for you..."
         )
         if 'until_date' in kwargs.keys():
             reply += f" or wait till `{kwargs['until_date'].strftime('%c')} UTC`"
