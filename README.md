@@ -1,6 +1,6 @@
 # neko-chan-telebot
 
-Updated version of [skitt_bot](https://github.com/skittles9823/skitt_bot) with some features (filters, basically) from 
+Updated version of [skitt_bot](https://github.com/skittles9823/skitt_bot) with some features from 
 [SkittBot](https://github.com/skittles9823/SkittBot) to work with latest version of python-telegram-bot
 
 ## Config
@@ -32,7 +32,7 @@ set the `WEBHOOK_URL` to the heroku application URL (generally https://app_name.
 For the first 70 commits or so, I didn't know that the concept of co-authorship existed.... so while the base logic is 
 the same as the above mentioned repositories with some changes that I thought were needed, the commit authorship for 
 those is shown as mine. Now there's a lot of stuff withing those 70 commits that actually are my own idea (like the 
-`exceptions` and `nhentai` modules, as well as the sql schemas for everything) and it would honestly be a pain to go 
+`exceptions` and `nhentai` modules, as well as the mongodb schemas for everything) and it would honestly be a pain to go 
 through all 70 commits and figure out which to amend and change authorship of to add co-authorship to 
 [Rhyse Simpson](https://github.com/skittles9823)
 
