@@ -292,8 +292,8 @@ def quote(update: Update, context: CallbackContext):
     update.effective_message.reply_sticker(sticker=open(file_name, "rb"))
 
     # remove stored image
-    # if isfile(file_name):
-    #     remove(file_name)
+    if isfile(file_name):
+        remove(file_name)
 
 
 __help__ = """
