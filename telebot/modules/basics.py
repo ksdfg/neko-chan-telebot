@@ -137,11 +137,11 @@ def info(update: Update, context: CallbackContext):
     # make info string
     reply = f"*ID* : `{user.id}`\n"
     if user.first_name:
-        reply += f"*First Name* : `{user.first_name}`\n"
+        reply += f"*First Name*: `{user.first_name}`\n"
     if user.last_name:
-        reply += f"*Last Name* : `{user.last_name}`\n"
+        reply += f"*Last Name*: `{user.last_name}`\n"
     if user.username:
-        reply += f"*Username* : @{escape_markdown(user.username)}\n\n"
+        reply += f"*Username*: @{escape_markdown(user.username)}\n\n"
     reply += mention_markdown(user_id=user.id, name="Click here to properly check out this kitten")
 
     # send user info
