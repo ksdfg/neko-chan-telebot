@@ -760,6 +760,7 @@ __help__ = r"""
 
 __mod_name__ = "Stickers"
 
+# create handlers
 dispatcher.add_handler(CommandHandler("stickerid", sticker_id))
 dispatcher.add_handler(CommandHandler("getsticker", get_sticker))
 dispatcher.add_handler(CommandHandler('kang', kang))

@@ -329,6 +329,7 @@ If you add an exception to `admin`, I will allow admins to execute commands even
 
 __mod_name__ = "Admin"
 
+# create handlers
 dispatcher.add_handler(CommandHandler("promote", promote))
 dispatcher.add_handler(CommandHandler("mute", mute))
 dispatcher.add_handler(CommandHandler("unmute", unmute))

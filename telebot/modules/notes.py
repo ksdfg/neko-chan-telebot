@@ -190,6 +190,7 @@ If you add an exception for `notes` in the chat, it will make sure that none of 
 
 __mod_name__ = "Notes"
 
+# create handlers
 dispatcher.add_handler(CommandHandler("get", fetch_note))
 dispatcher.add_handler(MessageHandler(Filters.regex(r"^#[^\s]+$"), fetch_note))
 dispatcher.add_handler(CommandHandler("notes", notes_for_chat))

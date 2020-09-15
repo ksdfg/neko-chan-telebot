@@ -185,6 +185,7 @@ If you add an exception for `filter` in the chat, it will make sure that none of
 
 __mod_name__ = "Filters"
 
+# create handlers
 dispatcher.add_handler(CommandHandler("filters", list_filters))
 dispatcher.add_handler(CommandHandler("addfilter", add_filter_handler))
 dispatcher.add_handler(CommandHandler("delfilters", del_filter_handler))

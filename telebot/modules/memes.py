@@ -188,6 +188,7 @@ __help__ = """
 
 __mod_name__ = "memes"
 
+# create handlers
 dispatcher.add_handler(CommandHandler("runs", runs))
 dispatcher.add_handler(CommandHandler("mock", mock))
 dispatcher.add_handler(CommandHandler("zalgofy", zalgofy))

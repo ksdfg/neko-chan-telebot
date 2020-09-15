@@ -325,4 +325,5 @@ __help__ = """
 
 __mod_name__ = "quote"
 
+# create handlers
 dispatcher.add_handler(CommandHandler('quote', quote))

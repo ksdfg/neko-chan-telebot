@@ -65,6 +65,7 @@ Adding an exception for a command in your chat will change it's behaviour. How i
 
 __mod_name__ = "Exceptions"
 
+# create handlers
 dispatcher.add_handler(CommandHandler('listexceptions', list_exceptions))
 dispatcher.add_handler(CommandHandler('addexceptions', add_exception))
 dispatcher.add_handler(CommandHandler('delexceptions', del_exception))
