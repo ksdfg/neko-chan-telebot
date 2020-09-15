@@ -21,8 +21,9 @@ def check_user_admin(func: Callable):
                 update.effective_message.reply_text(
                     "Get some admin privileges before you try to order me around, baka!"
                 )
-            else:
-                func(update, context, *args, **kwargs)
+                return
+
+        func(update, context, *args, **kwargs)
 
     return wrapper
 
@@ -40,8 +41,8 @@ def check_bot_admin(func: Callable):
             if update.effective_chat.get_member(context.bot.id).status not in ('administrator', 'creator'):
                 update.effective_message.reply_text("Ask your sugar daddy to give me admin status plej...")
                 return
-            else:
-                func(update, context, *args, **kwargs)
+
+        func(update, context, *args, **kwargs)
 
     return wrapper
 

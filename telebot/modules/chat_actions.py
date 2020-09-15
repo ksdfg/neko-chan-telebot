@@ -45,7 +45,10 @@ def purge(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     # check if bot has perms to delete a message
-    if not update.effective_chat.get_member(context.bot.id).can_delete_messages:
+    if (
+        update.effective_chat.type != "private"
+        and not update.effective_chat.get_member(context.bot.id).can_delete_messages
+    ):
         update.effective_message.reply_text(
             "Bribe your sugar daddy with some catnip and ask him to allow me to delete messages..."
         )
