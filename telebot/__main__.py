@@ -8,15 +8,25 @@ from telebot.modules import imported_mods
 print("Imported modules :", sorted(mod.__mod_name__ for mod in imported_mods.values()))
 
 # set bot commands
-COMMANDS = [
-    BotCommand(command='talk', description="[<word>] : Say <word> (or meow, if not given) rendum number of times"),
-    BotCommand(command='modules', description="List all the active modules"),
-    BotCommand(
-        command='help', description="[<modules list>] : Display the help text to understand how to use this bot"
-    ),
-    BotCommand(command='kang', description="<reply> [<emoji>] : Reply to a sticker to add it to your pack"),
-    BotCommand(command='id', description="Get the user and chat ID"),
-]
+COMMANDS = []
+
+# add commands from basics
+if "Basics" in [mod.__mod_name__ for mod in imported_mods.values()]:
+    COMMANDS += [
+        BotCommand(command='talk', description="[<word>] : Say <word> (or meow, if not given) rendum number of times"),
+        BotCommand(command='modules', description="List all the active modules"),
+        BotCommand(
+            command='help', description="[<modules list>] : Display the help text to understand how to use this bot"
+        ),
+        BotCommand(command='id', description="Get the user and chat ID"),
+        BotCommand(command='info', description="Get the user and chat ID"),
+    ]
+
+# add commands from stickers
+if "Stickers" in [mod.__mod_name__ for mod in imported_mods.values()]:
+    COMMANDS.append(
+        BotCommand(command='kang', description="<reply> [<emoji>] : Reply to a sticker to add it to your pack")
+    )
 
 if __name__ == "__main__":
     updater.bot.set_my_commands(COMMANDS)  # set bot commands to be displayed
