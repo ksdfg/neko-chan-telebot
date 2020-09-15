@@ -1,8 +1,9 @@
 from random import choice
 
 from emoji import emojize
-from telegram import Update
+from telegram import Update, User
 from telegram.ext import CallbackContext, CommandHandler, run_async
+from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import updater, dispatcher
 from telebot.modules import imported_mods
@@ -66,8 +67,6 @@ def help(update: Update, context: CallbackContext) -> None:
 - /talk `[<word>]` : Make me meow... if you tell me what to meow then I'll do that too
 
 - /modules : Let me tell you what all I can do to please you
-
-- /id : In case the pleasure was too strong, I'll tell you who and where you are
         """
     else:
         # add help strings of all imported modules too
@@ -124,6 +123,31 @@ def get_id(update: Update, context: CallbackContext) -> None:
     )
 
 
+def info(update: Update, context: CallbackContext):
+    """
+    Function to get user details
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    log(update, "info")
+
+    # get user to display info of
+    user: User = update.message.reply_to_message.from_user if update.message.reply_to_message else update.effective_user
+
+    # make info string
+    reply = f"*ID* : `{user.id}`\n"
+    if user.first_name:
+        reply += f"*First Name* : `{user.first_name}`\n"
+    if user.last_name:
+        reply += f"*Last Name* : `{user.last_name}`\n"
+    if user.username:
+        reply += f"*Username* : @{escape_markdown(user.username)}\n\n"
+    reply += mention_markdown(user_id=user.id, name="Click here to properly check out this kitten")
+
+    # send user info
+    update.effective_message.reply_markdown(reply)
+
+
 __mod_name__ = "Basics"
 
 __help__ = """
@@ -136,6 +160,8 @@ __help__ = """
 - /modules : List all the active modules
 
 - /id : Get the user and chat ID
+
+- /info `[<reply>]` : Get details of a user (by replying to their message) or yourself
 """
 
 
@@ -145,3 +171,4 @@ dispatcher.add_handler(CommandHandler("talk", talk))
 dispatcher.add_handler(CommandHandler("help", help))
 dispatcher.add_handler(CommandHandler("modules", list_modules))
 dispatcher.add_handler(CommandHandler("id", get_id))
+dispatcher.add_handler(CommandHandler("info", info))
