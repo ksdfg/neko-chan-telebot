@@ -709,14 +709,22 @@ def reorder2(update: Update, context: CallbackContext):
         return 0
 
     # get position of sticker in sticker pack
-    index = 0
+    old_index = new_index = -1
     pack = context.bot.get_sticker_set(set_name)
     for i, s in enumerate(pack.stickers):
         if s.file_id == sticker.file_id:
-            index = i
+            new_index = i
+        elif s.file_id == reorder[update.effective_user.id]:
+            old_index = i
+        if -1 not in (new_index, old_index):
+            break
+
+    # get actual new index based on whether sticker is currently before it or after
+    if old_index > new_index:
+        new_index += 1  # since the empty space will be after the sticker, not before
 
     # set sticker position
-    context.bot.set_sticker_position_in_set(reorder[update.effective_user.id], index)
+    context.bot.set_sticker_position_in_set(reorder[update.effective_user.id], new_index)
     del reorder[update.effective_user.id]
     update.effective_message.reply_markdown(
         f"I have updated [{context.bot.get_sticker_set(set_name).title}](t.me/addstickers/{set_name})!"
