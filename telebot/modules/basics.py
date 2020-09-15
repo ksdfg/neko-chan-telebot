@@ -135,7 +135,7 @@ def info(update: Update, context: CallbackContext):
     user: User = update.message.reply_to_message.from_user if update.message.reply_to_message else update.effective_user
 
     # make info string
-    reply = f"*ID* : `{user.id}`\n"
+    reply = f"*ID*: `{user.id}`\n"
     if user.first_name:
         reply += f"*First Name*: `{user.first_name}`\n"
     if user.last_name:
