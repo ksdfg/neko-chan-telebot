@@ -33,8 +33,16 @@ def pin(update: Update, context: CallbackContext):
         update.effective_message.reply_text("I'm a cat, not a psychic! Reply to the message you want to pin...")
         return
 
+    # Don't always loud pin
+    if context.args:
+        disable_notification = context.args[0].lower() in ('silent', 'quiet')
+
     # pin the message
-    context.bot.pin_chat_message(update.effective_chat.id, update.effective_message.reply_to_message.message_id)
+    context.bot.pin_chat_message(
+        update.effective_chat.id,
+        update.effective_message.reply_to_message.message_id,
+        disable_notification=disable_notification,
+    )
 
 
 @check_bot_admin
