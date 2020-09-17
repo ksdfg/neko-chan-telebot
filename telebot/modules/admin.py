@@ -261,10 +261,18 @@ def ban(update: Update, context: CallbackContext):
 def promote(update: Update, context: CallbackContext):
     """
     Promote a user to give him admin rights
-    :param update:
-    :param context:
-    :return:
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
     """
+    # check if user has enough perms
+    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+        user = update.effective_chat.get_member(update.effective_user.id)
+        if not user.can_promote_members and user.status != "creator":
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give you perms required to use the method `CanPromoteMembers`."
+            )
+            return
+
     # check if bot can promote users
     if (
         update.effective_chat.type != "private"
@@ -312,6 +320,8 @@ def promote(update: Update, context: CallbackContext):
     )
 
 
+@run_async
+@check_user_admin
 @check_bot_admin
 def pin(update: Update, context: CallbackContext):
     """
@@ -319,6 +329,15 @@ def pin(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
+    # check if user has enough perms
+    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+        user = update.effective_chat.get_member(update.effective_user.id)
+        if not user.can_pin_messages and user.status != "creator":
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give you perms required to use the method `CanPinMessages`."
+            )
+            return
+
     # check if bot has perms to pin a message
     if (
         update.effective_chat.type == "supergroup"
@@ -353,6 +372,8 @@ def pin(update: Update, context: CallbackContext):
     )
 
 
+@run_async
+@check_user_admin
 @check_bot_admin
 def purge(update: Update, context: CallbackContext):
     """
@@ -360,6 +381,15 @@ def purge(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
+    # check if user has enough perms
+    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+        user = update.effective_chat.get_member(update.effective_user.id)
+        if not user.can_delete_messages and user.status != "creator":
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give you perms required to use the method `CanDeleteMessages`."
+            )
+            return
+
     # check if bot has perms to delete a message
     if (
         update.effective_chat.type != "private"
