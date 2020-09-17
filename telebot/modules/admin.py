@@ -4,6 +4,7 @@ from typing import Callable
 
 from emoji import emojize
 from telegram import Update, ChatPermissions, MessageEntity, ChatMember
+from telegram.error import BadRequest
 from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
@@ -260,10 +261,18 @@ def ban(update: Update, context: CallbackContext):
 def promote(update: Update, context: CallbackContext):
     """
     Promote a user to give him admin rights
-    :param update:
-    :param context:
-    :return:
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
     """
+    # check if user has enough perms
+    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+        user = update.effective_chat.get_member(update.effective_user.id)
+        if not user.can_promote_members and user.status != "creator":
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give you perms required to use the method `CanPromoteMembers`."
+            )
+            return
+
     # check if bot can promote users
     if (
         update.effective_chat.type != "private"
@@ -311,6 +320,107 @@ def promote(update: Update, context: CallbackContext):
     )
 
 
+@run_async
+@check_user_admin
+@check_bot_admin
+def pin(update: Update, context: CallbackContext):
+    """
+    Pin a message in the chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # check if user has enough perms
+    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+        user = update.effective_chat.get_member(update.effective_user.id)
+        if not user.can_pin_messages and user.status != "creator":
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give you perms required to use the method `CanPinMessages`."
+            )
+            return
+
+    # check if bot has perms to pin a message
+    if (
+        update.effective_chat.type == "supergroup"
+        and not update.effective_chat.get_member(context.bot.id).can_pin_messages
+    ) or (
+        update.effective_chat.type == "channel"
+        and not update.effective_chat.get_member(context.bot.id).can_edit_messages
+    ):
+        update.effective_message.reply_text(
+            "Bribe your sugar daddy with some catnip and ask him to allow me to pin messages..."
+        )
+        return
+
+    log(update, "pin")
+
+    # check if there is a message to pin
+    if not update.effective_message.reply_to_message:
+        update.effective_message.reply_text("I'm a cat, not a psychic! Reply to the message you want to pin...")
+        return
+
+    # Don't always loud pin
+    if context.args:
+        disable_notification = context.args[0].lower() in ('silent', 'quiet')
+    else:
+        disable_notification = None
+
+    # pin the message
+    context.bot.pin_chat_message(
+        update.effective_chat.id,
+        update.effective_message.reply_to_message.message_id,
+        disable_notification=disable_notification,
+    )
+
+
+@run_async
+@check_user_admin
+@check_bot_admin
+def purge(update: Update, context: CallbackContext):
+    """
+    Delete all messages from quoted message
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # check if user has enough perms
+    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+        user = update.effective_chat.get_member(update.effective_user.id)
+        if not user.can_delete_messages and user.status != "creator":
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give you perms required to use the method `CanDeleteMessages`."
+            )
+            return
+
+    # check if bot has perms to delete a message
+    if (
+        update.effective_chat.type != "private"
+        and not update.effective_chat.get_member(context.bot.id).can_delete_messages
+    ):
+        update.effective_message.reply_text(
+            "Bribe your sugar daddy with some catnip and ask him to allow me to delete messages..."
+        )
+        return
+
+    log(update, "purge")
+
+    # check if start point is given
+    if not update.effective_message.reply_to_message:
+        update.effective_message.reply_text(
+            "I'm a cat, not a psychic! Reply to the message you want to start deleting from..."
+        )
+        return
+
+    # delete messages
+    for id_ in range(
+        update.effective_message.message_id - 1, update.effective_message.reply_to_message.message_id - 1, -1
+    ):
+        try:
+            context.bot.delete_message(update.effective_chat.id, id_)
+        except BadRequest:
+            continue
+
+    update.effective_message.reply_text("Just like we do it in china....")
+
+
 __help__ = """
 ***Admin only :***
 
@@ -324,6 +434,10 @@ __help__ = """
 
 - /kick `<reply> [x<m|h|d>]` : kick a user from the chat (whose message you are replying to) for x time, or until they are added back. m = minutes, h = hours, d = days.
 
+- /purge `<reply>` : delete all messages from replied message to current one.
+
+- /pin `<reply> [silent|quiet]` : pin replied message in the chat.
+
 If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the individual permissions.
 """
 
@@ -335,3 +449,5 @@ dispatcher.add_handler(CommandHandler("mute", mute))
 dispatcher.add_handler(CommandHandler("unmute", unmute))
 dispatcher.add_handler(CommandHandler("ban", ban))
 dispatcher.add_handler(CommandHandler("kick", ban))
+dispatcher.add_handler(CommandHandler("pin", pin))
+dispatcher.add_handler(CommandHandler("purge", purge))
