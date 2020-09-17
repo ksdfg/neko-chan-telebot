@@ -1,7 +1,7 @@
 # neko-chan-telebot
 
-Updated version of [skitt_bot](https://github.com/skittles9823/skitt_bot) with some features from 
-[SkittBot](https://github.com/skittles9823/SkittBot) to work with latest version of python-telegram-bot
+Updated version of [SkittBot](https://github.com/skittles9823/SkittBot) with some features from 
+[skitt_bot](https://github.com/skittles9823/skitt_bot) to work with latest version of python-telegram-bot
 
 ## Config
 
