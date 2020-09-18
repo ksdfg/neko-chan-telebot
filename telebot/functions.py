@@ -1,6 +1,6 @@
 from collections import Callable
 from functools import wraps
-from traceback import print_exc
+from traceback import print_exc, format_exc
 
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -101,10 +101,10 @@ def bot_action(func_name: str = None, extra_text: str = ""):
 
             try:
                 func(update, context, *args, **kwargs)
-            except Exception as e:
+            except:
                 print_exc()
                 update.effective_message.reply_markdown(
-                    f"`{str(e.__class__)} : {str(e)}`\n\n"
+                    f"```{format_exc()}```\n\n"
                     f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with some "
                     f"catnip to fix it for you..."
                 )
