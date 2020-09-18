@@ -4,7 +4,7 @@ from traceback import print_exc, format_exc
 
 from telegram import Update
 from telegram.ext import CallbackContext
-from telegram.utils.helpers import escape_markdown, mention_markdown
+from telegram.utils.helpers import mention_markdown
 
 from telebot import config
 
