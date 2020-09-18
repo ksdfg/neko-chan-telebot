@@ -437,7 +437,6 @@ def promote(update: Update, context: CallbackContext):
 @run_async
 @bot_action("pin")
 @for_chat_types('supergroup', 'channel')
-@check_user_admin
 @check_bot_admin
 def pin(update: Update, context: CallbackContext):
     """
@@ -446,7 +445,7 @@ def pin(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     # check if user has enough perms
-    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+    if update.effective_chat.id not in get_command_exception_chats("admin"):
         user = update.effective_chat.get_member(update.effective_user.id)
         if not user.can_pin_messages and user.status != "creator":
             update.effective_message.reply_markdown(
