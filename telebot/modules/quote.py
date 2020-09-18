@@ -11,7 +11,7 @@ from telegram import Update, Message
 from telegram.ext import CommandHandler, CallbackContext, run_async
 
 from telebot import dispatcher
-from telebot.functions import log, bot_action
+from telebot.functions import bot_action
 
 
 def _message_to_sticker(update: Update, context: CallbackContext) -> str:

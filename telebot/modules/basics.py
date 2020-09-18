@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext, CommandHandler, run_async
 from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import updater, dispatcher
-from telebot.functions import log, bot_action
+from telebot.functions import bot_action
 from telebot.modules import imported_mods
 
 # default Start Text

@@ -9,7 +9,7 @@ from telegram.utils.helpers import escape_markdown
 from zalgo_text.zalgo import zalgo
 
 from telebot import dispatcher
-from telebot.functions import log, bot_action
+from telebot.functions import bot_action
 
 
 @run_async

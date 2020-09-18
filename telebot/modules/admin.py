@@ -9,7 +9,7 @@ from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher
-from telebot.functions import check_user_admin, check_bot_admin, log, bot_action
+from telebot.functions import check_user_admin, check_bot_admin, bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.mute import add_muted_member, fetch_muted_member, remove_muted_member
 

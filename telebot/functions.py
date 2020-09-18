@@ -8,7 +8,6 @@ from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import config
 
-
 # Some Helper Functions
 from telebot.modules.db.users import add_user
 

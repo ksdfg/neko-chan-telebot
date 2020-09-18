@@ -1,5 +1,3 @@
-from typing import Iterable
-
 from decouple import config
 from telegram.ext import Updater
 
