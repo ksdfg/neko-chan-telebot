@@ -216,18 +216,8 @@ def unmute(update: Update, context: CallbackContext):
         )
         return
 
-    # set muted permissions
-    user = update.effective_chat.get_member(kwargs['user_id'])
-    kwargs['permissions'] = ChatPermissions(
-        can_send_messages=True,
-        can_send_media_messages=True,
-        can_send_other_messages=True,
-        can_send_polls=True,
-        can_add_web_page_previews=True,
-        can_change_info=user.can_change_info,
-        can_invite_users=user.can_invite_users,
-        can_pin_messages=user.can_pin_messages,
-    )
+    # set default permissions
+    kwargs['permissions'] = context.bot.get_chat(update.effective_chat.id).permissions
 
     # unmute member
     if remove_muted_member(chat=kwargs['chat_id'], user=kwargs['user_id']):
