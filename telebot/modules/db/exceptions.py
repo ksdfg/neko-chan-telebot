@@ -13,7 +13,7 @@ class Exceptions(Document):
 # create helper functions to be used to interact with the model
 
 
-def get_command_exception_chats(bot_action: str) -> List[int]:
+def get_command_exception_chats(command: str) -> List[int]:
     """
     Get all chats that have an exception for a given bot_action
     :param command: the bot_action whose exception we're checking for
@@ -27,7 +27,7 @@ def get_command_exception_chats(bot_action: str) -> List[int]:
         return []
 
 
-def add_command_exception_chats(bot_action: str, chat: int) -> str:
+def add_command_exception_chats(command: str, chat: int) -> str:
     """
     Add exception for a bot_action in a chat
     :param command: the bot_action for which we're adding an exception
@@ -52,7 +52,7 @@ def add_command_exception_chats(bot_action: str, chat: int) -> str:
     return f"Exception for bot_action `{command}` added!"
 
 
-def del_command_exception_chats(bot_action: str, chat: int) -> str:
+def del_command_exception_chats(command: str, chat: int) -> str:
     """
     delete exception for a bot_action in a chat
     :param command: the bot_action for which we're deleting an exception

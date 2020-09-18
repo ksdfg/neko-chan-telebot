@@ -105,7 +105,7 @@ def bot_action(func_name: str = None, extra_text: str = ""):
             except Exception as e:
                 print_exc()
                 update.effective_message.reply_markdown(
-                    f"`{escape_markdown(str(e))}`\n\n"
+                    f"`{escape_markdown(str(e.__class__))} : {escape_markdown(str(e))}`\n\n"
                     f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with some "
                     f"catnip to fix it for you..."
                 )
