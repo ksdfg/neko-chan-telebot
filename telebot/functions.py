@@ -10,6 +10,7 @@ from telebot import config
 
 
 # Some Helper Functions
+from telebot.modules.db.users import add_user
 
 
 def check_user_admin(func: Callable):
@@ -94,6 +95,8 @@ def bot_action(func_name: str = None, extra_text: str = ""):
             :param kwargs: anything extra
             :return: inner function to execute
             """
+            add_user(user_id=update.effective_user.id, username=update.effective_user.username)
+
             if func_name:
                 log(update, func_name, extra_text)
 
