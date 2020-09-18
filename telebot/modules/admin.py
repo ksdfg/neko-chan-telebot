@@ -384,7 +384,7 @@ def promote(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     # check if user has enough perms
-    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+    if update.effective_chat.id not in get_command_exception_chats("admin"):
         user = update.effective_chat.get_member(update.effective_user.id)
         if not user.can_promote_members and user.status != "creator":
             update.effective_message.reply_markdown(
@@ -392,31 +392,46 @@ def promote(update: Update, context: CallbackContext):
             )
             return
 
+    # get bot member object to check it's perms
+    bot: ChatMember = update.effective_chat.get_member(context.bot.id)
+
     # check if bot can promote users
-    if (
-        update.effective_chat.type != "private"
-        and not update.effective_chat.get_member(context.bot.id).can_promote_members
-    ):
+    if not bot.can_promote_members:
         update.effective_message.reply_markdown(
             "Ask your sugar daddy to give me perms required to use the method `CanPromoteMembers`."
         )
         return
 
-    # get member to promote
+    # get user to promote
     if update.effective_message.reply_to_message:
+        # get user who made the quoted message
         user_id = update.effective_message.reply_to_message.from_user.id
-        # check if user is trying to mute an admin
-        if update.effective_chat.get_member(user_id).status in ('administrator', 'creator'):
-            update.effective_message.reply_markdown(
-                "Thanks for trying to promote an admin. Maybe bring me some catnip you're high on next time?"
+        username = update.effective_message.reply_to_message.from_user.username
+        add_user(user_id=user_id, username=username)  # for future usage
+
+    elif context.args:
+        # get user from our users database using his username
+        usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
+        if usernames:
+            user_id = get_user(username=usernames[0][1:])
+            if not user_id:
+                update.effective_message.reply_text(
+                    "I don't remember anyone with that username... "
+                    "Maybe try executing the same command, but reply to a message by this user instead?"
+                )
+                return
+            username = usernames[0][1:]
+        else:
+            update.effective_message.reply_text(
+                "Reply to a message by the user or give username of user you want to promote..."
             )
             return
-    else:
-        update.effective_message.reply_text(f"Reply to a message by the user you want to promote...")
-        return
 
-    # get bot member object to check it's perms
-    bot: ChatMember = update.effective_chat.get_member(context.bot.id)
+    else:
+        update.effective_message.reply_text(
+            "Reply to a message by the user or give username of user you want to promote..."
+        )
+        return
 
     # promote member
     context.bot.promote_chat_member(
@@ -432,9 +447,16 @@ def promote(update: Update, context: CallbackContext):
         can_promote_members=bot.can_promote_members,
     )
 
-    update.effective_message.reply_text(
-        f"Everyone say NyaHello to @{update.effective_message.reply_to_message.from_user.username}, " f"our new admin"
-    )
+    # get all args other than the username
+    useful_args = []
+    for arg in context.args:
+        if username not in arg:
+            useful_args.append(arg)
+
+    if useful_args:
+        context.bot.set_chat_administrator_custom_title(update.effective_chat.id, user_id, " ".join(useful_args))
+
+    update.effective_message.reply_text(f"Everyone say NyaHello to @{username}, " f"our new admin")
 
 
 @run_async
@@ -549,9 +571,11 @@ def purge(update: Update, context: CallbackContext):
 
 
 __help__ = """
+- /pin `<reply> [silent|quiet]` : pin replied message in the chat.
+
 ***Admin only :***
 
-- /promote `<reply>` : promotes a user (whose message you are replying to) to admin
+- /promote `<reply|username> [<title>]` : promotes a user (whose username you've given as argument, or whose message you are quoting) to admin
 
 - /mute `<reply|username> [x<m|h|d>]` : mutes a user (whose username you've given as argument, or whose message you are quoting) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
 
@@ -562,8 +586,6 @@ __help__ = """
 - /kick `<reply|username>` : kick a user from the chat (whose username you've given as argument, or whose message you are quoting)
 
 - /purge `<reply>` : delete all messages from replied message to current one.
-
-- /pin `<reply> [silent|quiet]` : pin replied message in the chat.
 
 If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the individual permissions.
 """
