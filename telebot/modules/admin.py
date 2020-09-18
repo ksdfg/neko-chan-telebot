@@ -12,6 +12,7 @@ from telebot import dispatcher
 from telebot.functions import check_user_admin, check_bot_admin, bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.mute import add_muted_member, fetch_muted_member, remove_muted_member
+from telebot.modules.db.users import add_user, get_user
 
 
 def can_restrict(func: Callable):
@@ -62,13 +63,34 @@ def mute(update: Update, context: CallbackContext):
     # get user to mute
     if update.effective_message.reply_to_message:
         kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
-        # check if user is trying to mute an admin
-        user = update.effective_chat.get_member(kwargs['user_id'])
-        if user.status in ('administrator', 'creator'):
-            update.effective_message.reply_text("I can't mute an admin, baka!")
+        username = update.effective_message.reply_to_message.from_user.username
+        add_user(user_id=kwargs['user_id'], username=username)  # for future usage
+    elif context.args:
+        usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
+        if usernames:
+            kwargs['user_id'] = get_user(username=usernames[0][1:])
+            if not kwargs['user_id']:
+                update.effective_message.reply_text(
+                    "I don't remember anyone with that username... "
+                    "Maybe try executing the same command, but reply to a message by this user instead?"
+                )
+                return
+            username = usernames[0][1:]
+        else:
+            update.effective_message.reply_text(
+                "Reply to a message by the user or give username of user you want to mute..."
+            )
             return
     else:
-        update.effective_message.reply_text("Reply to a message by the user you want to mute...")
+        update.effective_message.reply_text(
+            "Reply to a message by the user or give username of user you want to mute..."
+        )
+        return
+
+    # check if user is trying to mute an admin
+    user = update.effective_chat.get_member(kwargs['user_id'])
+    if user.status in ('administrator', 'creator'):
+        update.effective_message.reply_text("I can't mute an admin, baka!")
         return
 
     # set muted permissions
@@ -83,11 +105,17 @@ def mute(update: Update, context: CallbackContext):
         can_pin_messages=user.can_pin_messages,
     )
 
+    # get all args other than the username
+    args = []
+    for arg in context.args:
+        if username not in arg:
+            args.append(arg)
+
     # noinspection DuplicatedCode
-    if context.args:
+    if args:
         # get datetime till when we have to mute user
         try:
-            time, unit = float(context.args[0][:-1]), context.args[0][-1]
+            time, unit = float(args[0][:-1]), args[0][-1]
             if unit == 'd':
                 kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(days=time)
             elif unit == 'h':
@@ -107,14 +135,14 @@ def mute(update: Update, context: CallbackContext):
     if add_muted_member(
         chat=kwargs['chat_id'],
         user=kwargs['user_id'],
-        username=update.effective_message.reply_to_message.from_user.username,
+        username=username,
         until_date=kwargs['until_date'] if 'until_date' in kwargs.keys() else None,
     ):
         # mute member
         context.bot.restrict_chat_member(**kwargs)
         reply = (
-            f"Sewed up @{escape_markdown(update.effective_message.reply_to_message.from_user.username)}'s mouth "
-            f":smiling_face_with_horns:\nIf you want to be un-muted, bribe an admin with some catnip to do it for you..."
+            f"Sewed up @{escape_markdown(username)}'s mouth :smiling_face_with_horns:\nIf you want to be un-muted, "
+            f"bribe an admin with some catnip to do it for you..."
         )
         if 'until_date' in kwargs.keys():
             reply += f" or wait till `{kwargs['until_date'].strftime('%c')} UTC`"
@@ -440,7 +468,7 @@ __help__ = """
 
 - /promote `<reply>` : promotes a user (whose message you are replying to) to admin
 
-- /mute `<reply> [x<m|h|d>]` : mutes a user (whose message you are replying to) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
+- /mute `<reply|username> [x<m|h|d>]` : mutes a user (whose username you've given as argument, or whose message you are replying to) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
 
 - /unmute `<reply|username>`: un-mutes a user (whose username you've given as argument, or whose message you are replying to)
 
