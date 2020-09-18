@@ -402,7 +402,7 @@ def promote(update: Update, context: CallbackContext):
         )
         return
 
-    # get user to promote
+    # get member to promote
     if update.effective_message.reply_to_message:
         # get user who made the quoted message
         user_id = update.effective_message.reply_to_message.from_user.id

@@ -13,7 +13,7 @@ from telegram.ext import run_async, CallbackContext, CommandHandler, Conversatio
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher, config
-from telebot.functions import log, bot_action
+from telebot.functions import bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.users import add_user
 
@@ -652,8 +652,6 @@ def packs(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the bot_action call.
     """
-    log(update, "packs")
-
     # get all user packs
     packs = _get_packs(update.effective_user, context.bot, False) + _get_packs(update.effective_user, context.bot, True)
 
