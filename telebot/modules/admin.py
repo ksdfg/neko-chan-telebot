@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from functools import wraps
-from typing import Callable
+from typing import Callable, List, Optional
 
 from emoji import emojize
 from telegram import Update, ChatPermissions, MessageEntity, ChatMember
@@ -46,6 +46,41 @@ def can_restrict(func: Callable):
     return wrapper
 
 
+# custom exception for when user gives the time in wrong format in message
+class TimeFormatException(Exception):
+    pass
+
+
+def get_datetime_form_args(args: List[str], username: str = "") -> Optional[datetime]:
+    """
+    Get the time quoted by a user from the args
+    :param args: context.args
+    :param username: username quoted in the message, if any
+    :return:
+    """
+    until_date = None
+
+    # get all args other than the username
+    useful_args = []
+    for arg in args:
+        if username not in arg:
+            useful_args.append(arg)
+
+    if useful_args:
+        # get datetime till when we have to mute user
+        time, unit = float(useful_args[0][:-1]), useful_args[0][-1]
+        if unit == 'd':
+            until_date = datetime.now(tz=timezone.utc) + timedelta(days=time)
+        elif unit == 'h':
+            until_date = datetime.now(tz=timezone.utc) + timedelta(hours=time)
+        elif unit == 'm':
+            until_date = datetime.now(tz=timezone.utc) + timedelta(minutes=time)
+        else:
+            raise TimeFormatException
+
+    return until_date
+
+
 @run_async
 @bot_action("mute")
 @check_user_admin
@@ -62,10 +97,13 @@ def mute(update: Update, context: CallbackContext):
 
     # get user to mute
     if update.effective_message.reply_to_message:
+        # get user who made the quoted message
         kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
         username = update.effective_message.reply_to_message.from_user.username
         add_user(user_id=kwargs['user_id'], username=username)  # for future usage
+
     elif context.args:
+        # get user from our users database using his username
         usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
         if usernames:
             kwargs['user_id'] = get_user(username=usernames[0][1:])
@@ -81,6 +119,7 @@ def mute(update: Update, context: CallbackContext):
                 "Reply to a message by the user or give username of user you want to mute..."
             )
             return
+
     else:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to mute..."
@@ -105,31 +144,17 @@ def mute(update: Update, context: CallbackContext):
         can_pin_messages=user.can_pin_messages,
     )
 
-    # get all args other than the username
-    args = []
-    for arg in context.args:
-        if username not in arg:
-            args.append(arg)
-
-    # noinspection DuplicatedCode
-    if args:
-        # get datetime till when we have to mute user
-        try:
-            time, unit = float(args[0][:-1]), args[0][-1]
-            if unit == 'd':
-                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(days=time)
-            elif unit == 'h':
-                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(hours=time)
-            elif unit == 'm':
-                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(minutes=time)
-            else:
-                update.effective_message.reply_markdown(
-                    "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
-                )
-                return
-        except ValueError:
-            update.effective_message.reply_text("Time needs to be a number, baka!")
-            return
+    # get datetime till when we have to mute user
+    try:
+        kwargs['until_date'] = get_datetime_form_args(context.args, username)
+    except TimeFormatException:
+        update.effective_message.reply_markdown(
+            "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
+        )
+        return
+    except ValueError:
+        update.effective_message.reply_text("Time needs to be a number, baka!")
+        return
 
     # add muted member in db
     if add_muted_member(
@@ -139,12 +164,12 @@ def mute(update: Update, context: CallbackContext):
         until_date=kwargs['until_date'] if 'until_date' in kwargs.keys() else None,
     ):
         # mute member
-        context.bot.restrict_chat_member(**kwargs)
+        # context.bot.restrict_chat_member(**kwargs)
         reply = (
             f"Sewed up @{escape_markdown(username)}'s mouth :smiling_face_with_horns:\nIf you want to be un-muted, "
             f"bribe an admin with some catnip to do it for you..."
         )
-        if 'until_date' in kwargs.keys():
+        if kwargs['until_date']:
             reply += f" or wait till `{kwargs['until_date'].strftime('%c')} UTC`"
 
         update.effective_message.reply_markdown(emojize(reply))
@@ -212,6 +237,90 @@ def unmute(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Couldn't remove record from db....")
 
 
+def ban_kick(update: Update, context: CallbackContext):
+    """
+    ban or kick a user from a chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    action = "ban" if update.effective_message.text.split(None, 1)[0] == "/ban" else "kick"
+
+    # kwargs to pass to the ban_chat_member function call
+    kwargs = {'chat_id': update.effective_chat.id}
+
+    # get user to ban
+    if update.effective_message.reply_to_message:
+        # get user who made the quoted message
+        kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
+        username = update.effective_message.reply_to_message.from_user.username
+        add_user(user_id=kwargs['user_id'], username=username)  # for future usage
+
+    elif context.args:
+        # get user from our users database using his username
+        usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
+        if usernames:
+            kwargs['user_id'] = get_user(username=usernames[0][1:])
+            if not kwargs['user_id']:
+                update.effective_message.reply_text(
+                    "I don't remember anyone with that username... "
+                    "Maybe try executing the same command, but reply to a message by this user instead?"
+                )
+                return
+            username = usernames[0][1:]
+        else:
+            update.effective_message.reply_text(
+                f"Reply to a message by the user or give username of user you want to {action}..."
+            )
+            return
+
+    else:
+        update.effective_message.reply_text(
+            f"Reply to a message by the user or give username of user you want to {action}..."
+        )
+        return
+
+    # check if user is trying to ban the bot
+    if kwargs['user_id'] == context.bot.id:
+        update.effective_message.reply_markdown(f"Try to {action} me again, I'll meow meow your buttocks.")
+        return
+
+    # check if user is trying to ban an admin
+    user = update.effective_chat.get_member(kwargs['user_id'])
+    if user.status in ('administrator', 'creator'):
+        update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just {action} __you__.")
+        return
+
+    # get datetime till when we have to mute user
+    try:
+        kwargs['until_date'] = get_datetime_form_args(context.args, username)
+    except TimeFormatException:
+        update.effective_message.reply_markdown(
+            "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
+        )
+        return
+    except ValueError:
+        update.effective_message.reply_text("Time needs to be a number, baka!")
+        return
+
+    # ban user
+    # context.bot.kick_chat_member(**kwargs)
+    # if action == "kick":
+    #     context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
+
+    # announce ban
+    reply = (
+        f"{'Banned' if action == 'ban' else 'Kicked'} "
+        f"@{escape_markdown(username)} to the litter "
+        f":smiling_face_with_horns:"
+    )
+    if action == "ban":
+        reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
+    if kwargs['until_date']:
+        reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
+
+    update.effective_message.reply_markdown(emojize(reply))
+
+
 @run_async
 @bot_action("ban")
 @check_user_admin
@@ -223,67 +332,7 @@ def ban(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    action = "ban" if update.effective_message.text.split(None, 1)[0] == "/ban" else "kick"
-
-    # kwargs to pass to the ban_chat_member function call
-    kwargs = {'chat_id': update.effective_chat.id}
-
-    # get user to ban
-    if update.effective_message.reply_to_message:
-        kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
-
-        # check if user is trying to ban the bot
-        if kwargs['user_id'] == context.bot.id:
-            update.effective_message.reply_markdown(f"Try to {action} me again, I'll meow meow your buttocks.")
-            return
-
-        # check if user is trying to ban an admin
-        user = update.effective_chat.get_member(kwargs['user_id'])
-        if user.status in ('administrator', 'creator'):
-            update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just {action} __you__.")
-            return
-
-    else:
-        update.effective_message.reply_text(f"Reply to a message by the user you want to {action}...")
-        return
-
-    # noinspection DuplicatedCode
-    if context.args:
-        # get datetime till when we have to ban user
-        try:
-            time, unit = float(context.args[0][:-1]), context.args[0][-1]
-            if unit == 'd':
-                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(days=time)
-            elif unit == 'h':
-                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(hours=time)
-            elif unit == 'm':
-                kwargs['until_date'] = datetime.now(tz=timezone.utc) + timedelta(minutes=time)
-            else:
-                update.effective_message.reply_markdown(
-                    "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
-                )
-                return
-        except ValueError:
-            update.effective_message.reply_text("Time needs to be a number, baka!")
-            return
-
-    # ban user
-    context.bot.kick_chat_member(**kwargs)
-    if action == "kick" and 'until_date' not in kwargs.keys():
-        context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
-
-    # announce ban
-    reply = (
-        f"{'Banned' if action == 'ban' else 'Kicked'} "
-        f"@{escape_markdown(update.effective_message.reply_to_message.from_user.username)} to the litter "
-        f":smiling_face_with_horns:"
-    )
-    if action == "ban":
-        reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
-    if 'until_date' in kwargs.keys():
-        reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
-
-    update.effective_message.reply_markdown(emojize(reply))
+    ban_kick(update, kick)
 
 
 @run_async
@@ -297,7 +346,7 @@ def kick(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    ban(update, context)
+    ban_kick(update, context)
 
 
 @run_async
@@ -468,13 +517,13 @@ __help__ = """
 
 - /promote `<reply>` : promotes a user (whose message you are replying to) to admin
 
-- /mute `<reply|username> [x<m|h|d>]` : mutes a user (whose username you've given as argument, or whose message you are replying to) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
+- /mute `<reply|username> [x<m|h|d>]` : mutes a user (whose username you've given as argument, or whose message you are quoting) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
 
-- /unmute `<reply|username>`: un-mutes a user (whose username you've given as argument, or whose message you are replying to)
+- /unmute `<reply|username>`: un-mutes a user (whose username you've given as argument, or whose message you are quoting)
 
-- /ban `<reply> [x<m|h|d>]`: ban a user from the chat (whose message you are replying to) for x time, or until they are added back. m = minutes, h = hours, d = days.
+- /ban `<reply|username> [x<m|h|d>]`: ban a user from the chat (whose username you've given as argument, or whose message you are quoting) for x time, or until they are added back. m = minutes, h = hours, d = days.
 
-- /kick `<reply> [x<m|h|d>]` : kick a user from the chat (whose message you are replying to) for x time, or until they are added back. m = minutes, h = hours, d = days.
+- /kick `<reply|username>` : kick a user from the chat (whose username you've given as argument, or whose message you are quoting)
 
 - /purge `<reply>` : delete all messages from replied message to current one.
 
@@ -490,6 +539,6 @@ dispatcher.add_handler(CommandHandler("promote", promote))
 dispatcher.add_handler(CommandHandler("mute", mute))
 dispatcher.add_handler(CommandHandler("unmute", unmute))
 dispatcher.add_handler(CommandHandler("ban", ban))
-dispatcher.add_handler(CommandHandler("kick", kick))
+dispatcher.add_handler(CommandHandler("kicc", kick))
 dispatcher.add_handler(CommandHandler("pin", pin))
 dispatcher.add_handler(CommandHandler("purge", purge))
