@@ -6,8 +6,8 @@ from telegram.ext import CallbackContext, CommandHandler, run_async
 from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import updater, dispatcher
+from telebot.functions import log, bot_action
 from telebot.modules import imported_mods
-from telebot.functions import log
 
 # default Start Text
 START_TEXT = emojize(
@@ -21,24 +21,24 @@ I'm `{updater.bot.first_name}`, a cute little bot that does rendum shit rn.
 
 
 @run_async
-def start(update: Update, context: CallbackContext) -> None:
+@bot_action("start")
+def start(update: Update, context: CallbackContext):
     """
     Reply with the start message on running /start
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, func_name="start")
     update.message.reply_markdown(START_TEXT)
 
 
 @run_async
-def list_modules(update: Update, context: CallbackContext) -> None:
+@bot_action("list modules")
+def list_modules(update: Update, context: CallbackContext):
     """
     Reply with all the imported modules
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "list modules")
     update.effective_message.reply_markdown(
         "The list of Active Modules is as follows :\n\n`"
         + "`\n`".join(mod.__mod_name__ for mod in imported_mods.values())
@@ -47,14 +47,13 @@ def list_modules(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
-def help(update: Update, context: CallbackContext) -> None:
+@bot_action("help")
+def help(update: Update, context: CallbackContext):
     """
     Reply with help message for the specified modules
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, func_name="help")
-
     text_blob = START_TEXT + "\n_Use following commands to use me_ (*blush*):\n"
 
     if not context.args:
@@ -88,14 +87,13 @@ def help(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
+@bot_action("talk")
 def talk(update: Update, context: CallbackContext) -> None:
     """
     Repeat a given word random number of times
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, func_name="talk")
-
     # get word (meow if not given)
     word = "meow "
     if context.args:
@@ -110,27 +108,26 @@ def talk(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
+@bot_action("id")
 def get_id(update: Update, context: CallbackContext) -> None:
     """
     Function to get chat and user ID
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "id")
-
     update.effective_message.reply_markdown(
         f"Your ID is :\n`{update.effective_user.id}`\n\nThe chat ID is :\n`{update.effective_chat.id}`"
     )
 
 
+@run_async
+@bot_action("info")
 def info(update: Update, context: CallbackContext):
     """
     Function to get user details
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "info")
-
     # get user to display info of
     user: User = update.message.reply_to_message.from_user if update.message.reply_to_message else update.effective_user
 

@@ -5,13 +5,14 @@ from telegram import Update
 from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import dispatcher
-from telebot.functions import log
+from telebot.functions import log, bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.filter import get_triggers_for_chat, add_filter, get_filter, del_filter
 
 
 @run_async
-def list_filters(update: Update, context: CallbackContext) -> None:
+@bot_action("list filters")
+def list_filters(update: Update, context: CallbackContext):
     """
     List all the filter triggers in a chat
     :param update: object representing the incoming update.
@@ -20,8 +21,6 @@ def list_filters(update: Update, context: CallbackContext) -> None:
     # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
-
-    log(update, "filters")
 
     filters = get_triggers_for_chat(update.effective_chat.id)
     if filters:
@@ -33,7 +32,8 @@ def list_filters(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
-def add_filter_handler(update: Update, context: CallbackContext) -> None:
+@bot_action("add filter")
+def add_filter_handler(update: Update, context: CallbackContext):
     """
     Add a filter in a chat
     :param update: object representing the incoming update.
@@ -42,8 +42,6 @@ def add_filter_handler(update: Update, context: CallbackContext) -> None:
     # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
-
-    log(update, "addfilter")
 
     # for ease of reference
     msg = update.effective_message
@@ -103,7 +101,8 @@ def add_filter_handler(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
-def del_filter_handler(update: Update, context: CallbackContext) -> None:
+@bot_action("delete filters")
+def del_filter_handler(update: Update, context: CallbackContext):
     """
     Delete a filter from the chat
     :param update: object representing the incoming update.
@@ -112,8 +111,6 @@ def del_filter_handler(update: Update, context: CallbackContext) -> None:
     # check for exception
     if update.effective_chat.id in get_command_exception_chats("filter"):
         return
-
-    log(update, "del filter")
 
     if context.args:
         # iterate over the triggers given and delete them from DB
@@ -126,6 +123,7 @@ def del_filter_handler(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
+@bot_action()
 def reply(update: Update, context: CallbackContext) -> None:
     """
     Reply when a filter is triggered

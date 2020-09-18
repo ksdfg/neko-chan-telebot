@@ -3,12 +3,13 @@ from telegram import Update
 from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import dispatcher
-from telebot.functions import log, check_user_admin
+from telebot.functions import check_user_admin, bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.notes import get_note, get_notes_for_chat, add_note, del_note
 
 
 @run_async
+@bot_action("get note")
 def fetch_note(update: Update, context: CallbackContext):
     """
     Fetch note
@@ -18,8 +19,6 @@ def fetch_note(update: Update, context: CallbackContext):
     # check exception
     if update.effective_chat.id in get_command_exception_chats("notes"):
         return
-
-    log(update, "get note")
 
     if update.effective_message.text[0] == "#":
         name = update.effective_message.text[1:]
@@ -50,6 +49,7 @@ def fetch_note(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("notes")
 def notes_for_chat(update: Update, context: CallbackContext):
     """
     List out all the notes in a chat
@@ -59,8 +59,6 @@ def notes_for_chat(update: Update, context: CallbackContext):
     # check exception
     if update.effective_chat.id in get_command_exception_chats("notes"):
         return
-
-    log(update, "notes")
 
     # get list of notes for the chat
     notes = get_notes_for_chat(update.effective_chat.id)
@@ -78,6 +76,7 @@ def notes_for_chat(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("add note")
 @check_user_admin
 def add_note_in_chat(update: Update, context: CallbackContext):
     """
@@ -149,6 +148,7 @@ def add_note_in_chat(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("delete note")
 @check_user_admin
 def del_note_in_chat(update: Update, context: CallbackContext):
     """
@@ -159,8 +159,6 @@ def del_note_in_chat(update: Update, context: CallbackContext):
     # check for exception
     if update.effective_chat.id in get_command_exception_chats("notes"):
         return
-
-    log(update, "del note")
 
     if context.args:
         # iterate over the triggers given and delete them from DB

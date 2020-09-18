@@ -1,8 +1,13 @@
 from collections import Callable
 from functools import wraps
+from traceback import print_exc
 
 from telegram import Update
 from telegram.ext import CallbackContext
+from telegram.utils.helpers import escape_markdown, mention_markdown
+
+from telebot import config
+
 
 # Some Helper Functions
 
@@ -62,3 +67,46 @@ def log(update: Update, func_name: str, extra_text: str = ""):
     print(update.effective_user.username, "called function", func_name, "from", chat)
     if extra_text:
         print(extra_text)
+
+
+def bot_action(func_name: str = None, extra_text: str = ""):
+    """
+    Function to log bot activity and execute bot_action
+    :param func_name: name of the function being called
+    :param extra_text: any extra text to be logged
+    :return: None
+    """
+
+    def wrapper(func: Callable):
+        """
+        a wrapper that will safely execute the bot_action after logging it if needed
+        :param func: function to execute for given bot_action
+        :return: wrapper function
+        """
+
+        @wraps(func)
+        def inner(update: Update, context: CallbackContext, *args, **kwargs):
+            """
+            log and execute the function
+            :param update: object representing the incoming update.
+            :param context: object containing data about the bot_action call.
+            :param args: anything extra
+            :param kwargs: anything extra
+            :return: inner function to execute
+            """
+            if func_name:
+                log(update, func_name, extra_text)
+
+            try:
+                func(update, context, *args, **kwargs)
+            except Exception as e:
+                print_exc()
+                update.effective_message.reply_markdown(
+                    f"`{escape_markdown(str(e))}`\n\n"
+                    f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with some "
+                    f"catnip to fix it for you..."
+                )
+
+        return inner
+
+    return wrapper

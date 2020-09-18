@@ -9,7 +9,7 @@ from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher
-from telebot.functions import check_user_admin, check_bot_admin, log
+from telebot.functions import check_user_admin, check_bot_admin, log, bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.mute import add_muted_member, fetch_muted_member, remove_muted_member
 
@@ -46,6 +46,7 @@ def can_restrict(func: Callable):
 
 
 @run_async
+@bot_action("mute")
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -55,8 +56,6 @@ def mute(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "mute")
-
     # kwargs to pass to the restrict_chat_member function call
     kwargs = {'chat_id': update.effective_chat.id}
 
@@ -126,6 +125,7 @@ def mute(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("un mute")
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -135,8 +135,6 @@ def unmute(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "un-mute")
-
     # kwargs to pass to the restrict_chat_member function call
     kwargs = {'chat_id': update.effective_chat.id}
 
@@ -182,6 +180,7 @@ def unmute(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("ban")
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -192,7 +191,6 @@ def ban(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     action = "ban" if update.effective_message.text.split(None, 1)[0] == "/ban" else "kick"
-    log(update, action)
 
     # kwargs to pass to the ban_chat_member function call
     kwargs = {'chat_id': update.effective_chat.id}
@@ -256,6 +254,21 @@ def ban(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("kick")
+@check_user_admin
+@check_bot_admin
+@can_restrict
+def kick(update: Update, context: CallbackContext):
+    """
+    kick a user from a chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    ban(update, context)
+
+
+@run_async
+@bot_action("promote")
 @check_user_admin
 @check_bot_admin
 def promote(update: Update, context: CallbackContext):
@@ -282,8 +295,6 @@ def promote(update: Update, context: CallbackContext):
             "Ask your sugar daddy to give me perms required to use the method `CanPromoteMembers`."
         )
         return
-
-    log(update, "promote")
 
     # get member to promote
     if update.effective_message.reply_to_message:
@@ -321,6 +332,7 @@ def promote(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("pin")
 @check_user_admin
 @check_bot_admin
 def pin(update: Update, context: CallbackContext):
@@ -351,8 +363,6 @@ def pin(update: Update, context: CallbackContext):
         )
         return
 
-    log(update, "pin")
-
     # check if there is a message to pin
     if not update.effective_message.reply_to_message:
         update.effective_message.reply_text("I'm a cat, not a psychic! Reply to the message you want to pin...")
@@ -373,6 +383,7 @@ def pin(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("purge")
 @check_user_admin
 @check_bot_admin
 def purge(update: Update, context: CallbackContext):
@@ -399,8 +410,6 @@ def purge(update: Update, context: CallbackContext):
             "Bribe your sugar daddy with some catnip and ask him to allow me to delete messages..."
         )
         return
-
-    log(update, "purge")
 
     # check if start point is given
     if not update.effective_message.reply_to_message:
@@ -448,6 +457,6 @@ dispatcher.add_handler(CommandHandler("promote", promote))
 dispatcher.add_handler(CommandHandler("mute", mute))
 dispatcher.add_handler(CommandHandler("unmute", unmute))
 dispatcher.add_handler(CommandHandler("ban", ban))
-dispatcher.add_handler(CommandHandler("kick", ban))
+dispatcher.add_handler(CommandHandler("kick", kick))
 dispatcher.add_handler(CommandHandler("pin", pin))
 dispatcher.add_handler(CommandHandler("purge", purge))

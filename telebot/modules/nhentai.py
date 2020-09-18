@@ -8,7 +8,7 @@ from telegram.utils.helpers import escape_markdown
 from telegraph import Telegraph
 
 from telebot import dispatcher
-from telebot.functions import log
+from telebot.functions import log, bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 
 
@@ -76,14 +76,13 @@ def get_content(content, _id):
 
 
 @run_async
+@bot_action("sauce")
 def sauce(update: Update, context: CallbackContext) -> None:
     """
     Fetch the doujin for all the sauces given by user, make telegraph article and send it to user for easy reading
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "sauce")
-
     # check if any args were given
     if not context.args:
         update.effective_message.reply_text("Please give some codes to fetch, this cat can't read your mind...")

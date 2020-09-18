@@ -9,30 +9,29 @@ from telegram.utils.helpers import escape_markdown
 from zalgo_text.zalgo import zalgo
 
 from telebot import dispatcher
-from telebot.functions import log
+from telebot.functions import log, bot_action
 
 
 @run_async
+@bot_action("runs")
 def runs(update: Update, context: CallbackContext) -> None:
     """
     Insulting reply whenever someone uses /runs
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "runs")
     update.effective_message.reply_markdown("I'm a cute kitty, and here we have a fat pussy.")
     update.effective_chat.send_sticker("CAACAgUAAxkBAAIJK19CjPoyyX9QwwHfNOZMnqww1hxXAALfAAPd6BozJDBFCIENpGkbBA")
 
 
 @run_async
+@bot_action("mock")
 def mock(update: Update, context: CallbackContext) -> None:
     """
     Mock a message like spongebob, and reply
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "mock")
-
     if update.effective_message.reply_to_message:
         update.effective_message.reply_to_message.reply_text(mock_text(update.effective_message.reply_to_message.text))
     else:
@@ -40,14 +39,13 @@ def mock(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
+@bot_action("zalgofy")
 def zalgofy(update: Update, context: CallbackContext) -> None:
     """
     Corrupt the way the text looks, and reply
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "zalgofy")
-
     if update.effective_message.reply_to_message:
         update.effective_message.reply_to_message.reply_text(
             zalgo().zalgofy(update.effective_message.reply_to_message.text)
@@ -57,14 +55,13 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
+@bot_action("owo")
 def owo(update: Update, context: CallbackContext) -> None:
     """
     Change a message to look like it was said by a moe weeb
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "owo")
-
     if not update.effective_message.reply_to_message:
         update.effective_message.reply_text(
             "Gommenye, I don't nyaruhodo what normie text you want to henshin into the moe weeb dialect"
@@ -119,14 +116,13 @@ def owo(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
+@bot_action("stretch")
 def stretch(update: Update, context: CallbackContext):
     """
     Stretch the vowels in a message by a random count
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "stretch")
-
     if not update.effective_message.reply_to_message:
         update.effective_message.reply_text(
             "If you're not gonna give me a message to meme, at least give me some catnip..."
@@ -143,14 +139,13 @@ def stretch(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("vapor")
 def vapor(update: Update, context: CallbackContext):
     """
     Make a message look more ａｅｓｔｈｅｔｉｃ
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "vapor")
-
     if not context.args and not (
         update.effective_message.reply_to_message and update.effective_message.reply_to_message.text_markdown
     ):

@@ -9,13 +9,15 @@ You can set config variables in your environment, store them in a `.env` file in
 commandline arguments while running the bot.
 
 The config variables are as follows :-
+- `ADMIN` : The user ID of the person managing the bot
 - `TOKEN` : Telegram bot token
 - `DATABASE_NAME` : The name of the database you are using
 - `DATABASE_URL` : The MongoDB host URI (if not given, bot will try to connect to local MongoDB instance at default port)
 - `WEBHOOK_URL` : The URL your webhook should connect to (Default value is `False`, which will disable webhook)
 - `PORT` : Port to use for your webhooks (Default value is `80`)
 - `LOAD` : Space separated list of modules you would like to load (Default value is `False`, which will just load all modules)
-- `NO_LOAD` : Space separated list of modules you would like NOT to load (Default value is `False`, which will not skip any modules)
+- `NO_LOAD` : Space separated list of modules you would like NOT to load (Default value is `False`, which will not skip any modules
+- `SUPERUSERS` : Space separated list of user IDs for which some exceptions won't work
 
 ## Running the bot
 

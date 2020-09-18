@@ -11,7 +11,7 @@ from telegram import Update, Message
 from telegram.ext import CommandHandler, CallbackContext, run_async
 
 from telebot import dispatcher
-from telebot.functions import log
+from telebot.functions import log, bot_action
 
 
 def _message_to_sticker(update: Update, context: CallbackContext) -> str:
@@ -292,14 +292,13 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
 
 
 @run_async
+@bot_action("quote")
 def quote(update: Update, context: CallbackContext):
     """
     convert message into quote and reply
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    log(update, "quote")
-
     context.bot.send_chat_action(update.effective_chat.id, 'upload_photo')  # tell chat that a sticker is incoming
 
     # make sticker and save on disk

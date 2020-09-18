@@ -1,20 +1,18 @@
 import math
 import os
-from collections import namedtuple
 from os import remove
 from typing import Tuple, IO, List
 from urllib.request import urlretrieve
 from uuid import uuid4
 
 from PIL import Image
-from decouple import config
 from emoji import emojize
 from telegram import Update, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton, Bot, User, Message, StickerSet
 from telegram.error import BadRequest
 from telegram.ext import run_async, CallbackContext, CommandHandler, ConversationHandler, MessageHandler, Filters
 from telegram.utils.helpers import escape_markdown
 
-from telebot import dispatcher
+from telebot import dispatcher, config
 from telebot.functions import log
 from telebot.modules.db.exceptions import get_command_exception_chats
 
@@ -24,7 +22,7 @@ def sticker_id(update: Update, context: CallbackContext) -> None:
     """
     Reply with the file ID of a given sticker
     :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
+    :param context: object containing data about the bot_action call.
     """
     log(update, "sticker id")
 
@@ -40,7 +38,7 @@ def get_sticker(update: Update, context: CallbackContext) -> None:
     """
     Reply with the PNG image as a document for a given sticker
     :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
+    :param context: object containing data about the bot_action call.
     """
     log(update, "get sticker")
 
@@ -218,12 +216,12 @@ def kang(update: Update, context: CallbackContext) -> None:
     """
     Add a sticker to user's pack
     :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
+    :param context: object containing data about the bot_action call.
     """
     # check for exception, but skip exception if user is a superuser
-    if update.effective_user.id not in config(
-        "SUPERUSERS", cast=lambda x: map(int, x.split(","))
-    ) and update.effective_chat.id in get_command_exception_chats("kang"):
+    if update.effective_user.id not in config.SUPERUSERS and update.effective_chat.id in get_command_exception_chats(
+        "kang"
+    ):
         return
 
     log(update, "kang")
@@ -426,7 +424,7 @@ def migrate(update: Update, context: CallbackContext) -> None:
     """
     Migrate all stickers from a given pack into user's pack(s)
     :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
+    :param context: object containing data about the bot_action call.
     """
     log(update, "migrate pack")
 
@@ -585,7 +583,7 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
     """
     Delete a sticker form one of the user's packs
     :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
+    :param context: object containing data about the bot_action call.
     """
     log(update, "del_sticker")
 
@@ -618,7 +616,7 @@ def packs(update: Update, context: CallbackContext):
     """
     List all the packs of a user
     :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
+    :param context: object containing data about the bot_action call.
     """
     log(update, "packs")
 
@@ -647,7 +645,7 @@ def reorder1(update: Update, context: CallbackContext):
     """
     First step in reordering sticker in pack - take input of sticker who's position is to be changed
     :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
+    :param context: object containing data about the bot_action call.
     :return: 0 if successful to move on to next step, else -1 (ConversationHandler.END)
     """
     log(update, "reorder step 1")
@@ -691,7 +689,7 @@ def reorder2(update: Update, context: CallbackContext):
     """
     Last step in reordering sticker in pack - take input of sticker which is now gonna be on the left of the reordered sticker
     :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
+    :param context: object containing data about the bot_action call.
     :return: 0, if wrong input is made, else -1 (ConversationHandler.END)
     """
     log(update, "reorder step 2")
@@ -738,7 +736,7 @@ def reorder_cancel(update: Update, context: CallbackContext):
     """
     Last step in reordering sticker in pack - take input of sticker which is now gonna be on the left of the reordered sticker
     :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
+    :param context: object containing data about the bot_action call.
     :return: 0, if wrong input is made, else -1 (ConversationHandler.END)
     """
     log(update, "reorder cancel")
