@@ -13,39 +13,51 @@ from telegram.ext import run_async, CallbackContext, CommandHandler, Conversatio
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher, config
-from telebot.functions import log
+from telebot.functions import log, bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
+from telebot.modules.db.users import add_user
 
 
 @run_async
+@bot_action("sticker id")
 def sticker_id(update: Update, context: CallbackContext) -> None:
     """
     Reply with the file ID of a given sticker
     :param update: object representing the incoming update.
     :param context: object containing data about the bot_action call.
     """
-    log(update, "sticker id")
-
     rep_msg = update.effective_message.reply_to_message
+
     if rep_msg and rep_msg.sticker:
+        # future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
         update.effective_message.reply_markdown("Sticker ID:\n```" + escape_markdown(rep_msg.sticker.file_id) + "```")
+
     else:
         update.effective_message.reply_text("Please reply to a sticker to get its ID.")
 
 
 @run_async
+@bot_action("get sticker")
 def get_sticker(update: Update, context: CallbackContext) -> None:
     """
     Reply with the PNG image as a document for a given sticker
     :param update: object representing the incoming update.
     :param context: object containing data about the bot_action call.
     """
-    log(update, "get sticker")
-
     rep_msg = update.effective_message.reply_to_message
     chat_id = update.effective_chat.id
 
     if rep_msg and rep_msg.sticker:
+        # future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
+
         # check if sticker is animated, fugg off if it is
         if rep_msg.sticker.is_animated:
             update.effective_message.reply_text(
@@ -212,6 +224,7 @@ def _make_pack(
 
 
 @run_async
+@bot_action("kang")
 def kang(update: Update, context: CallbackContext) -> None:
     """
     Add a sticker to user's pack
@@ -223,8 +236,6 @@ def kang(update: Update, context: CallbackContext) -> None:
         "kang"
     ):
         return
-
-    log(update, "kang")
 
     msg = update.effective_message
     user = update.effective_user
@@ -258,6 +269,12 @@ def kang(update: Update, context: CallbackContext) -> None:
 
     # If user has replied to some message
     if is_animated:
+        # future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
+
         # download sticker
         sticker = msg.reply_to_message.sticker
         context.bot.get_file(sticker.file_id).download(kang_sticker)
@@ -289,6 +306,12 @@ def kang(update: Update, context: CallbackContext) -> None:
                 )
 
     elif msg.reply_to_message:
+        # future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
+
         # get sticker file
         if msg.reply_to_message.sticker:
             file_id = msg.reply_to_message.sticker.file_id
@@ -420,18 +443,23 @@ def kang(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
+@bot_action("migrate pack")
 def migrate(update: Update, context: CallbackContext) -> None:
     """
     Migrate all stickers from a given pack into user's pack(s)
     :param update: object representing the incoming update.
     :param context: object containing data about the bot_action call.
     """
-    log(update, "migrate pack")
-
     # check if there is a sticker to kang set from
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate!")
         return
+
+    # future usage
+    add_user(
+        user_id=update.effective_message.reply_to_message.from_user.id,
+        username=update.effective_message.reply_to_message.from_user.username,
+    )
 
     # get original set name
     og_set_name = update.effective_message.reply_to_message.sticker.set_name
@@ -579,18 +607,23 @@ def migrate(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
+@bot_action("delete sticker")
 def del_sticker(update: Update, context: CallbackContext) -> None:
     """
     Delete a sticker form one of the user's packs
     :param update: object representing the incoming update.
     :param context: object containing data about the bot_action call.
     """
-    log(update, "del_sticker")
-
     # check if there's anything to delete
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return
+
+    # future usage
+    add_user(
+        user_id=update.effective_message.reply_to_message.from_user.id,
+        username=update.effective_message.reply_to_message.from_user.username,
+    )
 
     # check if the bot has perms to delete the sticker
     sticker = update.effective_message.reply_to_message.sticker
@@ -612,6 +645,7 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
 
 
 @run_async
+@bot_action("list packs")
 def packs(update: Update, context: CallbackContext):
     """
     List all the packs of a user
@@ -641,6 +675,7 @@ reorder = {}
 
 
 @run_async
+@bot_action("reorder step 1")
 def reorder1(update: Update, context: CallbackContext):
     """
     First step in reordering sticker in pack - take input of sticker who's position is to be changed
@@ -648,12 +683,16 @@ def reorder1(update: Update, context: CallbackContext):
     :param context: object containing data about the bot_action call.
     :return: 0 if successful to move on to next step, else -1 (ConversationHandler.END)
     """
-    log(update, "reorder step 1")
-
     # check if there is a sticker to kang set from
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return ConversationHandler.END
+
+    # future usage
+    add_user(
+        user_id=update.effective_message.reply_to_message.from_user.id,
+        username=update.effective_message.reply_to_message.from_user.username,
+    )
 
     # check if the bot has perms to delete the sticker
     sticker = update.effective_message.reply_to_message.sticker
@@ -685,6 +724,7 @@ def reorder1(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("reorder step 2")
 def reorder2(update: Update, context: CallbackContext):
     """
     Last step in reordering sticker in pack - take input of sticker which is now gonna be on the left of the reordered sticker
@@ -692,8 +732,6 @@ def reorder2(update: Update, context: CallbackContext):
     :param context: object containing data about the bot_action call.
     :return: 0, if wrong input is made, else -1 (ConversationHandler.END)
     """
-    log(update, "reorder step 2")
-
     # check if there is a sticker to kang set from
     if not update.effective_message.sticker:
         update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
@@ -732,6 +770,7 @@ def reorder2(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("reorder cancel")
 def reorder_cancel(update: Update, context: CallbackContext):
     """
     Last step in reordering sticker in pack - take input of sticker which is now gonna be on the left of the reordered sticker
@@ -739,8 +778,6 @@ def reorder_cancel(update: Update, context: CallbackContext):
     :param context: object containing data about the bot_action call.
     :return: 0, if wrong input is made, else -1 (ConversationHandler.END)
     """
-    log(update, "reorder cancel")
-
     # set sticker position
     del reorder[update.effective_user.id]
     update.effective_message.reply_text(f"Don't wake me up from my nap before you make up your mind!")

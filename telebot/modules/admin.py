@@ -223,13 +223,15 @@ def unmute(update: Update, context: CallbackContext):
     if update.effective_message.reply_to_message:
         kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
         username = update.effective_message.reply_to_message.from_user.username
+        add_user(user_id=kwargs['user_id'], username=username)  # for future usage
+
     elif context.args:
         usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
         if usernames:
             kwargs['user_id'] = fetch_muted_member(chat=kwargs['chat_id'], username=usernames[0][1:])
             if not kwargs['user_id']:
                 update.effective_message.reply_text(
-                    "No such user is muted in this chat... Maybe stop the catnip for a while?"
+                    "No such user is muted in this chat... Maybe stay away from the catnip for a while?"
                 )
                 return
             username = usernames[0][1:]
@@ -238,6 +240,7 @@ def unmute(update: Update, context: CallbackContext):
                 "Reply to a message by the user or give username of user you want to unmute..."
             )
             return
+
     else:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to unmute..."
@@ -471,6 +474,12 @@ def pin(update: Update, context: CallbackContext):
         update.effective_message.reply_text("I'm a cat, not a psychic! Reply to the message you want to pin...")
         return
 
+    # for future usage
+    add_user(
+        user_id=update.effective_message.reply_to_message.from_user.id,
+        username=update.effective_message.reply_to_message.from_user.username,
+    )
+
     # Don't always loud pin
     if context.args:
         disable_notification = context.args[0].lower() in ('silent', 'quiet')
@@ -520,6 +529,12 @@ def purge(update: Update, context: CallbackContext):
             "I'm a cat, not a psychic! Reply to the message you want to start deleting from..."
         )
         return
+
+    # for future usage
+    add_user(
+        user_id=update.effective_message.reply_to_message.from_user.id,
+        username=update.effective_message.reply_to_message.from_user.username,
+    )
 
     # delete messages
     for id_ in range(

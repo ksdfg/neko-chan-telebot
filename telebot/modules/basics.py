@@ -10,6 +10,8 @@ from telebot.functions import bot_action
 from telebot.modules import imported_mods
 
 # default Start Text
+from telebot.modules.db.users import add_user
+
 START_TEXT = emojize(
     f"""
 NyaHello World! :cat:
@@ -130,6 +132,8 @@ def info(update: Update, context: CallbackContext):
     """
     # get user to display info of
     user: User = update.message.reply_to_message.from_user if update.message.reply_to_message else update.effective_user
+
+    add_user(user_id=user.id, username=user.username)  # for future usage
 
     # make info string
     reply = f"*ID*: `{user.id}`\n"
