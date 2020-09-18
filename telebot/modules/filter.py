@@ -8,6 +8,7 @@ from telebot import dispatcher
 from telebot.functions import log, bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.filter import get_triggers_for_chat, add_filter, get_filter, del_filter
+from telebot.modules.db.users import add_user
 
 
 @run_async
@@ -68,29 +69,44 @@ def add_filter_handler(update: Update, context: CallbackContext):
         kwargs['content'] = content
         kwargs['filter_type'] = "text"
 
-    elif msg.reply_to_message and msg.reply_to_message.sticker:
-        kwargs['content'] = msg.reply_to_message.sticker.file_id
-        kwargs['filter_type'] = "sticker"
+    elif msg.reply_to_message:
+        # for future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
 
-    elif msg.reply_to_message and msg.reply_to_message.document:
-        kwargs['content'] = msg.reply_to_message.document.file_id
-        kwargs['filter_type'] = "document"
+        if msg.reply_to_message.text_markdown:
+            kwargs['content'] = msg.reply_to_message.text_markdown
+            kwargs['filter_type'] = "text"
 
-    elif msg.reply_to_message and msg.reply_to_message.photo:
-        kwargs['content'] = msg.reply_to_message.photo[-1].file_id
-        kwargs['filter_type'] = "photo"
+        elif msg.reply_to_message.sticker:
+            kwargs['content'] = msg.reply_to_message.sticker.file_id
+            kwargs['filter_type'] = "sticker"
 
-    elif msg.reply_to_message and msg.reply_to_message.audio:
-        kwargs['content'] = msg.reply_to_message.audio.file_id
-        kwargs['filter_type'] = "audio"
+        elif msg.reply_to_message.document:
+            kwargs['content'] = msg.reply_to_message.document.file_id
+            kwargs['filter_type'] = "document"
 
-    elif msg.reply_to_message and msg.reply_to_message.voice:
-        kwargs['content'] = msg.reply_to_message.voice.file_id
-        kwargs['filter_type'] = "voice"
+        elif msg.reply_to_message.photo:
+            kwargs['content'] = msg.reply_to_message.photo[-1].file_id
+            kwargs['filter_type'] = "photo"
 
-    elif msg.reply_to_message and msg.reply_to_message.video:
-        kwargs['content'] = msg.reply_to_message.video.file_id
-        kwargs['filter_type'] = "video"
+        elif msg.reply_to_message.audio:
+            kwargs['content'] = msg.reply_to_message.audio.file_id
+            kwargs['filter_type'] = "audio"
+
+        elif msg.reply_to_message.voice:
+            kwargs['content'] = msg.reply_to_message.voice.file_id
+            kwargs['filter_type'] = "voice"
+
+        elif msg.reply_to_message.video:
+            kwargs['content'] = msg.reply_to_message.video.file_id
+            kwargs['filter_type'] = "video"
+
+        else:
+            msg.reply_markdown("This cat isn't a random reply generator, baka! Give some content to reply with......")
+            return
 
     else:
         msg.reply_markdown("This cat isn't a random reply generator, baka! Give some content to reply with......")

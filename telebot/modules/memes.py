@@ -10,6 +10,7 @@ from zalgo_text.zalgo import zalgo
 
 from telebot import dispatcher
 from telebot.functions import bot_action
+from telebot.modules.db.users import add_user
 
 
 @run_async
@@ -33,7 +34,14 @@ def mock(update: Update, context: CallbackContext) -> None:
     :param context: object containing data about the command call.
     """
     if update.effective_message.reply_to_message:
+        # for future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
+
         update.effective_message.reply_to_message.reply_text(mock_text(update.effective_message.reply_to_message.text))
+
     else:
         update.effective_message.reply_text("I don't see anything to mock here other than your ugly face...")
 
@@ -47,9 +55,16 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
     :param context: object containing data about the command call.
     """
     if update.effective_message.reply_to_message:
+        # for future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
+
         update.effective_message.reply_to_message.reply_text(
             zalgo().zalgofy(update.effective_message.reply_to_message.text)
         )
+
     else:
         update.effective_message.reply_text("Gimme a message to zalgofy before I claw your tits off...")
 
@@ -67,6 +82,12 @@ def owo(update: Update, context: CallbackContext) -> None:
             "Gommenye, I don't nyaruhodo what normie text you want to henshin into the moe weeb dialect"
         )
         return
+
+    # for future usage
+    add_user(
+        user_id=update.effective_message.reply_to_message.from_user.id,
+        username=update.effective_message.reply_to_message.from_user.username,
+    )
 
     # list of all kaomojis to use in owo
     kaomoji = [
@@ -129,6 +150,12 @@ def stretch(update: Update, context: CallbackContext):
         )
 
     else:
+        # for future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
+
         update.effective_message.reply_to_message.reply_markdown(
             sub(
                 r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])',
@@ -159,6 +186,11 @@ def vapor(update: Update, context: CallbackContext):
         text = " ".join(context.args)
     else:
         text = update.effective_message.reply_to_message.text
+        # for future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
 
     aesthetic_text = text.translate(dict((i, i + 0xFEE0) for i in range(0x21, 0x7F)))  # make text more ａｅｓｔｈｅｔｉｃ
 

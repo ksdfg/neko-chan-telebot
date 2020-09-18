@@ -15,6 +15,32 @@ from telebot.modules.db.mute import add_muted_member, fetch_muted_member, remove
 from telebot.modules.db.users import add_user, get_user
 
 
+def for_chat_types(*types):
+    """
+    Allow a command to run only in the following types of functions
+    :param types: the list of types of chats to allow the command in
+    :return: wrapper that does the above check
+    """
+
+    def wrapper(func: Callable):
+        """
+        Wrapper function for making sure chat is within the given types only
+        :param func: The function this wraps over
+        """
+
+        @wraps(func)
+        def inner(update: Update, context: CallbackContext, *args, **kwargs):
+            if update.effective_chat.type not in types:
+                update.effective_message.reply_text(f"Sorry, can't do that in a {update.effective_chat.type}...")
+                return
+
+            func(update, context, *args, **kwargs)
+
+        return inner
+
+    return wrapper
+
+
 def can_restrict(func: Callable):
     """
     Wrapper function for checking if user and bot has perms required for muting and un-muting
@@ -83,6 +109,7 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
 
 @run_async
 @bot_action("mute")
+@for_chat_types('supergroup')
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -179,6 +206,7 @@ def mute(update: Update, context: CallbackContext):
 
 @run_async
 @bot_action("un mute")
+@for_chat_types('supergroup')
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -195,13 +223,15 @@ def unmute(update: Update, context: CallbackContext):
     if update.effective_message.reply_to_message:
         kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
         username = update.effective_message.reply_to_message.from_user.username
+        add_user(user_id=kwargs['user_id'], username=username)  # for future usage
+
     elif context.args:
         usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
         if usernames:
             kwargs['user_id'] = fetch_muted_member(chat=kwargs['chat_id'], username=usernames[0][1:])
             if not kwargs['user_id']:
                 update.effective_message.reply_text(
-                    "No such user is muted in this chat... Maybe stop the catnip for a while?"
+                    "No such user is muted in this chat... Maybe stay away from the catnip for a while?"
                 )
                 return
             username = usernames[0][1:]
@@ -210,6 +240,7 @@ def unmute(update: Update, context: CallbackContext):
                 "Reply to a message by the user or give username of user you want to unmute..."
             )
             return
+
     else:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to unmute..."
@@ -313,6 +344,7 @@ def ban_kick(update: Update, context: CallbackContext):
 
 @run_async
 @bot_action("ban")
+@for_chat_types('supergroup', 'channel')
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -327,6 +359,7 @@ def ban(update: Update, context: CallbackContext):
 
 @run_async
 @bot_action("kick")
+@for_chat_types('supergroup', 'channel')
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -341,6 +374,7 @@ def kick(update: Update, context: CallbackContext):
 
 @run_async
 @bot_action("promote")
+@for_chat_types('supergroup', 'channel')
 @check_user_admin
 @check_bot_admin
 def promote(update: Update, context: CallbackContext):
@@ -350,7 +384,7 @@ def promote(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     # check if user has enough perms
-    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+    if update.effective_chat.id not in get_command_exception_chats("admin"):
         user = update.effective_chat.get_member(update.effective_user.id)
         if not user.can_promote_members and user.status != "creator":
             update.effective_message.reply_markdown(
@@ -358,11 +392,11 @@ def promote(update: Update, context: CallbackContext):
             )
             return
 
+    # get bot member object to check it's perms
+    bot: ChatMember = update.effective_chat.get_member(context.bot.id)
+
     # check if bot can promote users
-    if (
-        update.effective_chat.type != "private"
-        and not update.effective_chat.get_member(context.bot.id).can_promote_members
-    ):
+    if not bot.can_promote_members:
         update.effective_message.reply_markdown(
             "Ask your sugar daddy to give me perms required to use the method `CanPromoteMembers`."
         )
@@ -370,19 +404,34 @@ def promote(update: Update, context: CallbackContext):
 
     # get member to promote
     if update.effective_message.reply_to_message:
+        # get user who made the quoted message
         user_id = update.effective_message.reply_to_message.from_user.id
-        # check if user is trying to mute an admin
-        if update.effective_chat.get_member(user_id).status in ('administrator', 'creator'):
-            update.effective_message.reply_markdown(
-                "Thanks for trying to promote an admin. Maybe bring me some catnip you're high on next time?"
+        username = update.effective_message.reply_to_message.from_user.username
+        add_user(user_id=user_id, username=username)  # for future usage
+
+    elif context.args:
+        # get user from our users database using his username
+        usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
+        if usernames:
+            user_id = get_user(username=usernames[0][1:])
+            if not user_id:
+                update.effective_message.reply_text(
+                    "I don't remember anyone with that username... "
+                    "Maybe try executing the same command, but reply to a message by this user instead?"
+                )
+                return
+            username = usernames[0][1:]
+        else:
+            update.effective_message.reply_text(
+                "Reply to a message by the user or give username of user you want to promote..."
             )
             return
-    else:
-        update.effective_message.reply_text(f"Reply to a message by the user you want to promote...")
-        return
 
-    # get bot member object to check it's perms
-    bot: ChatMember = update.effective_chat.get_member(context.bot.id)
+    else:
+        update.effective_message.reply_text(
+            "Reply to a message by the user or give username of user you want to promote..."
+        )
+        return
 
     # promote member
     context.bot.promote_chat_member(
@@ -398,14 +447,21 @@ def promote(update: Update, context: CallbackContext):
         can_promote_members=bot.can_promote_members,
     )
 
-    update.effective_message.reply_text(
-        f"Everyone say NyaHello to @{update.effective_message.reply_to_message.from_user.username}, " f"our new admin"
-    )
+    # get all args other than the username
+    useful_args = []
+    for arg in context.args:
+        if username not in arg:
+            useful_args.append(arg)
+
+    if useful_args:
+        context.bot.set_chat_administrator_custom_title(update.effective_chat.id, user_id, " ".join(useful_args))
+
+    update.effective_message.reply_text(f"Everyone say NyaHello to @{username}, " f"our new admin")
 
 
 @run_async
 @bot_action("pin")
-@check_user_admin
+@for_chat_types('supergroup', 'channel')
 @check_bot_admin
 def pin(update: Update, context: CallbackContext):
     """
@@ -414,7 +470,7 @@ def pin(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     # check if user has enough perms
-    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
+    if update.effective_chat.id not in get_command_exception_chats("admin"):
         user = update.effective_chat.get_member(update.effective_user.id)
         if not user.can_pin_messages and user.status != "creator":
             update.effective_message.reply_markdown(
@@ -439,6 +495,12 @@ def pin(update: Update, context: CallbackContext):
     if not update.effective_message.reply_to_message:
         update.effective_message.reply_text("I'm a cat, not a psychic! Reply to the message you want to pin...")
         return
+
+    # for future usage
+    add_user(
+        user_id=update.effective_message.reply_to_message.from_user.id,
+        username=update.effective_message.reply_to_message.from_user.username,
+    )
 
     # Don't always loud pin
     if context.args:
@@ -490,6 +552,12 @@ def purge(update: Update, context: CallbackContext):
         )
         return
 
+    # for future usage
+    add_user(
+        user_id=update.effective_message.reply_to_message.from_user.id,
+        username=update.effective_message.reply_to_message.from_user.username,
+    )
+
     # delete messages
     for id_ in range(
         update.effective_message.message_id - 1, update.effective_message.reply_to_message.message_id - 1, -1
@@ -503,9 +571,11 @@ def purge(update: Update, context: CallbackContext):
 
 
 __help__ = """
+- /pin `<reply> [silent|quiet]` : pin replied message in the chat.
+
 ***Admin only :***
 
-- /promote `<reply>` : promotes a user (whose message you are replying to) to admin
+- /promote `<reply|username> [<title>]` : promotes a user (whose username you've given as argument, or whose message you are quoting) to admin
 
 - /mute `<reply|username> [x<m|h|d>]` : mutes a user (whose username you've given as argument, or whose message you are quoting) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
 
@@ -516,8 +586,6 @@ __help__ = """
 - /kick `<reply|username>` : kick a user from the chat (whose username you've given as argument, or whose message you are quoting)
 
 - /purge `<reply>` : delete all messages from replied message to current one.
-
-- /pin `<reply> [silent|quiet]` : pin replied message in the chat.
 
 If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the individual permissions.
 """

@@ -12,6 +12,7 @@ from telegram.ext import CommandHandler, CallbackContext, run_async
 
 from telebot import dispatcher
 from telebot.functions import bot_action
+from telebot.modules.db.users import add_user
 
 
 def _message_to_sticker(update: Update, context: CallbackContext) -> str:
@@ -306,9 +307,15 @@ def quote(update: Update, context: CallbackContext):
         file_name = _message_to_sticker(update, context)
     except AttributeError:
         update.effective_message.reply_text(
-            "Please reply to a message to get its quote.\nThis cat can't read your mind"
+            "Please reply to a message to get its quote...\nThis cat can't read your mind!"
         )
         return
+
+    # for future usage
+    add_user(
+        user_id=update.effective_message.reply_to_message.from_user.id,
+        username=update.effective_message.reply_to_message.from_user.username,
+    )
 
     # send generated image as sticker
     update.effective_message.reply_sticker(sticker=open(file_name, "rb"))

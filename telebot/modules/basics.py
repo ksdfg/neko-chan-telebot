@@ -1,7 +1,7 @@
 from random import choice
 
 from emoji import emojize
-from telegram import Update, User
+from telegram import Update, User, MessageEntity
 from telegram.ext import CallbackContext, CommandHandler, run_async
 from telegram.utils.helpers import escape_markdown, mention_markdown
 
@@ -10,6 +10,8 @@ from telebot.functions import bot_action
 from telebot.modules import imported_mods
 
 # default Start Text
+from telebot.modules.db.users import add_user, get_user
+
 START_TEXT = emojize(
     f"""
 NyaHello World! :cat:
@@ -129,7 +131,28 @@ def info(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     # get user to display info of
-    user: User = update.message.reply_to_message.from_user if update.message.reply_to_message else update.effective_user
+    if update.effective_message.reply_to_message:
+        # get user who made the quoted message
+        user = update.message.reply_to_message.from_user
+        add_user(user_id=user.id, username=user.username)  # for future usage
+
+    elif context.args:
+        # get user from our users database using his username
+        usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
+        if usernames:
+            user_id = get_user(username=usernames[0][1:])
+            if not user_id:
+                update.effective_message.reply_text(
+                    "I don't remember anyone with that username... "
+                    "Maybe try executing the same command, but reply to a message by this user instead?"
+                )
+                return
+            user = update.effective_chat.get_member(user_id).user
+        else:
+            user = update.effective_user
+
+    else:
+        user = update.effective_user
 
     # make info string
     reply = f"*ID*: `{user.id}`\n"
@@ -158,7 +181,7 @@ __help__ = """
 
 - /id : Get the user and chat ID
 
-- /info `[<reply>]` : Get details of a user (by replying to their message) or yourself
+- /info `[<reply|username>]` : Get details of a user (by replying to their message or giving their username) or yourself
 """
 
 

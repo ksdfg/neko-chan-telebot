@@ -7,9 +7,10 @@ from telegram.ext import CallbackContext
 from telegram.utils.helpers import mention_markdown
 
 from telebot import config
+from telebot.modules.db.users import add_user
+
 
 # Some Helper Functions
-from telebot.modules.db.users import add_user
 
 
 def check_user_admin(func: Callable):
