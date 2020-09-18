@@ -138,7 +138,7 @@ def unmute(update: Update, context: CallbackContext):
     # kwargs to pass to the restrict_chat_member function call
     kwargs = {'chat_id': update.effective_chat.id}
 
-    # get user to mute
+    # get user to un mute
     if update.effective_message.reply_to_message:
         kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
         username = update.effective_message.reply_to_message.from_user.username
@@ -146,6 +146,11 @@ def unmute(update: Update, context: CallbackContext):
         usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
         if usernames:
             kwargs['user_id'] = fetch_muted_member(chat=kwargs['chat_id'], username=usernames[0][1:])
+            if not kwargs['user_id']:
+                update.effective_message.reply_text(
+                    "No such user is muted in this chat... Maybe stop the catnip for a while?"
+                )
+                return
             username = usernames[0][1:]
         else:
             update.effective_message.reply_text(
