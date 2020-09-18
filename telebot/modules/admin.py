@@ -164,7 +164,7 @@ def mute(update: Update, context: CallbackContext):
         until_date=kwargs['until_date'] if 'until_date' in kwargs.keys() else None,
     ):
         # mute member
-        # context.bot.restrict_chat_member(**kwargs)
+        context.bot.restrict_chat_member(**kwargs)
         reply = (
             f"Sewed up @{escape_markdown(username)}'s mouth :smiling_face_with_horns:\nIf you want to be un-muted, "
             f"bribe an admin with some catnip to do it for you..."
@@ -293,9 +293,9 @@ def ban_kick(update: Update, context: CallbackContext):
         return
 
     # ban user
-    # context.bot.kick_chat_member(**kwargs)
-    # if action == "kick":
-    #     context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
+    context.bot.kick_chat_member(**kwargs)
+    if action == "kick":
+        context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
 
     # announce ban
     reply = (
@@ -529,6 +529,6 @@ dispatcher.add_handler(CommandHandler("promote", promote))
 dispatcher.add_handler(CommandHandler("mute", mute))
 dispatcher.add_handler(CommandHandler("unmute", unmute))
 dispatcher.add_handler(CommandHandler("ban", ban))
-dispatcher.add_handler(CommandHandler("kicc", kick))
+dispatcher.add_handler(CommandHandler("kick", kick))
 dispatcher.add_handler(CommandHandler("pin", pin))
 dispatcher.add_handler(CommandHandler("purge", purge))
