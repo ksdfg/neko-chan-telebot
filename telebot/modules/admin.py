@@ -15,6 +15,32 @@ from telebot.modules.db.mute import add_muted_member, fetch_muted_member, remove
 from telebot.modules.db.users import add_user, get_user
 
 
+def for_chat_types(*types):
+    """
+    Allow a command to run only in the following types of functions
+    :param types: the list of types of chats to allow the command in
+    :return: wrapper that does the above check
+    """
+
+    def wrapper(func: Callable):
+        """
+        Wrapper function for making sure chat is within the given types only
+        :param func: The function this wraps over
+        """
+
+        @wraps(func)
+        def inner(update: Update, context: CallbackContext, *args, **kwargs):
+            if update.effective_chat.type not in types:
+                update.effective_message.reply_text(f"Sorry, can't do that in a {update.effective_chat.type}...")
+                return
+
+            func(update, context, *args, **kwargs)
+
+        return inner
+
+    return wrapper
+
+
 def can_restrict(func: Callable):
     """
     Wrapper function for checking if user and bot has perms required for muting and un-muting
@@ -83,6 +109,7 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
 
 @run_async
 @bot_action("mute")
+@for_chat_types('supergroup')
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -179,6 +206,7 @@ def mute(update: Update, context: CallbackContext):
 
 @run_async
 @bot_action("un mute")
+@for_chat_types('supergroup')
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -313,6 +341,7 @@ def ban_kick(update: Update, context: CallbackContext):
 
 @run_async
 @bot_action("ban")
+@for_chat_types('supergroup', 'channel')
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -327,6 +356,7 @@ def ban(update: Update, context: CallbackContext):
 
 @run_async
 @bot_action("kick")
+@for_chat_types('supergroup', 'channel')
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -341,6 +371,7 @@ def kick(update: Update, context: CallbackContext):
 
 @run_async
 @bot_action("promote")
+@for_chat_types('supergroup', 'channel')
 @check_user_admin
 @check_bot_admin
 def promote(update: Update, context: CallbackContext):
@@ -405,6 +436,7 @@ def promote(update: Update, context: CallbackContext):
 
 @run_async
 @bot_action("pin")
+@for_chat_types('supergroup', 'channel')
 @check_user_admin
 @check_bot_admin
 def pin(update: Update, context: CallbackContext):
