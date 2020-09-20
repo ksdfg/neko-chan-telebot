@@ -1,16 +1,16 @@
 from random import choice
 
 from emoji import emojize
-from telegram import Update, User, MessageEntity
+from telegram import Update, MessageEntity
 from telegram.ext import CallbackContext, CommandHandler, run_async
-from telegram.utils.helpers import escape_markdown, mention_markdown
+from telegram.utils.helpers import escape_markdown
 
 from telebot import updater, dispatcher
 from telebot.functions import bot_action
 from telebot.modules import imported_mods
+from telebot.modules.db.users import add_user, get_user
 
 # default Start Text
-from telebot.modules.db.users import add_user, get_user
 
 START_TEXT = emojize(
     f"""
@@ -162,7 +162,7 @@ def info(update: Update, context: CallbackContext):
         reply += f"*Last Name*: `{user.last_name}`\n"
     if user.username:
         reply += f"*Username*: @{escape_markdown(user.username)}\n\n"
-    reply += mention_markdown(user_id=user.id, name="Click here to properly check out this kitten")
+    reply += user.mention_markdown(name="Click here to properly check this kitten out")
 
     # send user info
     update.effective_message.reply_markdown(reply)
