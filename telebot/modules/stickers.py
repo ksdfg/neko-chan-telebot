@@ -730,12 +730,12 @@ def reorder2(update: Update, context: CallbackContext):
     :param context: object containing data about the bot_action call.
     :return: 0, if wrong input is made, else -1 (ConversationHandler.END)
     """
-    # check if there is a sticker to kang set from
+    # check if there is a sticker
     if not update.effective_message.sticker:
         update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
         return 0
 
-    # check if the bot has perms to delete the sticker
+    # check if the bot has perms to reorder the sticker
     sticker = update.effective_message.sticker
     set_name = sticker.set_name
     if context.bot.username not in set_name:

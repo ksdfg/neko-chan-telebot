@@ -101,7 +101,7 @@ def bot_action(func_name: str = None, extra_text: str = ""):
                 log(update, func_name, extra_text)
 
             try:
-                func(update, context, *args, **kwargs)
+                return func(update, context, *args, **kwargs)
             except:
                 print_exc()
                 update.effective_message.reply_markdown(
