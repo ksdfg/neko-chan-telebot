@@ -354,7 +354,7 @@ def ban(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    ban_kick(update, kick)
+    ban_kick(update, context)
 
 
 @run_async
