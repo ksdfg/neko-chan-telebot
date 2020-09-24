@@ -1,4 +1,5 @@
 from collections import Callable
+from datetime import datetime
 from functools import wraps
 from traceback import print_exc, format_exc
 
@@ -95,7 +96,10 @@ def bot_action(func_name: str = None, extra_text: str = ""):
             :param kwargs: anything extra
             :return: inner function to execute
             """
-            add_user(user_id=update.effective_user.id, username=update.effective_user.username)
+            try:
+                add_user(user_id=update.effective_user.id, username=update.effective_user.username)
+            except:
+                print_exc()
 
             if func_name:
                 log(update, func_name, extra_text)
