@@ -6,7 +6,7 @@ from emoji import emojize
 from telegram import Update, ChatPermissions, MessageEntity, ChatMember
 from telegram.error import BadRequest
 from telegram.ext import run_async, CallbackContext, CommandHandler
-from telegram.utils.helpers import escape_markdown
+from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import dispatcher
 from telebot.functions import check_user_admin, check_bot_admin, bot_action
@@ -434,29 +434,39 @@ def promote(update: Update, context: CallbackContext):
         return
 
     # promote member
-    context.bot.promote_chat_member(
-        chat_id=update.effective_chat.id,
-        user_id=user_id,
-        can_change_info=bot.can_change_info,
-        can_post_messages=bot.can_post_messages,
-        can_edit_messages=bot.can_edit_messages,
-        can_delete_messages=bot.can_delete_messages,
-        can_invite_users=bot.can_invite_users,
-        can_restrict_members=bot.can_restrict_members,
-        can_pin_messages=bot.can_pin_messages,
-        can_promote_members=bot.can_promote_members,
-    )
+    reply = ""
+    try:
+        context.bot.promote_chat_member(
+            chat_id=update.effective_chat.id,
+            user_id=user_id,
+            can_change_info=bot.can_change_info,
+            can_post_messages=bot.can_post_messages,
+            can_edit_messages=bot.can_edit_messages,
+            can_delete_messages=bot.can_delete_messages,
+            can_invite_users=bot.can_invite_users,
+            can_restrict_members=bot.can_restrict_members,
+            can_pin_messages=bot.can_pin_messages,
+            can_promote_members=bot.can_promote_members,
+        )
+        reply += f"Everyone say NyaHello to {mention_markdown(user_id, username)}, our new admin!"
 
-    # get all args other than the username
-    useful_args = []
-    for arg in context.args:
-        if username not in arg:
-            useful_args.append(arg)
+        # get all args other than the username
+        useful_args = []
+        for arg in context.args:
+            if username not in arg:
+                useful_args.append(arg)
 
-    if useful_args:
-        context.bot.set_chat_administrator_custom_title(update.effective_chat.id, user_id, " ".join(useful_args))
+        if useful_args:
+            title = " ".join(useful_args)
+            context.bot.set_chat_administrator_custom_title(update.effective_chat.id, user_id, title)
+            reply += f"\nThey have been granted the title of `{title}`."
 
-    update.effective_message.reply_text(f"Everyone say NyaHello to @{username}, " f"our new admin")
+        update.effective_message.reply_markdown(reply.strip())
+
+    except BadRequest:
+        update.effective_message.reply_text(
+            "This cat can't meow at it's superiors.... and neither can I change their perms or title."
+        )
 
 
 @run_async
