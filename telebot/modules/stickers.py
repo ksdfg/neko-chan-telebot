@@ -543,12 +543,20 @@ def migrate(update: Update, context: CallbackContext) -> None:
         # if current pack can still fit in more stickers
         if len(sticker_pack.stickers) < max_stickers:
             try:
-                context.bot.add_sticker_to_set(
-                    user_id=update.effective_user.id,
-                    name=pack_name,
-                    tgs_sticker=open(file, 'rb'),
-                    emojis=sticker.emoji,
-                )
+                if is_animated:
+                    context.bot.add_sticker_to_set(
+                        user_id=update.effective_user.id,
+                        name=pack_name,
+                        tgs_sticker=open(file, 'rb'),
+                        emojis=sticker.emoji,
+                    )
+                else:
+                    context.bot.add_sticker_to_set(
+                        user_id=update.effective_user.id,
+                        name=pack_name,
+                        png_sticker=open(file, 'rb'),
+                        emojis=sticker.emoji,
+                    )
             except BadRequest:
                 # make new pack
                 try:
