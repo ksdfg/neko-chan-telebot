@@ -712,7 +712,9 @@ def reorder1(update: Update, context: CallbackContext):
         pass
 
     # store sticker to reorder
-    reorder[update.effective_user.id] = update.effective_message.reply_to_message.sticker.file_id
+    reorder[
+        str(update.effective_user.id) + str(update.effective_chat.id)
+    ] = update.effective_message.reply_to_message.sticker.file_id
 
     update.effective_message.reply_markdown(
         "Please send the sticker that is going to be on the `left` of this sticker __after__ the reorder, or /cancel to stop"
@@ -748,7 +750,7 @@ def reorder2(update: Update, context: CallbackContext):
     for i, s in enumerate(pack.stickers):
         if s.file_id == sticker.file_id:
             new_index = i
-        elif s.file_id == reorder[update.effective_user.id]:
+        elif s.file_id == reorder[str(update.effective_user.id) + str(update.effective_chat.id)]:
             old_index = i
         if -1 not in (new_index, old_index):
             break
@@ -758,8 +760,10 @@ def reorder2(update: Update, context: CallbackContext):
         new_index += 1  # since the empty space will be after the sticker, not before
 
     # set sticker position
-    context.bot.set_sticker_position_in_set(reorder[update.effective_user.id], new_index)
-    del reorder[update.effective_user.id]
+    context.bot.set_sticker_position_in_set(
+        reorder[str(update.effective_user.id) + str(update.effective_chat.id)], new_index
+    )
+    del reorder[str(update.effective_user.id) + str(update.effective_chat.id)]
     update.effective_message.reply_markdown(
         f"I have updated [{context.bot.get_sticker_set(set_name).title}](t.me/addstickers/{set_name})!"
     )
@@ -777,7 +781,7 @@ def reorder_cancel(update: Update, context: CallbackContext):
     :return: 0, if wrong input is made, else -1 (ConversationHandler.END)
     """
     # set sticker position
-    del reorder[update.effective_user.id]
+    del reorder[str(update.effective_user.id) + str(update.effective_chat.id)]
     update.effective_message.reply_text(f"Don't wake me up from my nap before you make up your mind!")
 
     return ConversationHandler.END
