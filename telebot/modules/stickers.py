@@ -1,6 +1,7 @@
 import math
 import os
 from os import remove
+from re import search
 from typing import Tuple, IO, List
 from urllib.request import urlretrieve
 from uuid import uuid4
@@ -468,7 +469,7 @@ def migrate(update: Update, context: CallbackContext) -> None:
         return
 
     # check if the sticker set already belongs to this bot
-    if context.bot.username in og_set_name:
+    if search(f"{context.bot.username}$", og_set_name):
         update.effective_message.reply_markdown(f"This pack already belongs to `{context.bot.first_name}`...")
         return
 
@@ -542,12 +543,20 @@ def migrate(update: Update, context: CallbackContext) -> None:
         # if current pack can still fit in more stickers
         if len(sticker_pack.stickers) < max_stickers:
             try:
-                context.bot.add_sticker_to_set(
-                    user_id=update.effective_user.id,
-                    name=pack_name,
-                    tgs_sticker=open(file, 'rb'),
-                    emojis=sticker.emoji,
-                )
+                if is_animated:
+                    context.bot.add_sticker_to_set(
+                        user_id=update.effective_user.id,
+                        name=pack_name,
+                        tgs_sticker=open(file, 'rb'),
+                        emojis=sticker.emoji,
+                    )
+                else:
+                    context.bot.add_sticker_to_set(
+                        user_id=update.effective_user.id,
+                        name=pack_name,
+                        png_sticker=open(file, 'rb'),
+                        emojis=sticker.emoji,
+                    )
             except BadRequest:
                 # make new pack
                 try:
@@ -628,7 +637,7 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
     # check if the bot has perms to delete the sticker
     sticker = update.effective_message.reply_to_message.sticker
     set_name = sticker.set_name
-    if context.bot.username not in set_name:
+    if not search(f"{context.bot.username}$", set_name):
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return
 
@@ -695,7 +704,7 @@ def reorder1(update: Update, context: CallbackContext):
     # check if the bot has perms to delete the sticker
     sticker = update.effective_message.reply_to_message.sticker
     set_name = sticker.set_name
-    if context.bot.username not in set_name:
+    if not search(f"{context.bot.username}$", set_name):
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return ConversationHandler.END
 
@@ -712,7 +721,9 @@ def reorder1(update: Update, context: CallbackContext):
         pass
 
     # store sticker to reorder
-    reorder[update.effective_user.id] = update.effective_message.reply_to_message.sticker.file_id
+    reorder[
+        str(update.effective_user.id) + str(update.effective_chat.id)
+    ] = update.effective_message.reply_to_message.sticker.file_id
 
     update.effective_message.reply_markdown(
         "Please send the sticker that is going to be on the `left` of this sticker __after__ the reorder, or /cancel to stop"
@@ -738,7 +749,7 @@ def reorder2(update: Update, context: CallbackContext):
     # check if the bot has perms to reorder the sticker
     sticker = update.effective_message.sticker
     set_name = sticker.set_name
-    if context.bot.username not in set_name:
+    if not search(f"{context.bot.username}$", set_name):
         update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
         return 0
 
@@ -748,7 +759,7 @@ def reorder2(update: Update, context: CallbackContext):
     for i, s in enumerate(pack.stickers):
         if s.file_id == sticker.file_id:
             new_index = i
-        elif s.file_id == reorder[update.effective_user.id]:
+        elif s.file_id == reorder[str(update.effective_user.id) + str(update.effective_chat.id)]:
             old_index = i
         if -1 not in (new_index, old_index):
             break
@@ -758,8 +769,10 @@ def reorder2(update: Update, context: CallbackContext):
         new_index += 1  # since the empty space will be after the sticker, not before
 
     # set sticker position
-    context.bot.set_sticker_position_in_set(reorder[update.effective_user.id], new_index)
-    del reorder[update.effective_user.id]
+    context.bot.set_sticker_position_in_set(
+        reorder[str(update.effective_user.id) + str(update.effective_chat.id)], new_index
+    )
+    del reorder[str(update.effective_user.id) + str(update.effective_chat.id)]
     update.effective_message.reply_markdown(
         f"I have updated [{context.bot.get_sticker_set(set_name).title}](t.me/addstickers/{set_name})!"
     )
@@ -777,7 +790,7 @@ def reorder_cancel(update: Update, context: CallbackContext):
     :return: 0, if wrong input is made, else -1 (ConversationHandler.END)
     """
     # set sticker position
-    del reorder[update.effective_user.id]
+    del reorder[str(update.effective_user.id) + str(update.effective_chat.id)]
     update.effective_message.reply_text(f"Don't wake me up from my nap before you make up your mind!")
 
     return ConversationHandler.END
@@ -792,7 +805,7 @@ __help__ = r"""
 
 - /kang `<reply> [<emojis>]` : reply to a sticker (animated or non animated) or a picture to add it to your pack. Won't do anything if you have an exception set in the chat.
 
-- /migratepack `<reply>` : reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s).
+- /migrate `<reply>` : reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s).
 
 - /delsticker `<reply>` : reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from said pack.
 
@@ -805,7 +818,7 @@ __mod_name__ = "Stickers"
 dispatcher.add_handler(CommandHandler("stickerid", sticker_id))
 dispatcher.add_handler(CommandHandler("getsticker", get_sticker))
 dispatcher.add_handler(CommandHandler('kang', kang))
-dispatcher.add_handler(CommandHandler('migratepack', migrate))
+dispatcher.add_handler(CommandHandler('migrate', migrate))
 dispatcher.add_handler(CommandHandler('delsticker', del_sticker))
 dispatcher.add_handler(CommandHandler('packs', packs))
 dispatcher.add_handler(
