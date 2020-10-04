@@ -1,6 +1,7 @@
 import math
 import os
 from os import remove
+from re import search
 from typing import Tuple, IO, List
 from urllib.request import urlretrieve
 from uuid import uuid4
@@ -468,7 +469,7 @@ def migrate(update: Update, context: CallbackContext) -> None:
         return
 
     # check if the sticker set already belongs to this bot
-    if context.bot.username in og_set_name:
+    if search(f"{context.bot.username}$", og_set_name):
         update.effective_message.reply_markdown(f"This pack already belongs to `{context.bot.first_name}`...")
         return
 
@@ -628,7 +629,7 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
     # check if the bot has perms to delete the sticker
     sticker = update.effective_message.reply_to_message.sticker
     set_name = sticker.set_name
-    if context.bot.username not in set_name:
+    if not search(f"{context.bot.username}$", set_name):
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return
 
@@ -695,7 +696,7 @@ def reorder1(update: Update, context: CallbackContext):
     # check if the bot has perms to delete the sticker
     sticker = update.effective_message.reply_to_message.sticker
     set_name = sticker.set_name
-    if context.bot.username not in set_name:
+    if not search(f"{context.bot.username}$", set_name):
         update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return ConversationHandler.END
 
@@ -740,7 +741,7 @@ def reorder2(update: Update, context: CallbackContext):
     # check if the bot has perms to reorder the sticker
     sticker = update.effective_message.sticker
     set_name = sticker.set_name
-    if context.bot.username not in set_name:
+    if not search(f"{context.bot.username}$", set_name):
         update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
         return 0
 
@@ -796,7 +797,7 @@ __help__ = r"""
 
 - /kang `<reply> [<emojis>]` : reply to a sticker (animated or non animated) or a picture to add it to your pack. Won't do anything if you have an exception set in the chat.
 
-- /migratepack `<reply>` : reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s).
+- /migrate `<reply>` : reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s).
 
 - /delsticker `<reply>` : reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from said pack.
 
@@ -809,7 +810,7 @@ __mod_name__ = "Stickers"
 dispatcher.add_handler(CommandHandler("stickerid", sticker_id))
 dispatcher.add_handler(CommandHandler("getsticker", get_sticker))
 dispatcher.add_handler(CommandHandler('kang', kang))
-dispatcher.add_handler(CommandHandler('migratepack', migrate))
+dispatcher.add_handler(CommandHandler('migrate', migrate))
 dispatcher.add_handler(CommandHandler('delsticker', del_sticker))
 dispatcher.add_handler(CommandHandler('packs', packs))
 dispatcher.add_handler(
