@@ -127,11 +127,11 @@ class UserError(Exception):
 # exception class for when no user is found in the DB
 class UserRecordError(Exception):
     def __init__(self):
-        message = (
+        self.message = (
             "I don't remember anyone with that username... "
             "Maybe try executing the same command, but reply to a message by this user instead?"
         )
-        super(UserRecordError, self).__init__(message)
+        super(UserRecordError, self).__init__(self.message)
 
 
 def get_user_from_message(message: Message) -> Tuple[int, str]:
