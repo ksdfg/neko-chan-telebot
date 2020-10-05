@@ -470,6 +470,99 @@ def promote(update: Update, context: CallbackContext):
 
 
 @run_async
+@bot_action("demote")
+@for_chat_types('supergroup', 'channel')
+@check_user_admin
+@check_bot_admin
+def demote(update: Update, context: CallbackContext):
+    """
+    Demote a user to remove admin rights
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # check if user has enough perms
+    if update.effective_chat.id not in get_command_exception_chats("admin"):
+        user = update.effective_chat.get_member(update.effective_user.id)
+        if not user.can_promote_members and user.status != "creator":
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give you perms required to use the method `CanPromoteMembers`."
+            )
+            return
+
+    # get bot member object to check it's perms
+    bot: ChatMember = update.effective_chat.get_member(context.bot.id)
+
+    # check if bot can promote users
+    if not bot.can_promote_members:
+        update.effective_message.reply_markdown(
+            "Ask your sugar daddy to give me perms required to use the method `CanPromoteMembers`."
+        )
+        return
+
+    # get member to demote
+    if update.effective_message.reply_to_message:
+        # get user who made the quoted message
+        user_id = update.effective_message.reply_to_message.from_user.id
+        username = update.effective_message.reply_to_message.from_user.username
+        add_user(user_id=user_id, username=username)  # for future usage
+
+    elif context.args:
+        # get user from our users database using his username
+        usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
+        if usernames:
+            user_id = get_user(username=usernames[0][1:])
+            if not user_id:
+                update.effective_message.reply_text(
+                    "I don't remember anyone with that username... "
+                    "Maybe try executing the same command, but reply to a message by this user instead?"
+                )
+                return
+            username = usernames[0][1:]
+        else:
+            update.effective_message.reply_text(
+                "Reply to a message by the user or give username of user you want to demote..."
+            )
+            return
+
+    else:
+        update.effective_message.reply_text(
+            "Reply to a message by the user or give username of user you want to demote..."
+        )
+        return
+
+    # demote member
+    if update.effective_chat.get_member(user_id).status != "administrator":
+        update.effective_message.reply_text("What are you gonna demote a pleb to?")
+        return
+
+    try:
+        context.bot.promote_chat_member(
+            chat_id=update.effective_chat.id,
+            user_id=user_id,
+            can_change_info=False,
+            can_post_messages=False,
+            can_edit_messages=False,
+            can_delete_messages=False,
+            can_invite_users=False,
+            can_restrict_members=False,
+            can_pin_messages=False,
+            can_promote_members=False,
+        )
+
+        update.effective_message.reply_markdown(
+            emojize(
+                f"{mention_markdown(user_id, username)} has been thrown down from the council of admins to rot with the"
+                f" rest of you plebs :grinning_cat_face_with_smiling_eyes:"
+            )
+        )
+
+    except BadRequest:
+        update.effective_message.reply_text(
+            "This cat can't meow at it's superiors.... and neither can I change their perms or title."
+        )
+
+
+@run_async
 @bot_action("pin")
 @for_chat_types('supergroup', 'channel')
 @check_bot_admin
@@ -587,6 +680,8 @@ __help__ = """
 
 - /promote `<reply|username> [<title>]` : promotes a user (whose username you've given as argument, or whose message you are quoting) to admin
 
+- /demote `<reply|username>` : demotes an admin (whose username you've given as argument, or whose message you are quoting)
+
 - /mute `<reply|username> [x<m|h|d>]` : mutes a user (whose username you've given as argument, or whose message you are quoting) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
 
 - /unmute `<reply|username>`: un-mutes a user (whose username you've given as argument, or whose message you are quoting)
@@ -604,6 +699,7 @@ __mod_name__ = "Admin"
 
 # create handlers
 dispatcher.add_handler(CommandHandler("promote", promote))
+dispatcher.add_handler(CommandHandler("demote", demote))
 dispatcher.add_handler(CommandHandler("mute", mute))
 dispatcher.add_handler(CommandHandler("unmute", unmute))
 dispatcher.add_handler(CommandHandler("ban", ban))
