@@ -9,7 +9,14 @@ from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import dispatcher
-from telebot.functions import check_user_admin, check_bot_admin, bot_action
+from telebot.functions import (
+    check_user_admin,
+    check_bot_admin,
+    bot_action,
+    get_user_from_message,
+    UserError,
+    UserRecordError,
+)
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.mute import add_muted_member, fetch_muted_member, remove_muted_member
 from telebot.modules.db.users import add_user, get_user
@@ -492,7 +499,7 @@ def demote(update: Update, context: CallbackContext):
     # get bot member object to check it's perms
     bot: ChatMember = update.effective_chat.get_member(context.bot.id)
 
-    # check if bot can promote users
+    # check if bot can demote users
     if not bot.can_promote_members:
         update.effective_message.reply_markdown(
             "Ask your sugar daddy to give me perms required to use the method `CanPromoteMembers`."
@@ -500,34 +507,15 @@ def demote(update: Update, context: CallbackContext):
         return
 
     # get member to demote
-    if update.effective_message.reply_to_message:
-        # get user who made the quoted message
-        user_id = update.effective_message.reply_to_message.from_user.id
-        username = update.effective_message.reply_to_message.from_user.username
-        add_user(user_id=user_id, username=username)  # for future usage
-
-    elif context.args:
-        # get user from our users database using his username
-        usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
-        if usernames:
-            user_id = get_user(username=usernames[0][1:])
-            if not user_id:
-                update.effective_message.reply_text(
-                    "I don't remember anyone with that username... "
-                    "Maybe try executing the same command, but reply to a message by this user instead?"
-                )
-                return
-            username = usernames[0][1:]
-        else:
-            update.effective_message.reply_text(
-                "Reply to a message by the user or give username of user you want to demote..."
-            )
-            return
-
-    else:
+    try:
+        user_id, username = get_user_from_message(update.effective_message)
+    except UserError:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to demote..."
         )
+        return
+    except UserRecordError as e:
+        update.effective_message.reply_text(e.message)
         return
 
     # demote member
