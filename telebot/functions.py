@@ -1,14 +1,14 @@
 from collections import Callable
-from datetime import datetime
 from functools import wraps
 from traceback import print_exc, format_exc
+from typing import Tuple
 
-from telegram import Update
+from telegram import Update, Message, MessageEntity
 from telegram.ext import CallbackContext
 from telegram.utils.helpers import mention_markdown
 
 from telebot import config
-from telebot.modules.db.users import add_user
+from telebot.modules.db.users import add_user, get_user
 
 
 # Some Helper Functions
@@ -117,3 +117,47 @@ def bot_action(func_name: str = None, extra_text: str = ""):
         return inner
 
     return wrapper
+
+
+# exception class for when no user is found for given message
+class UserError(Exception):
+    pass
+
+
+# exception class for when no user is found in the DB
+class UserRecordError(Exception):
+    def __init__(self):
+        message = (
+            "I don't remember anyone with that username... "
+            "Maybe try executing the same command, but reply to a message by this user instead?"
+        )
+        super(UserRecordError, self).__init__(message)
+
+
+def get_user_from_message(message: Message) -> Tuple[int, str]:
+    """
+    Get the User ID of a user from a given message from either the reply to message, or username given in content
+    :param message: The message whose content or reply to message we need to check
+    :return: User ID of the user
+    """
+    if message.reply_to_message:
+        # get user who made the quoted message
+        user_id = message.reply_to_message.from_user.id
+        username = message.reply_to_message.from_user.username
+        add_user(user_id=user_id, username=username)  # for future usage
+
+    elif len(message.text.split(" ")) > 1:
+        # get user from our users database using his username
+        usernames = list(message.parse_entities([MessageEntity.MENTION]).values())
+        if usernames:
+            user_id = get_user(username=usernames[0][1:])
+            if not user_id:
+                raise UserRecordError()
+            username = usernames[0][1:]
+        else:
+            raise UserError()
+
+    else:
+        raise UserError()
+
+    return user_id, username
