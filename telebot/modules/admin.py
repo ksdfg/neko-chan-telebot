@@ -227,31 +227,15 @@ def unmute(update: Update, context: CallbackContext):
     kwargs = {'chat_id': update.effective_chat.id}
 
     # get user to un mute
-    if update.effective_message.reply_to_message:
-        kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
-        username = update.effective_message.reply_to_message.from_user.username
-        add_user(user_id=kwargs['user_id'], username=username)  # for future usage
-
-    elif context.args:
-        usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
-        if usernames:
-            kwargs['user_id'] = fetch_muted_member(chat=kwargs['chat_id'], username=usernames[0][1:])
-            if not kwargs['user_id']:
-                update.effective_message.reply_text(
-                    "No such user is muted in this chat... Maybe stay away from the catnip for a while?"
-                )
-                return
-            username = usernames[0][1:]
-        else:
-            update.effective_message.reply_text(
-                "Reply to a message by the user or give username of user you want to unmute..."
-            )
-            return
-
-    else:
+    try:
+        user_id, username = get_user_from_message(update.effective_message)
+    except UserError:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to unmute..."
         )
+        return
+    except UserRecordError as e:
+        update.effective_message.reply_text(e.message)
         return
 
     # set default permissions
