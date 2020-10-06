@@ -3,7 +3,6 @@ from random import choice
 from requests import get
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import run_async, CallbackContext, CommandHandler
-from telegram.utils.helpers import mention_markdown
 
 from telebot import dispatcher
 from telebot.functions import bot_action
@@ -19,7 +18,9 @@ def ud(update: Update, context: CallbackContext):
     """
     if context.args:
         try:
-            result = get(f'http://api.urbandictionary.com/v0/define?term={" ".join(context.args)}').json()['list'][0]
+            result = choice(
+                get(f'http://api.urbandictionary.com/v0/define?term={" ".join(context.args)}').json()['list']
+            )
             update.effective_message.reply_markdown(
                 f"***Word***: {' '.join(context.args)}\n\n***Definition***:\n{result['definition']}\n\n",
                 disable_web_page_preview=True,
