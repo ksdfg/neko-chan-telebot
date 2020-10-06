@@ -1,7 +1,7 @@
 from random import choice
 
 from requests import get
-from telegram import Update
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import run_async, CallbackContext, CommandHandler
 from telegram.utils.helpers import mention_markdown
 
@@ -21,10 +21,11 @@ def ud(update: Update, context: CallbackContext):
         try:
             result = get(f'http://api.urbandictionary.com/v0/define?term={" ".join(context.args)}').json()['list'][0]
             update.effective_message.reply_markdown(
-                f"***Word***: {' '.join(context.args)}\n\n"
-                f"***Definition***:\n{result['definition']}\n\n"
-                f"[Click here to learn more]({result['permalink']})",
+                f"***Word***: {' '.join(context.args)}\n\n***Definition***:\n{result['definition']}\n\n",
                 disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton(text="Click here to learn more", url=result['permalink'])]]
+                ),
             )
         except IndexError:
             update.effective_message.reply_markdown(
@@ -32,12 +33,13 @@ def ud(update: Update, context: CallbackContext):
                 "wisdom you seek. Preferably the second option. When I'm passing by."
             )
     else:
+        user_link = f"tg://user?id={update.effective_user.id}"
         update.effective_message.reply_markdown(
             f"***Word***: {update.effective_user.first_name}\n\n"
             f"***Definition***:\nA dumbass eternally high on cheap catnip who doesn't know that I can't get a word's "
-            f"meaning they don't tell me what the bloody word is.\n\n"
-            f"{mention_markdown(user_id=update.effective_user.id, name='Click here to learn more')}",
+            f"meaning they don't tell me what the bloody word is.\n\n",
             disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="Click here to learn more", url=user_link)]]),
         )
 
 
