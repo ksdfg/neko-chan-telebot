@@ -277,34 +277,15 @@ def ban_kick(update: Update, context: CallbackContext):
     kwargs = {'chat_id': update.effective_chat.id}
 
     # get user to ban
-    if update.effective_message.reply_to_message:
-        # get user who made the quoted message
-        kwargs['user_id'] = update.effective_message.reply_to_message.from_user.id
-        username = update.effective_message.reply_to_message.from_user.username
-        add_user(user_id=kwargs['user_id'], username=username)  # for future usage
-
-    elif context.args:
-        # get user from our users database using his username
-        usernames = list(update.effective_message.parse_entities([MessageEntity.MENTION]).values())
-        if usernames:
-            kwargs['user_id'] = get_user(username=usernames[0][1:])
-            if not kwargs['user_id']:
-                update.effective_message.reply_text(
-                    "I don't remember anyone with that username... "
-                    "Maybe try executing the same command, but reply to a message by this user instead?"
-                )
-                return
-            username = usernames[0][1:]
-        else:
-            update.effective_message.reply_text(
-                f"Reply to a message by the user or give username of user you want to {action}..."
-            )
-            return
-
-    else:
+    try:
+        user_id, username = get_user_from_message(update.effective_message)
+    except UserError:
         update.effective_message.reply_text(
             f"Reply to a message by the user or give username of user you want to {action}..."
         )
+        return
+    except UserRecordError as e:
+        update.effective_message.reply_text(e.message)
         return
 
     # check if user is trying to ban the bot
