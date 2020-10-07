@@ -22,7 +22,7 @@ There are a few self-imposed rules on the project structure, to keep the project
 
 - Make sure all modules function independent of each other. Deleting a `module.py` file or not loading that module during runtime should have no effect on the other modules.
 
-- If there is a function that is not handling a bot functionality but only helping it achieve the funcitonality (e.g. a wrapper to check if user has certain permissions or a function to get all the stickerpacks belonging to a certain user) then
+- If there is a function that is not handling a bot functionality but only helping it achieve the functionality (e.g. a wrapper to check if user has certain permissions or a function to get all the stickerpacks belonging to a certain user) then
 
   - It should be in `telebot/functions.py` if it is going to be used in multiple modules.
 
