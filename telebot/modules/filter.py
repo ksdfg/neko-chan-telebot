@@ -11,7 +11,6 @@ from telebot.modules.db.filter import get_triggers_for_chat, add_filter, get_fil
 from telebot.modules.db.users import add_user
 
 
-@run_async
 @bot_action("list filters")
 def list_filters(update: Update, context: CallbackContext):
     """
@@ -32,7 +31,6 @@ def list_filters(update: Update, context: CallbackContext):
         update.message.reply_markdown(emojize("No active filters in this chat :crying_cat_face:"))
 
 
-@run_async
 @bot_action("add filter")
 def add_filter_handler(update: Update, context: CallbackContext):
     """
@@ -116,7 +114,6 @@ def add_filter_handler(update: Update, context: CallbackContext):
     msg.reply_markdown(add_filter(**kwargs))
 
 
-@run_async
 @bot_action("delete filters")
 def del_filter_handler(update: Update, context: CallbackContext):
     """
@@ -138,7 +135,6 @@ def del_filter_handler(update: Update, context: CallbackContext):
         )
 
 
-@run_async
 @bot_action()
 def reply(update: Update, context: CallbackContext) -> None:
     """
@@ -200,7 +196,7 @@ If you add an exception for `filter` in the chat, it will make sure that none of
 __mod_name__ = "Filters"
 
 # create handlers
-dispatcher.add_handler(CommandHandler("filters", list_filters))
-dispatcher.add_handler(CommandHandler("filter", add_filter_handler))
-dispatcher.add_handler(CommandHandler("stop", del_filter_handler))
-dispatcher.add_handler(MessageHandler(Filters.all, reply), group=69)
+dispatcher.add_handler(CommandHandler("filters", list_filters, run_async=True))
+dispatcher.add_handler(CommandHandler("filter", add_filter_handler, run_async=True))
+dispatcher.add_handler(CommandHandler("stop", del_filter_handler, run_async=True))
+dispatcher.add_handler(MessageHandler(Filters.all, reply, run_async=True), group=69)
