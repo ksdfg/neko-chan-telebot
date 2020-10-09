@@ -13,7 +13,6 @@ from telebot.functions import bot_action
 from telebot.modules.db.users import add_user
 
 
-@run_async
 @bot_action("runs")
 def runs(update: Update, context: CallbackContext) -> None:
     """
@@ -25,7 +24,6 @@ def runs(update: Update, context: CallbackContext) -> None:
     update.effective_chat.send_sticker("CAACAgUAAxkBAAIJK19CjPoyyX9QwwHfNOZMnqww1hxXAALfAAPd6BozJDBFCIENpGkbBA")
 
 
-@run_async
 @bot_action("mock")
 def mock(update: Update, context: CallbackContext) -> None:
     """
@@ -46,7 +44,6 @@ def mock(update: Update, context: CallbackContext) -> None:
         update.effective_message.reply_text("I don't see anything to mock here other than your ugly face...")
 
 
-@run_async
 @bot_action("zalgofy")
 def zalgofy(update: Update, context: CallbackContext) -> None:
     """
@@ -69,7 +66,6 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
         update.effective_message.reply_text("Gimme a message to zalgofy before I claw your tits off...")
 
 
-@run_async
 @bot_action("owo")
 def owo(update: Update, context: CallbackContext) -> None:
     """
@@ -136,7 +132,6 @@ def owo(update: Update, context: CallbackContext) -> None:
         )
 
 
-@run_async
 @bot_action("stretch")
 def stretch(update: Update, context: CallbackContext):
     """
@@ -165,7 +160,6 @@ def stretch(update: Update, context: CallbackContext):
         )
 
 
-@run_async
 @bot_action("vapor")
 def vapor(update: Update, context: CallbackContext):
     """
@@ -216,9 +210,9 @@ __help__ = """
 __mod_name__ = "memes"
 
 # create handlers
-dispatcher.add_handler(CommandHandler("runs", runs))
-dispatcher.add_handler(CommandHandler("mock", mock))
-dispatcher.add_handler(CommandHandler("zalgofy", zalgofy))
-dispatcher.add_handler(CommandHandler("owo", owo))
-dispatcher.add_handler(CommandHandler("stretch", stretch))
-dispatcher.add_handler(CommandHandler("vapor", vapor))
+dispatcher.add_handler(CommandHandler("runs", runs, run_async=True))
+dispatcher.add_handler(CommandHandler("mock", mock, run_async=True))
+dispatcher.add_handler(CommandHandler("zalgofy", zalgofy, run_async=True))
+dispatcher.add_handler(CommandHandler("owo", owo, run_async=True))
+dispatcher.add_handler(CommandHandler("stretch", stretch, run_async=True))
+dispatcher.add_handler(CommandHandler("vapor", vapor, run_async=True))
