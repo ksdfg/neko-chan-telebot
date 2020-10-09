@@ -10,7 +10,6 @@ from telebot.modules.db.exceptions import (
 )
 
 
-@run_async
 @bot_action()
 def list_exceptions(update: Update, context: CallbackContext):
     """
@@ -29,7 +28,6 @@ def list_exceptions(update: Update, context: CallbackContext):
         update.effective_message.reply_text("You don't have any exceptions set!")
 
 
-@run_async
 @bot_action("add exception")
 def add_exception(update: Update, context: CallbackContext):
     """
@@ -46,7 +44,6 @@ def add_exception(update: Update, context: CallbackContext):
         update.effective_message.reply_markdown(reply)
 
 
-@run_async
 @bot_action("delete exceptions")
 def del_exception(update: Update, context: CallbackContext):
     """
@@ -76,6 +73,6 @@ Adding an exception for a bot_action in your chat will change it's behaviour. Ho
 __mod_name__ = "Exceptions"
 
 # create handlers
-dispatcher.add_handler(CommandHandler('listexceptions', list_exceptions))
-dispatcher.add_handler(CommandHandler('addexceptions', add_exception))
-dispatcher.add_handler(CommandHandler('delexceptions', del_exception))
+dispatcher.add_handler(CommandHandler('listexceptions', list_exceptions, run_async=True))
+dispatcher.add_handler(CommandHandler('addexceptions', add_exception, run_async=True))
+dispatcher.add_handler(CommandHandler('delexceptions', del_exception, run_async=True))
