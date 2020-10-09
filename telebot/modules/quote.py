@@ -292,7 +292,6 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
     return f"{file_name}_final.png"
 
 
-@run_async
 @bot_action("quote")
 def quote(update: Update, context: CallbackContext):
     """
@@ -332,4 +331,4 @@ __help__ = """
 __mod_name__ = "quote"
 
 # create handlers
-dispatcher.add_handler(CommandHandler('quote', quote))
+dispatcher.add_handler(CommandHandler('quote', quote, run_async=True))
