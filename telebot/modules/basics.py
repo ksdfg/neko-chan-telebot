@@ -21,7 +21,6 @@ I'm `{updater.bot.first_name}`, a cute little bot that does rendum shit rn.
 )
 
 
-@run_async
 @bot_action("start")
 def start(update: Update, context: CallbackContext):
     """
@@ -32,7 +31,6 @@ def start(update: Update, context: CallbackContext):
     update.message.reply_markdown(START_TEXT)
 
 
-@run_async
 @bot_action("list modules")
 def list_modules(update: Update, context: CallbackContext):
     """
@@ -47,7 +45,6 @@ def list_modules(update: Update, context: CallbackContext):
     )
 
 
-@run_async
 @bot_action("help")
 def help(update: Update, context: CallbackContext):
     """
@@ -87,7 +84,6 @@ def help(update: Update, context: CallbackContext):
     update.message.reply_markdown(text_blob)
 
 
-@run_async
 @bot_action("talk")
 def talk(update: Update, context: CallbackContext) -> None:
     """
@@ -108,7 +104,6 @@ def talk(update: Update, context: CallbackContext) -> None:
     update.message.reply_markdown(f"`{spem}`")
 
 
-@run_async
 @bot_action("id")
 def get_id(update: Update, context: CallbackContext) -> None:
     """
@@ -121,7 +116,6 @@ def get_id(update: Update, context: CallbackContext) -> None:
     )
 
 
-@run_async
 @bot_action("info")
 def info(update: Update, context: CallbackContext):
     """
@@ -171,9 +165,9 @@ __help__ = """
 
 
 # create handlers
-dispatcher.add_handler(CommandHandler("start", start))
-dispatcher.add_handler(CommandHandler("talk", talk))
-dispatcher.add_handler(CommandHandler("help", help))
-dispatcher.add_handler(CommandHandler("modules", list_modules))
-dispatcher.add_handler(CommandHandler("id", get_id))
-dispatcher.add_handler(CommandHandler("info", info))
+dispatcher.add_handler(CommandHandler("start", start, run_async=True))
+dispatcher.add_handler(CommandHandler("talk", talk, run_async=True))
+dispatcher.add_handler(CommandHandler("help", help, run_async=True))
+dispatcher.add_handler(CommandHandler("modules", list_modules, run_async=True))
+dispatcher.add_handler(CommandHandler("id", get_id, run_async=True))
+dispatcher.add_handler(CommandHandler("info", info, run_async=True))
