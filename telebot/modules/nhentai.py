@@ -75,7 +75,6 @@ def get_content(content, _id):
         return res.strip()
 
 
-@run_async
 @bot_action("sauce")
 def sauce(update: Update, context: CallbackContext) -> None:
     """
@@ -129,4 +128,4 @@ If you don't have an exception set for your chat, it'll send it to you in your p
 __mod_name__ = "nhentai"
 
 # create handlers
-dispatcher.add_handler(CommandHandler('sauce', sauce))
+dispatcher.add_handler(CommandHandler('sauce', sauce, run_async=True))
