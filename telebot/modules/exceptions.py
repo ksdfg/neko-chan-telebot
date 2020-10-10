@@ -41,6 +41,7 @@ def add_exception(update: Update, context: CallbackContext):
 
     for command in context.args:
         reply = add_command_exception_chats(command, update.effective_chat.id)
+        print(reply)
         update.effective_message.reply_markdown(reply)
 
 
@@ -63,16 +64,16 @@ def del_exception(update: Update, context: CallbackContext):
 __help__ = """
 Adding an exception for a bot_action in your chat will change it's behaviour. How it will change depends on the bot_action.
 
-- /listexceptions : list all exceptions in chat
+- /exceptions : list all exceptions in chat
 
-- /addexceptions `<commands list>` : Add exceptions for given commands (space separated)
+- /except `<commands list>` : Add exceptions for given commands (space separated)
 
-- /delexceptions `<commands list>` : Delete exceptions for given commands (space separated)
+- /delexcept `<commands list>` : Delete exceptions for given commands (space separated)
 """
 
 __mod_name__ = "Exceptions"
 
 # create handlers
-dispatcher.add_handler(CommandHandler('listexceptions', list_exceptions, run_async=True))
-dispatcher.add_handler(CommandHandler('addexceptions', add_exception, run_async=True))
-dispatcher.add_handler(CommandHandler('delexceptions', del_exception, run_async=True))
+dispatcher.add_handler(CommandHandler('exceptions', list_exceptions, run_async=True))
+dispatcher.add_handler(CommandHandler('except', add_exception, run_async=True))
+dispatcher.add_handler(CommandHandler('delexcept', del_exception, run_async=True))
