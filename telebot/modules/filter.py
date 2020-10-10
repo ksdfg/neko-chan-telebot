@@ -152,6 +152,10 @@ def reply(update: Update, context: CallbackContext) -> None:
     if text is None:
         return
 
+    # make sure it doesn't reply to message trying to stop a trigger
+    if search("^/stop .+", text):
+        return
+
     # get triggers for the chat
     triggers = get_triggers_for_chat(update.effective_chat.id)
 
