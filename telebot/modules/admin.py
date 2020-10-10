@@ -569,15 +569,13 @@ def purge(update: Update, context: CallbackContext):
     )
 
     # delete messages
-    for id_ in range(
-        update.effective_message.message_id - 1, update.effective_message.reply_to_message.message_id - 1, -1
-    ):
+    for id_ in range(update.effective_message.message_id, update.effective_message.reply_to_message.message_id - 1, -1):
         try:
             context.bot.delete_message(update.effective_chat.id, id_)
         except BadRequest:
             continue
 
-    update.effective_message.reply_text("Just like we do it in china....")
+    update.effective_chat.send_message("Just like we do it in china....")
 
 
 __help__ = """
