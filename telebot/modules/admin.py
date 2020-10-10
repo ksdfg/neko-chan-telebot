@@ -130,7 +130,7 @@ def mute(update: Update, context: CallbackContext):
 
     # get user to mute
     try:
-        user_id, username = get_user_from_message(update.effective_message)
+        kwargs['user_id'], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to mute..."
@@ -207,7 +207,7 @@ def unmute(update: Update, context: CallbackContext):
 
     # get user to un mute
     try:
-        user_id, username = get_user_from_message(update.effective_message)
+        kwargs['user_id'], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to unmute..."
@@ -241,7 +241,7 @@ def ban_kick(update: Update, context: CallbackContext):
 
     # get user to ban
     try:
-        user_id, username = get_user_from_message(update.effective_message)
+        kwargs['user_id'], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             f"Reply to a message by the user or give username of user you want to {action}..."
