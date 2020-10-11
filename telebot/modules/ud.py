@@ -8,7 +8,6 @@ from telebot import dispatcher
 from telebot.functions import bot_action
 
 
-@run_async
 @bot_action("urban dict")
 def ud(update: Update, context: CallbackContext):
     """
@@ -47,4 +46,4 @@ __help__ = """
 
 __mod_name__ = "Urban-Dictionary"
 
-dispatcher.add_handler(CommandHandler("ud", ud))
+dispatcher.add_handler(CommandHandler("ud", ud, run_async=True))
