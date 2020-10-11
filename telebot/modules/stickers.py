@@ -19,7 +19,6 @@ from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.users import add_user
 
 
-@run_async
 @bot_action("sticker id")
 def sticker_id(update: Update, context: CallbackContext) -> None:
     """
@@ -41,7 +40,6 @@ def sticker_id(update: Update, context: CallbackContext) -> None:
         update.effective_message.reply_text("Please reply to a sticker to get its ID.")
 
 
-@run_async
 @bot_action("get sticker")
 def get_sticker(update: Update, context: CallbackContext) -> None:
     """
@@ -224,7 +222,6 @@ def _make_pack(
         print(f"failed to create {pack_name}")
 
 
-@run_async
 @bot_action("kang")
 def kang(update: Update, context: CallbackContext) -> None:
     """
@@ -443,7 +440,6 @@ def kang(update: Update, context: CallbackContext) -> None:
         os.remove(kang_sticker)
 
 
-@run_async
 @bot_action("migrate pack")
 def migrate(update: Update, context: CallbackContext) -> None:
     """
@@ -615,7 +611,6 @@ def migrate(update: Update, context: CallbackContext) -> None:
         os.remove(file)
 
 
-@run_async
 @bot_action("delete sticker")
 def del_sticker(update: Update, context: CallbackContext) -> None:
     """
@@ -653,7 +648,6 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
     update.effective_message.reply_markdown(f"Deleted that sticker from [{set_title}](t.me/addstickers/{set_name}).")
 
 
-@run_async
 @bot_action("list packs")
 def packs(update: Update, context: CallbackContext):
     """
@@ -681,7 +675,6 @@ def packs(update: Update, context: CallbackContext):
 reorder = {}
 
 
-@run_async
 @bot_action("reorder step 1")
 def reorder1(update: Update, context: CallbackContext):
     """
@@ -732,7 +725,6 @@ def reorder1(update: Update, context: CallbackContext):
     return 0
 
 
-@run_async
 @bot_action("reorder step 2")
 def reorder2(update: Update, context: CallbackContext):
     """
@@ -780,7 +772,6 @@ def reorder2(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 
-@run_async
 @bot_action("reorder cancel")
 def reorder_cancel(update: Update, context: CallbackContext):
     """
@@ -815,16 +806,16 @@ __help__ = r"""
 __mod_name__ = "Stickers"
 
 # create handlers
-dispatcher.add_handler(CommandHandler("stickerid", sticker_id))
-dispatcher.add_handler(CommandHandler("getsticker", get_sticker))
-dispatcher.add_handler(CommandHandler('kang', kang))
-dispatcher.add_handler(CommandHandler('migrate', migrate))
-dispatcher.add_handler(CommandHandler('delsticker', del_sticker))
-dispatcher.add_handler(CommandHandler('packs', packs))
+dispatcher.add_handler(CommandHandler("stickerid", sticker_id, run_async=True))
+dispatcher.add_handler(CommandHandler("getsticker", get_sticker, run_async=True))
+dispatcher.add_handler(CommandHandler('kang', kang, run_async=True))
+dispatcher.add_handler(CommandHandler('migrate', migrate, run_async=True))
+dispatcher.add_handler(CommandHandler('delsticker', del_sticker, run_async=True))
+dispatcher.add_handler(CommandHandler('packs', packs, run_async=True))
 dispatcher.add_handler(
     ConversationHandler(
-        entry_points=[CommandHandler("reorder", reorder1)],
-        states={0: [MessageHandler(Filters.sticker, reorder2)]},
-        fallbacks=[CommandHandler("cancel", reorder_cancel)],
+        entry_points=[CommandHandler("reorder", reorder1, run_async=True)],
+        states={0: [MessageHandler(Filters.sticker, reorder2, run_async=True)]},
+        fallbacks=[CommandHandler("cancel", reorder_cancel, run_async=True)],
     )
 )

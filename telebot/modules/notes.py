@@ -9,7 +9,6 @@ from telebot.modules.db.notes import get_note, get_notes_for_chat, add_note, del
 from telebot.modules.db.users import add_user
 
 
-@run_async
 @bot_action("get note")
 def fetch_note(update: Update, context: CallbackContext):
     """
@@ -49,7 +48,6 @@ def fetch_note(update: Update, context: CallbackContext):
         update.effective_message.reply_video(content)
 
 
-@run_async
 @bot_action("notes")
 def notes_for_chat(update: Update, context: CallbackContext):
     """
@@ -76,7 +74,6 @@ def notes_for_chat(update: Update, context: CallbackContext):
         update.effective_message.reply_text("No one told me to remember anything, so I got high on catnip instead.....")
 
 
-@run_async
 @bot_action("add note")
 @check_user_admin
 def add_note_in_chat(update: Update, context: CallbackContext):
@@ -159,7 +156,6 @@ def add_note_in_chat(update: Update, context: CallbackContext):
     msg.reply_markdown(add_note(**kwargs))
 
 
-@run_async
 @bot_action("delete note")
 @check_user_admin
 def del_note_in_chat(update: Update, context: CallbackContext):
@@ -201,9 +197,9 @@ If you add an exception for `notes` in the chat, it will make sure that none of 
 __mod_name__ = "Notes"
 
 # create handlers
-dispatcher.add_handler(CommandHandler("get", fetch_note))
-dispatcher.add_handler(MessageHandler(Filters.regex(r"^#[^\s]+$"), fetch_note))
-dispatcher.add_handler(CommandHandler("notes", notes_for_chat))
-dispatcher.add_handler(CommandHandler("saved", notes_for_chat))
-dispatcher.add_handler(CommandHandler("save", add_note_in_chat))
-dispatcher.add_handler(CommandHandler("clear", del_note_in_chat))
+dispatcher.add_handler(CommandHandler("get", fetch_note, run_async=True))
+dispatcher.add_handler(MessageHandler(Filters.regex(r"^#[^\s]+$"), fetch_note, run_async=True))
+dispatcher.add_handler(CommandHandler("notes", notes_for_chat, run_async=True))
+dispatcher.add_handler(CommandHandler("saved", notes_for_chat, run_async=True))
+dispatcher.add_handler(CommandHandler("save", add_note_in_chat, run_async=True))
+dispatcher.add_handler(CommandHandler("clear", del_note_in_chat, run_async=True))

@@ -114,7 +114,6 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
     return until_date
 
 
-@run_async
 @bot_action("mute")
 @for_chat_types('supergroup')
 @check_user_admin
@@ -131,7 +130,7 @@ def mute(update: Update, context: CallbackContext):
 
     # get user to mute
     try:
-        user_id, username = get_user_from_message(update.effective_message)
+        kwargs['user_id'], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to mute..."
@@ -192,7 +191,6 @@ def mute(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Couldn't save record in db....")
 
 
-@run_async
 @bot_action("un mute")
 @for_chat_types('supergroup')
 @check_user_admin
@@ -209,7 +207,7 @@ def unmute(update: Update, context: CallbackContext):
 
     # get user to un mute
     try:
-        user_id, username = get_user_from_message(update.effective_message)
+        kwargs['user_id'], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to unmute..."
@@ -243,7 +241,7 @@ def ban_kick(update: Update, context: CallbackContext):
 
     # get user to ban
     try:
-        user_id, username = get_user_from_message(update.effective_message)
+        kwargs['user_id'], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             f"Reply to a message by the user or give username of user you want to {action}..."
@@ -295,7 +293,6 @@ def ban_kick(update: Update, context: CallbackContext):
     update.effective_message.reply_markdown(emojize(reply))
 
 
-@run_async
 @bot_action("ban")
 @for_chat_types('supergroup', 'channel')
 @check_user_admin
@@ -310,7 +307,6 @@ def ban(update: Update, context: CallbackContext):
     ban_kick(update, context)
 
 
-@run_async
 @bot_action("kick")
 @for_chat_types('supergroup', 'channel')
 @check_user_admin
@@ -325,7 +321,6 @@ def kick(update: Update, context: CallbackContext):
     ban_kick(update, context)
 
 
-@run_async
 @bot_action("promote")
 @for_chat_types('supergroup', 'channel')
 @check_user_admin
@@ -403,7 +398,6 @@ def promote(update: Update, context: CallbackContext):
         )
 
 
-@run_async
 @bot_action("demote")
 @for_chat_types('supergroup', 'channel')
 @check_user_admin
@@ -477,7 +471,6 @@ def demote(update: Update, context: CallbackContext):
         )
 
 
-@run_async
 @bot_action("pin")
 @for_chat_types('supergroup', 'channel')
 @check_bot_admin
@@ -534,7 +527,6 @@ def pin(update: Update, context: CallbackContext):
     )
 
 
-@run_async
 @bot_action("purge")
 @check_user_admin
 @check_bot_admin
@@ -577,15 +569,13 @@ def purge(update: Update, context: CallbackContext):
     )
 
     # delete messages
-    for id_ in range(
-        update.effective_message.message_id - 1, update.effective_message.reply_to_message.message_id - 1, -1
-    ):
+    for id_ in range(update.effective_message.message_id, update.effective_message.reply_to_message.message_id - 1, -1):
         try:
             context.bot.delete_message(update.effective_chat.id, id_)
         except BadRequest:
             continue
 
-    update.effective_message.reply_text("Just like we do it in china....")
+    update.effective_chat.send_message("Just like we do it in china....")
 
 
 __help__ = """
@@ -613,11 +603,11 @@ If you add an exception to `admin`, I will allow admins to execute commands even
 __mod_name__ = "Admin"
 
 # create handlers
-dispatcher.add_handler(CommandHandler("promote", promote))
-dispatcher.add_handler(CommandHandler("demote", demote))
-dispatcher.add_handler(CommandHandler("mute", mute))
-dispatcher.add_handler(CommandHandler("unmute", unmute))
-dispatcher.add_handler(CommandHandler("ban", ban))
-dispatcher.add_handler(CommandHandler("kick", kick))
-dispatcher.add_handler(CommandHandler("pin", pin))
-dispatcher.add_handler(CommandHandler("purge", purge))
+dispatcher.add_handler(CommandHandler("promote", promote, run_async=True))
+dispatcher.add_handler(CommandHandler("demote", demote, run_async=True))
+dispatcher.add_handler(CommandHandler("mute", mute, run_async=True))
+dispatcher.add_handler(CommandHandler("unmute", unmute, run_async=True))
+dispatcher.add_handler(CommandHandler("ban", ban, run_async=True))
+dispatcher.add_handler(CommandHandler("kick", kick, run_async=True))
+dispatcher.add_handler(CommandHandler("pin", pin, run_async=True))
+dispatcher.add_handler(CommandHandler("purge", purge, run_async=True))
