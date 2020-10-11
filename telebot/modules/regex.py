@@ -55,4 +55,4 @@ eg: \\?.
 """
 
 # ad handlers
-dispatcher.add_handler(MessageHandler(Filters.regex(compile("s([/:|_]).*([/:|_]).*")), regex, run_async=True))
+dispatcher.add_handler(MessageHandler(Filters.regex(compile("^s([/:|_]).*([/:|_]).*")), regex, run_async=True))
