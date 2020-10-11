@@ -1,4 +1,4 @@
-from re import compile
+from re import compile, search
 from subprocess import Popen, PIPE, check_output, CalledProcessError, STDOUT
 
 from telegram import MAX_MESSAGE_LENGTH, Update
@@ -21,8 +21,10 @@ def regex(update: Update, context: CallbackContext):
 
     # make sure `s` command is properly terminated
     command = update.effective_message.text
-    if command.count("/") == 2:
-        command += "/"
+    delimiter = command[1]
+    if command.count(delimiter) == 2:
+        command += delimiter
+    command = search(f"s{delimiter}.*{delimiter}.*{delimiter}[ig]*", command).group()
 
     # execute sed in shell to get output
     try:
