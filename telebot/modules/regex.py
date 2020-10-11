@@ -16,34 +16,34 @@ def regex(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    if "regex" not in get_exceptions_for_chat(update.effective_chat.id):
-        if not update.effective_message.reply_to_message:
-            update.effective_message.reply_text("Gimme text to replace stuff in, baka!")
-            return
+    if "regex" in get_exceptions_for_chat(update.effective_chat.id):
+        return
 
-        # make sure `s` command is properly terminated
-        command = update.effective_message.text
-        delimiter = command[1]
-        if command.count(delimiter) == 2:
-            command += delimiter
-        delimiter_regex_safe = delimiter.replace('|', r'\|')  # because | is regex OR
-        command = search(
-            f"s{delimiter_regex_safe}.*{delimiter_regex_safe}.*{delimiter_regex_safe}[ig]*", command
-        ).group()
+    if not update.effective_message.reply_to_message:
+        update.effective_message.reply_text("Gimme text to replace stuff in, baka!")
+        return
 
-        # execute sed in shell to get output
-        try:
-            text_input = Popen(("echo", update.effective_message.reply_to_message.text), stdout=PIPE, stderr=STDOUT)
-            result = check_output(("sed", "-r", command), stdin=text_input.stdout, stderr=STDOUT)
-        except CalledProcessError as e:
-            update.effective_message.reply_markdown(f"```{e.output.decode()}```")
-            return
+    # make sure `s` command is properly terminated
+    command = update.effective_message.text
+    delimiter = command[1]
+    if command.count(delimiter) == 2:
+        command += delimiter
+    delimiter_regex_safe = delimiter.replace('|', r'\|')  # because | is regex OR
+    command = search(f"s{delimiter_regex_safe}.*{delimiter_regex_safe}.*{delimiter_regex_safe}[ig]*", command).group()
 
-        # reply with the output text
-        if len(result.decode()) > MAX_MESSAGE_LENGTH:
-            update.effective_message.reply_text("Resultant message is too big for this pussy to send......")
-        else:
-            update.effective_message.reply_to_message.reply_text(result.decode())
+    # execute sed in shell to get output
+    try:
+        text_input = Popen(("echo", update.effective_message.reply_to_message.text), stdout=PIPE, stderr=STDOUT)
+        result = check_output(("sed", "-r", command), stdin=text_input.stdout, stderr=STDOUT)
+    except CalledProcessError as e:
+        update.effective_message.reply_markdown(f"```{e.output.decode()}```")
+        return
+
+    # reply with the output text
+    if len(result.decode()) > MAX_MESSAGE_LENGTH:
+        update.effective_message.reply_text("Resultant message is too big for this pussy to send......")
+    else:
+        update.effective_message.reply_to_message.reply_text(result.decode())
 
 
 __mod_name__ = "Regex"
