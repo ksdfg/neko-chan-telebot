@@ -51,16 +51,18 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    if update.effective_message.reply_to_message:
+    transform = zalgo().zalgofy
+
+    if context.args:
+        update.effective_message.reply_text(transform(update.effective_message.text.replace("/zalgofy ", "").strip()))
+
+    elif update.effective_message.reply_to_message:
         # for future usage
         add_user(
             user_id=update.effective_message.reply_to_message.from_user.id,
             username=update.effective_message.reply_to_message.from_user.username,
         )
-
-        update.effective_message.reply_to_message.reply_text(
-            zalgo().zalgofy(update.effective_message.reply_to_message.text)
-        )
+        update.effective_message.reply_to_message.reply_text(transform(update.effective_message.reply_to_message.text))
 
     else:
         update.effective_message.reply_text("Gimme a message to zalgofy before I claw your tits off...")
