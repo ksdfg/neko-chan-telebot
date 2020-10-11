@@ -17,6 +17,7 @@ def regex(update: Update, context: CallbackContext):
     """
     if not update.effective_message.reply_to_message:
         update.effective_message.reply_text("Gimme text to replace stuff in, baka!")
+        return
 
     # make sure `s` command is properly terminated
     command = update.effective_message.text
