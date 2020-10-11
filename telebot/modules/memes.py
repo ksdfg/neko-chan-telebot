@@ -139,24 +139,32 @@ def stretch(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    if not update.effective_message.reply_to_message:
-        update.effective_message.reply_text(
-            "If you're not gonna give me a message to meme, at least give me some catnip..."
+    if context.args:
+        update.effective_message.reply_markdown(
+            sub(
+                r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])',
+                (r'\1' * randint(3, 10)),
+                update.effective_message.text_markdown.replace("/stretch ", "").strip(),
+            )
         )
 
-    else:
-        # for future usage
-        add_user(
-            user_id=update.effective_message.reply_to_message.from_user.id,
-            username=update.effective_message.reply_to_message.from_user.username,
-        )
-
+    elif update.effective_message.reply_to_message:
         update.effective_message.reply_to_message.reply_markdown(
             sub(
                 r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])',
                 (r'\1' * randint(3, 10)),
                 update.effective_message.reply_to_message.text_markdown,
             )
+        )
+        # for future usage
+        add_user(
+            user_id=update.effective_message.reply_to_message.from_user.id,
+            username=update.effective_message.reply_to_message.from_user.username,
+        )
+
+    else:
+        update.effective_message.reply_text(
+            "If you're not gonna give me something to meme then bring some catnip atleast..."
         )
 
 
@@ -202,9 +210,9 @@ __help__ = """
 
 - /owo `<reply>` : translate normie to moe weeb
 
-- /stretch `<reply>` : talk like the sloth from zootopia
+- /stretch `<reply|message>` : talk like the sloth from zootopia
 
-- /vapor `[<reply>|<message>]` : ｖａｐｏｒｗａｖｅ ａｅｓｔｈｅｔｉｃｓ
+- /vapor `<reply|message>` : ｖａｐｏｒｗａｖｅ ａｅｓｔｈｅｔｉｃｓ
 """
 
 __mod_name__ = "memes"
