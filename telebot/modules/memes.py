@@ -73,41 +73,34 @@ def owo(update: Update, context: CallbackContext) -> None:
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    if not update.effective_message.reply_to_message:
-        update.effective_message.reply_text(
-            "Gommenye, I don't nyaruhodo what normie text you want to henshin into the moe weeb dialect"
-        )
-        return
 
-    # for future usage
-    add_user(
-        user_id=update.effective_message.reply_to_message.from_user.id,
-        username=update.effective_message.reply_to_message.from_user.username,
-    )
+    def transform(text: str):
+        """
+        Transform message text
+        :param text: The text in the message
+        :return: owo-fied text
+        """
+        # list of all kaomojis to use in owo
+        kaomoji = [
+            r"`(・\`ω´・)`",
+            "`;;w;;`",
+            "`owo`",
+            "`UwU`",
+            "`>w<`",
+            "`^w^`",
+            "`( ^ _ ^)∠☆`",
+            "`(ô_ô)`",
+            "`~:o`",
+            "`;____;`",
+            "`(*^*)`",
+            "`(>_`",
+            "`(♥_♥)`",
+            "`*(^O^)*`",
+            "`((+_+))`",
+        ]
 
-    # list of all kaomojis to use in owo
-    kaomoji = [
-        escape_markdown("```\n(・`ω´・)\n```"),
-        escape_markdown("```\n;;w;;\n```"),
-        escape_markdown("```\nowo\n```"),
-        escape_markdown("```\nUwU\n```"),
-        escape_markdown("```\n>w<\n```"),
-        escape_markdown("```\n^w^\n```"),
-        escape_markdown("```\n" + r"\(^o\) (/o^)/" + "\n```"),
-        escape_markdown("```\n( ^ _ ^)∠☆\n```"),
-        escape_markdown("```\n(ô_ô)\n```"),
-        escape_markdown("```\n~:o\n```"),
-        escape_markdown("```\n;____;\n```"),
-        escape_markdown("```\n(*^*)\n```"),
-        escape_markdown("```\n(>_\n```"),
-        escape_markdown("```\n(♥_♥)\n```"),
-        escape_markdown("```\n*(^O^)*\n```"),
-        escape_markdown("```\n((+_+))\n```"),
-    ]
-
-    try:
         # replace certain characters and add a kaomoji
-        reply_text = sub(r'[rl]', "w", update.effective_message.reply_to_message.text_markdown)
+        reply_text = sub(r'[rl]', "w", text)
         reply_text = sub(r'[ｒｌ]', "ｗ", reply_text)
         reply_text = sub(r'[RL]', 'W', reply_text)
         reply_text = sub(r'[ＲＬ]', 'Ｗ', reply_text)
@@ -119,16 +112,45 @@ def owo(update: Update, context: CallbackContext) -> None:
         reply_text = sub(r'！+', ' ' + choice(kaomoji), reply_text)
         reply_text = reply_text.replace("ove", "uv")
         reply_text = reply_text.replace("ｏｖｅ", "ｕｖ")
-        reply_text += "\n" + choice(kaomoji)
+        reply_text += " " + choice(kaomoji)
 
-        # reply to the original message
-        update.effective_message.reply_to_message.reply_markdown(reply_text)
+        return reply_text
 
-    except BadRequest:
-        # in case we messed up markdown while replacing characters and adding kaomoji
+    if context.args:
+        try:
+            update.effective_message.reply_markdown_v2(
+                transform(update.effective_message.text_markdown_v2.replace("/owo ", "").strip())
+            )
+        except BadRequest as e:
+            print(e)
+            # in case we messed up markdown while replacing characters and adding kaomoji
+            update.effective_message.reply_text(
+                "Gommenye, I over-owo'd myself.... please try again. "
+                "If it still doesn't work, then this must be the language of god's you're trying to translate...."
+            )
+
+    elif update.effective_message.reply_to_message:
+        try:
+            print(transform(update.effective_message.reply_to_message.text_markdown))
+            update.effective_message.reply_to_message.reply_markdown(
+                transform(update.effective_message.reply_to_message.text_markdown)
+            )
+            # for future usage
+            add_user(
+                user_id=update.effective_message.reply_to_message.from_user.id,
+                username=update.effective_message.reply_to_message.from_user.username,
+            )
+        except BadRequest as e:
+            print(e)
+            # in case we messed up markdown while replacing characters and adding kaomoji
+            update.effective_message.reply_text(
+                "Gommenye, I over-owo'd myself.... please try again. "
+                "If it still doesn't work, then this must be the language of god's you're trying to translate...."
+            )
+
+    else:
         update.effective_message.reply_text(
-            "Gommenye, I over-owo'd myself.... please try again. "
-            "If it still doesn't work, then this must be the language of god's you're trying to translate...."
+            "Gommenye, I don't nyaruhodo what normie text you want to henshin into the moe weeb dialect"
         )
 
 
@@ -206,9 +228,9 @@ def vapor(update: Update, context: CallbackContext):
 __help__ = """
 - /mock `<reply>` : MoCk LikE sPOnGEbob
 
-- /zalgofy `<reply>` : cͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ
+- /zalgofy `<reply|message>` : cͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ
 
-- /owo `<reply>` : translate normie to moe weeb
+- /owo `<reply|message>` : translate normie to moe weeb
 
 - /stretch `<reply|message>` : talk like the sloth from zootopia
 
