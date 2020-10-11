@@ -33,7 +33,10 @@ def regex(update: Update, context: CallbackContext):
         return
 
     # reply with the output text
-    update.effective_message.reply_to_message.reply_text(result.decode())
+    if len(result.decode()) > MAX_MESSAGE_LENGTH:
+        update.effective_message.reply_text("Resultant message is too big for this pussy to send......")
+    else:
+        update.effective_message.reply_to_message.reply_text(result.decode())
 
 
 __mod_name__ = "Regex"
