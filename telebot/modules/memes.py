@@ -4,8 +4,7 @@ from re import sub
 from spongemock.spongemock import mock as mock_text
 from telegram import Update
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext, CommandHandler, run_async
-from telegram.utils.helpers import escape_markdown
+from telegram.ext import CallbackContext, CommandHandler
 from zalgo_text.zalgo import zalgo
 
 from telebot import dispatcher
@@ -31,14 +30,16 @@ def mock(update: Update, context: CallbackContext) -> None:
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    if update.effective_message.reply_to_message:
+    if context.args:
+        update.effective_message.reply_text(mock_text(update.effective_message.text.replace("/mock ", "").strip()))
+
+    elif update.effective_message.reply_to_message:
+        update.effective_message.reply_to_message.reply_text(mock_text(update.effective_message.reply_to_message.text))
         # for future usage
         add_user(
             user_id=update.effective_message.reply_to_message.from_user.id,
             username=update.effective_message.reply_to_message.from_user.username,
         )
-
-        update.effective_message.reply_to_message.reply_text(mock_text(update.effective_message.reply_to_message.text))
 
     else:
         update.effective_message.reply_text("I don't see anything to mock here other than your ugly face...")
@@ -57,12 +58,12 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
         update.effective_message.reply_text(transform(update.effective_message.text.replace("/zalgofy ", "").strip()))
 
     elif update.effective_message.reply_to_message:
+        update.effective_message.reply_to_message.reply_text(transform(update.effective_message.reply_to_message.text))
         # for future usage
         add_user(
             user_id=update.effective_message.reply_to_message.from_user.id,
             username=update.effective_message.reply_to_message.from_user.username,
         )
-        update.effective_message.reply_to_message.reply_text(transform(update.effective_message.reply_to_message.text))
 
     else:
         update.effective_message.reply_text("Gimme a message to zalgofy before I claw your tits off...")
@@ -133,7 +134,6 @@ def owo(update: Update, context: CallbackContext) -> None:
 
     elif update.effective_message.reply_to_message:
         try:
-            print(transform(update.effective_message.reply_to_message.text_markdown))
             update.effective_message.reply_to_message.reply_markdown(
                 transform(update.effective_message.reply_to_message.text_markdown)
             )
@@ -228,7 +228,7 @@ def vapor(update: Update, context: CallbackContext):
 
 
 __help__ = """
-- /mock `<reply>` : MoCk LikE sPOnGEbob
+- /mock `<reply|message>` : MoCk LikE sPOnGEbob
 
 - /zalgofy `<reply|message>` : cͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ
 
