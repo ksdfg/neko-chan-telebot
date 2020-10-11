@@ -24,7 +24,8 @@ def regex(update: Update, context: CallbackContext):
     delimiter = command[1]
     if command.count(delimiter) == 2:
         command += delimiter
-    command = search(f"s{delimiter}.*{delimiter}.*{delimiter}[ig]*", command).group()
+    delimiter_regex_safe = delimiter.replace('|', r'\|')  # because | is regex OR
+    command = search(f"s{delimiter_regex_safe}.*{delimiter_regex_safe}.*{delimiter_regex_safe}[ig]*", command).group()
 
     # execute sed in shell to get output
     try:
