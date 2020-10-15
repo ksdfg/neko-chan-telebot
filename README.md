@@ -1,6 +1,5 @@
 # neko-chan-telebot
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ksdfg/neko-chan-telebot/check-black-formatting) 
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/ksdfg/neko-chan-telebot/graphs/commit-activity)
 ![GitHub contributors](https://img.shields.io/github/contributors/ksdfg/neko-chan-telebot)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ksdfg/neko-chan-telebot)
