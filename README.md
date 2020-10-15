@@ -1,6 +1,11 @@
 # neko-chan-telebot
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ksdfg/neko-chan-telebot/check-black-formatting) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/ksdfg/neko-chan-telebot/graphs/commit-activity) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/ksdfg/neko-chan-telebot) ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/ksdfg/neko-chan-telebot) ![GitHub](https://img.shields.io/github/license/ksdfg/neko-chan-telebot)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ksdfg/neko-chan-telebot/check-black-formatting) 
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/ksdfg/neko-chan-telebot/graphs/commit-activity) 
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
+![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/ksdfg/neko-chan-telebot) 
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/ksdfg/neko-chan-telebot) 
+![GitHub](https://img.shields.io/github/license/ksdfg/neko-chan-telebot)
 
 Updated version of [SkittBot](https://github.com/skittles9823/SkittBot) with some features from 
 [skitt_bot](https://github.com/skittles9823/skitt_bot) to work with latest version of python-telegram-bot
