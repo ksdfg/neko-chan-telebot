@@ -1,7 +1,9 @@
 # neko-chan-telebot
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ksdfg/neko-chan-telebot/check-black-formatting) 
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/ksdfg/neko-chan-telebot/graphs/commit-activity) 
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/ksdfg/neko-chan-telebot/graphs/commit-activity)
+![GitHub contributors](https://img.shields.io/github/contributors/ksdfg/neko-chan-telebot)
+![GitHub last commit](https://img.shields.io/github/last-commit/ksdfg/neko-chan-telebot)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
 ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/ksdfg/neko-chan-telebot) 
 ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/ksdfg/neko-chan-telebot) 
