@@ -9,7 +9,7 @@
 ![GitHub](https://img.shields.io/github/license/ksdfg/neko-chan-telebot)
 
 Updated version of [SkittBot](https://github.com/skittles9823/SkittBot) with some features from 
-[skitt_bot](https://github.com/skittles9823/skitt_bot) to work with latest version of python-telegram-bot
+[skitt_bot](https://github.com/skittles9823/skitt_bot) to work with latest version of python-telegram-bot. Now has quite a few original features as well.
 
 ## Config
 
