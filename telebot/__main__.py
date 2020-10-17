@@ -5,7 +5,7 @@ from telebot import updater, config
 from telebot.modules import imported_mods
 
 # log all imported modules
-print("Imported modules :", sorted(mod.__mod_name__ for mod in imported_mods.values()))
+print("Imported modules :", ", ".join(sorted(mod.__mod_name__ for mod in imported_mods.values())))
 
 # set bot commands
 COMMANDS = []
