@@ -2,7 +2,7 @@ from re import IGNORECASE, search, escape
 
 from emoji import emojize
 from telegram import Update
-from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
+from telegram.ext import CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import dispatcher
 from telebot.functions import log, bot_action

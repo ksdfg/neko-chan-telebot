@@ -3,9 +3,9 @@ from functools import wraps
 from typing import Callable, List, Optional
 
 from emoji import emojize
-from telegram import Update, ChatPermissions, MessageEntity, ChatMember
+from telegram import Update, ChatPermissions, ChatMember
 from telegram.error import BadRequest
-from telegram.ext import run_async, CallbackContext, CommandHandler
+from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import dispatcher
@@ -18,8 +18,8 @@ from telebot.functions import (
     UserRecordError,
 )
 from telebot.modules.db.exceptions import get_command_exception_chats
-from telebot.modules.db.mute import add_muted_member, fetch_muted_member, remove_muted_member
-from telebot.modules.db.users import add_user, get_user
+from telebot.modules.db.mute import add_muted_member, remove_muted_member
+from telebot.modules.db.users import add_user
 
 
 def for_chat_types(*types):

@@ -10,7 +10,7 @@ from PIL import Image
 from emoji import emojize
 from telegram import Update, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton, Bot, User, Message, StickerSet
 from telegram.error import BadRequest
-from telegram.ext import run_async, CallbackContext, CommandHandler, ConversationHandler, MessageHandler, Filters
+from telegram.ext import CallbackContext, CommandHandler, ConversationHandler, MessageHandler, Filters
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher, config

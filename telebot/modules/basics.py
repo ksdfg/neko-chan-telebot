@@ -2,7 +2,7 @@ from random import choice
 
 from emoji import emojize
 from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler, run_async
+from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
 from telebot import updater, dispatcher

@@ -1,6 +1,6 @@
 from emoji import emojize
 from telegram import Update
-from telegram.ext import run_async, CallbackContext, CommandHandler, MessageHandler, Filters
+from telegram.ext import CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import dispatcher
 from telebot.functions import check_user_admin, bot_action

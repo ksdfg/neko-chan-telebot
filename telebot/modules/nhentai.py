@@ -3,7 +3,7 @@ from string import Template
 import requests
 from bs4 import BeautifulSoup
 from telegram import Update, ParseMode
-from telegram.ext import CommandHandler, run_async, CallbackContext
+from telegram.ext import CommandHandler, CallbackContext
 from telegram.utils.helpers import escape_markdown
 from telegraph import Telegraph
 

@@ -1,5 +1,5 @@
 from telegram import Update
-from telegram.ext import CommandHandler, run_async, CallbackContext
+from telegram.ext import CommandHandler, CallbackContext
 
 from telebot import dispatcher
 from telebot.functions import bot_action

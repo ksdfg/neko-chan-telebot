@@ -2,7 +2,7 @@ from random import choice
 
 from requests import get
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import run_async, CallbackContext, CommandHandler
+from telegram.ext import CallbackContext, CommandHandler
 
 from telebot import dispatcher
 from telebot.functions import bot_action

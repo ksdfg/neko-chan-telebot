@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from PIL import ImageFont, ImageDraw, Image, ImageFilter
 from telegram import Update, Message
-from telegram.ext import CommandHandler, CallbackContext, run_async
+from telegram.ext import CommandHandler, CallbackContext
 
 from telebot import dispatcher
 from telebot.functions import bot_action
