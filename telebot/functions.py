@@ -3,7 +3,9 @@ from functools import wraps
 from traceback import print_exc, format_exc
 from typing import Tuple
 
+from emoji import emojize
 from telegram import Update, Message, MessageEntity
+from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 from telegram.utils.helpers import mention_markdown
 
@@ -106,12 +108,27 @@ def bot_action(func_name: str = None, extra_text: str = ""):
 
             try:
                 return func(update, context, *args, **kwargs)
+            except BadRequest as e:
+                if e.message == "Message is too long":
+                    update.effective_message.reply_text(
+                        emojize(
+                            "I tried to send a message so long that my tongue got tired :sad_but_relieved_face: "
+                            "This is not gonna work, let's try something else..."
+                        )
+                    )
+                else:
+                    print_exc()
+                    update.effective_message.reply_markdown(
+                        f"```{format_exc()}```\n\n"
+                        f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with "
+                        "some catnip to fix it for you..."
+                    )
             except:
                 print_exc()
                 update.effective_message.reply_markdown(
                     f"```{format_exc()}```\n\n"
                     f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with some "
-                    f"catnip to fix it for you..."
+                    "catnip to fix it for you..."
                 )
 
         return inner
