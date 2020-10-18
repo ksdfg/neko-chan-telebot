@@ -19,7 +19,8 @@ def regex(update: Update, context: CallbackContext):
     if "regex" in get_exceptions_for_chat(update.effective_chat.id):
         return
 
-    if not update.effective_message.reply_to_message:
+    # check if there is a quoted message
+    if not (update.effective_message.reply_to_message and update.effective_message.reply_to_message.text):
         update.effective_message.reply_text("Gimme text to replace stuff in, baka!")
         return
 
@@ -40,10 +41,7 @@ def regex(update: Update, context: CallbackContext):
         return
 
     # reply with the output text
-    if len(result.decode()) > MAX_MESSAGE_LENGTH:
-        update.effective_message.reply_text("Resultant message is too big for this pussy to send......")
-    else:
-        update.effective_message.reply_to_message.reply_text(result.decode())
+    update.effective_message.reply_to_message.reply_text(result.decode())
 
 
 __mod_name__ = "Regex"
