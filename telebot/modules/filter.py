@@ -5,7 +5,7 @@ from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import dispatcher
-from telebot.functions import log, bot_action
+from telebot.functions import log, bot_action, check_user_admin
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.filter import get_triggers_for_chat, add_filter, get_filter, del_filter
 from telebot.modules.db.users import add_user
@@ -32,6 +32,7 @@ def list_filters(update: Update, context: CallbackContext):
 
 
 @bot_action("add filter")
+@check_user_admin
 def add_filter_handler(update: Update, context: CallbackContext):
     """
     Add a filter in a chat
@@ -115,6 +116,7 @@ def add_filter_handler(update: Update, context: CallbackContext):
 
 
 @bot_action("delete filters")
+@check_user_admin
 def del_filter_handler(update: Update, context: CallbackContext):
     """
     Delete a filter from the chat
@@ -189,6 +191,8 @@ def reply(update: Update, context: CallbackContext) -> None:
 
 __help__ = """
 - /filters : list all active filters in the chat
+
+*Admin Only*
 
 - /filter `<trigger> [<content>|<reply>]` : add a filter
 
