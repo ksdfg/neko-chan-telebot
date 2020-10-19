@@ -257,8 +257,16 @@ def ban_kick(update: Update, context: CallbackContext):
         update.effective_message.reply_markdown(f"Try to {action} me again, I'll meow meow your buttocks.")
         return
 
-    # check if user is trying to ban an admin
     user = update.effective_chat.get_member(kwargs['user_id'])
+
+    # check if user is in the group
+    if user.status == 'left':
+        update.effective_message.reply_text(
+            f"If you can't steal catnip from an empty can, you can't {action} someone who isn't in the group."
+        )
+        return
+
+    # check if user is trying to ban an admin
     if user.status in ('administrator', 'creator'):
         update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just {action} __you__.")
         return
