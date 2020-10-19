@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+from re import match
 from typing import Callable, List, Optional
 
 from emoji import emojize
@@ -234,7 +235,7 @@ def ban_kick(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    action = "ban" if update.effective_message.text.split(None, 1)[0] == "/ban" else "kick"
+    action = "ban" if match("^/ban.*$", update.effective_message.text) else "kick"
 
     # kwargs to pass to the ban_chat_member function call
     kwargs = {'chat_id': update.effective_chat.id}
@@ -256,8 +257,16 @@ def ban_kick(update: Update, context: CallbackContext):
         update.effective_message.reply_markdown(f"Try to {action} me again, I'll meow meow your buttocks.")
         return
 
-    # check if user is trying to ban an admin
     user = update.effective_chat.get_member(kwargs['user_id'])
+
+    # check if user is in the group
+    if user.status == 'left':
+        update.effective_message.reply_text(
+            f"If you can't steal catnip from an empty can, you can't {action} someone who isn't in the group."
+        )
+        return
+
+    # check if user is trying to ban an admin
     if user.status in ('administrator', 'creator'):
         update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just {action} __you__.")
         return
