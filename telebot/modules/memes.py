@@ -8,7 +8,6 @@ from re import sub
 from uuid import uuid4
 
 from PIL import Image
-from cv2.cv2 import CascadeClassifier, cvtColor, COLOR_BGR2GRAY
 from deeppyer import deepfry
 from emoji import emojize
 from numpy import array
