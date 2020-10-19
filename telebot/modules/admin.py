@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+from re import match
 from typing import Callable, List, Optional
 
 from emoji import emojize
@@ -234,7 +235,7 @@ def ban_kick(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    action = "ban" if update.effective_message.text.split(None, 1)[0] == "/ban" else "kick"
+    action = "ban" if match("^/ban.*$", update.effective_message.text) else "kick"
 
     # kwargs to pass to the ban_chat_member function call
     kwargs = {'chat_id': update.effective_chat.id}
