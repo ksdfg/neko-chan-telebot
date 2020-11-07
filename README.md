@@ -9,7 +9,8 @@
 ![GitHub](https://img.shields.io/github/license/ksdfg/neko-chan-telebot)
 
 Updated version of [SkittBot](https://github.com/skittles9823/SkittBot) with some features from 
-[skitt_bot](https://github.com/skittles9823/skitt_bot) to work with latest version of python-telegram-bot. Now has quite a few original features as well.
+[skitt_bot](https://github.com/skittles9823/skitt_bot) to work with latest version of python-telegram-bot. 
+Now has quite a few original features as well.
 
 ## Config
 
@@ -26,6 +27,16 @@ The config variables are as follows :-
 - `LOAD` : Space separated list of modules (`.py` file name) you would like to load (Default value is `False`, which will just load all modules)
 - `NO_LOAD` : Space separated list of modules (`.py` file name) you would like NOT to load (Default value is `False`, which will not skip any modules
 - `SUPERUSERS` : Space separated list of user IDs for which some exceptions won't work
+
+## Installing Dependencies
+
+This project uses [poetry](https://python-poetry.org) to manage dependencies.
+You can refer to [this](https://python-poetry.org/docs/#installation) to install poetry.
+
+To install all the dependencies for the project, run
+```shell script
+poetry install
+```
 
 ## Running the bot
 

@@ -1,3 +1,30 @@
 [tool.black]
 skip-string-normalization = true
 line-length = 120
+
+[tool.poetry]
+name = "neko-chan-telebot"
+version = "0.1.0"
+description = "Updated version of SkittBot with some features from skitt_bot to work with latest version of python-telegram-bot. Now has quite a few original features as well."
+authors = ["ksdfg <ksdfg123@gmail.com>"]
+license = "GPL-3.0"
+
+[tool.poetry.dependencies]
+python = "^3.8.5"
+python-telegram-bot = "^13.0"
+mongoengine = "^0.20.0"
+dnspython = "^2.0.0"
+python-decouple = "^3.3"
+bs4 = "^0.0.1"
+emoji = "^0.6.0"
+telegraph = "^1.4.1"
+spongemock = "^0.3.4"
+zalgo-text = "^0.6"
+black = "^20.8b1"
+Pillow = "^8.0.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
