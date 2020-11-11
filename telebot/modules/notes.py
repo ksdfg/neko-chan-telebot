@@ -198,7 +198,7 @@ __mod_name__ = "Notes"
 
 # create handlers
 dispatcher.add_handler(CommandHandler("get", fetch_note, run_async=True))
-dispatcher.add_handler(MessageHandler(Filters.regex(r"^#[^\s]+$"), fetch_note, run_async=True))
+dispatcher.add_handler(MessageHandler(Filters.regex(r"^#[^\s].+$"), fetch_note, run_async=True))
 dispatcher.add_handler(CommandHandler("notes", notes_for_chat, run_async=True))
 dispatcher.add_handler(CommandHandler("saved", notes_for_chat, run_async=True))
 dispatcher.add_handler(CommandHandler("save", add_note_in_chat, run_async=True))
