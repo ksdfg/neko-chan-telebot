@@ -10,5 +10,5 @@ jobs:
     - uses: actions/checkout@master
     - run: |
           curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-          pip install $($HOME/.poetry/bin/poetry export --without-hashes | grep black | cut -d';' -f1)
+          pip install $($HOME/.poetry/bin/poetry export --dev --without-hashes | grep black | cut -d';' -f1) --user
           black --check .
