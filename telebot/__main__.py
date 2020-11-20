@@ -28,6 +28,10 @@ if "Stickers" in [mod.__mod_name__ for mod in imported_mods.values()]:
         BotCommand(command='kang', description="<reply> [<emoji>] : Reply to a sticker to add it to your pack")
     )
 
+# add commands from delete
+if "Delete" in [mod.__mod_name__ for mod in imported_mods.values()]:
+    COMMANDS.append(BotCommand(command='del', description="<reply> : delete the quoted message."))
+
 if __name__ == "__main__":
     updater.bot.set_my_commands(COMMANDS)  # set bot commands to be displayed
 
