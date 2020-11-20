@@ -56,6 +56,50 @@ def check_bot_admin(func: Callable):
     return wrapper
 
 
+def check_reply_to_message(error_msg: str):
+    """
+    Check if the message has a reply_to_message
+    :param error_msg: message to send when there is no reply_to_message
+    :return: wrapper
+    """
+
+    def wrapper(func: Callable):
+        """
+        a wrapper that will safely execute the function after checking if it has a reply_to
+        :param func: function to execute after check
+        :return: wrapper function
+        """
+
+        @wraps(func)
+        def inner(update: Update, context: CallbackContext, *args, **kwargs):
+            """
+            check and execute the function
+            :param update: object representing the incoming update.
+            :param context: object containing data about the bot_action call.
+            :param args: anything extra
+            :param kwargs: anything extra
+            :return: inner function to execute
+            """
+            if update.effective_message.reply_to_message:
+                # store user info for future usage
+                try:
+                    add_user(
+                        user_id=update.effective_message.reply_to_message.from_user.id,
+                        username=update.effective_message.reply_to_message.from_user.username,
+                    )
+                except:
+                    print_exc()
+
+                return func(update, context, *args, **kwargs)  # execute the function
+
+            else:
+                update.effective_message.reply_markdown(error_msg)
+
+        return inner
+
+    return wrapper
+
+
 def log(update: Update, func_name: str, extra_text: str = ""):
     """
     Function to log bot activity

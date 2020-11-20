@@ -12,6 +12,7 @@ from telebot.functions import (
     check_user_admin,
     check_bot_admin,
     bot_action,
+    check_reply_to_message,
 )
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.users import add_user
@@ -49,14 +50,16 @@ def check_user_can_delete(func: Callable):
     @wraps(func)
     def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
         # check if user can delete messages
-        if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats(
-            "delete"
+        if (
+            update.effective_chat.type != "private"
+            and update.effective_message.reply_to_message.from_user.id != update.effective_user.id
+            and update.effective_chat.id not in get_command_exception_chats("delete")
         ):
             user = update.effective_chat.get_member(update.effective_user.id)
             if not user.can_delete_messages and user.status != "creator":
                 update.effective_message.reply_markdown(
                     "Ask your sugar daddy to give you perms required to use the method `CanDeleteMessages`, "
-                    "or add an exception to module `Delete`."
+                    "or add an exception to module `delete`."
                 )
                 return
 
@@ -66,6 +69,7 @@ def check_user_can_delete(func: Callable):
 
 
 @bot_action("delete")
+@check_reply_to_message(error_msg="I'm a cat, not a psychic! Reply to the message you want to delete...")
 @check_user_admin
 @check_user_can_delete
 @check_bot_admin
@@ -76,10 +80,6 @@ def delete(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    # check if start point is given
-    if not update.effective_message.reply_to_message:
-        update.effective_message.reply_text("I'm a cat, not a psychic! Reply to the message you want to delete...")
-        return
 
     # for future usage
     add_user(
@@ -103,6 +103,7 @@ def delete(update: Update, context: CallbackContext):
 
 @bot_action("purge")
 @check_user_admin
+@check_reply_to_message(error_msg="I'm a cat, not a psychic! Reply to the message you want to start deleting from...")
 @check_user_can_delete
 @check_bot_admin
 @check_bot_can_delete
@@ -112,13 +113,6 @@ def purge(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    # check if start point is given
-    if not update.effective_message.reply_to_message:
-        update.effective_message.reply_text(
-            "I'm a cat, not a psychic! Reply to the message you want to start deleting from..."
-        )
-        return
-
     # for future usage
     add_user(
         user_id=update.effective_message.reply_to_message.from_user.id,
