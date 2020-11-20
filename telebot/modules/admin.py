@@ -536,57 +536,6 @@ def pin(update: Update, context: CallbackContext):
     )
 
 
-@bot_action("purge")
-@check_user_admin
-@check_bot_admin
-def purge(update: Update, context: CallbackContext):
-    """
-    Delete all messages from quoted message
-    :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
-    """
-    # check if user has enough perms
-    if update.effective_chat.type != "private" and update.effective_chat.id not in get_command_exception_chats("admin"):
-        user = update.effective_chat.get_member(update.effective_user.id)
-        if not user.can_delete_messages and user.status != "creator":
-            update.effective_message.reply_markdown(
-                "Ask your sugar daddy to give you perms required to use the method `CanDeleteMessages`."
-            )
-            return
-
-    # check if bot has perms to delete a message
-    if (
-        update.effective_chat.type != "private"
-        and not update.effective_chat.get_member(context.bot.id).can_delete_messages
-    ):
-        update.effective_message.reply_text(
-            "Bribe your sugar daddy with some catnip and ask him to allow me to delete messages..."
-        )
-        return
-
-    # check if start point is given
-    if not update.effective_message.reply_to_message:
-        update.effective_message.reply_text(
-            "I'm a cat, not a psychic! Reply to the message you want to start deleting from..."
-        )
-        return
-
-    # for future usage
-    add_user(
-        user_id=update.effective_message.reply_to_message.from_user.id,
-        username=update.effective_message.reply_to_message.from_user.username,
-    )
-
-    # delete messages
-    for id_ in range(update.effective_message.message_id, update.effective_message.reply_to_message.message_id - 1, -1):
-        try:
-            context.bot.delete_message(update.effective_chat.id, id_)
-        except BadRequest:
-            continue
-
-    update.effective_chat.send_message("Just like we do it in china....")
-
-
 __help__ = """
 - /pin `<reply> [silent|quiet]` : pin replied message in the chat.
 
@@ -604,8 +553,6 @@ __help__ = """
 
 - /kick `<reply|username>` : kick a user from the chat (whose username you've given as argument, or whose message you are quoting)
 
-- /purge `<reply>` : delete all messages from replied message to current one.
-
 If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the individual permissions.
 """
 
@@ -619,4 +566,3 @@ dispatcher.add_handler(CommandHandler("unmute", unmute, run_async=True))
 dispatcher.add_handler(CommandHandler("ban", ban, run_async=True))
 dispatcher.add_handler(CommandHandler("kick", kick, run_async=True))
 dispatcher.add_handler(CommandHandler("pin", pin, run_async=True))
-dispatcher.add_handler(CommandHandler("purge", purge, run_async=True))
