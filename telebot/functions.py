@@ -32,7 +32,7 @@ def check_user_admin(func: Callable):
                 )
                 return
 
-        func(update, context, *args, **kwargs)
+        return func(update, context, *args, **kwargs)
 
     return wrapper
 
@@ -51,7 +51,7 @@ def check_bot_admin(func: Callable):
                 update.effective_message.reply_text("Ask your sugar daddy to give me admin status plej...")
                 return
 
-        func(update, context, *args, **kwargs)
+        return func(update, context, *args, **kwargs)
 
     return wrapper
 
