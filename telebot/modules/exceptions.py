@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext
 
 from telebot import dispatcher
-from telebot.functions import bot_action
+from telebot.functions import bot_action, check_user_admin
 from telebot.modules.db.exceptions import (
     add_command_exception_chats,
     del_command_exception_chats,
@@ -29,6 +29,7 @@ def list_exceptions(update: Update, context: CallbackContext):
 
 
 @bot_action("add exception")
+@check_user_admin
 def add_exception(update: Update, context: CallbackContext):
     """
     Add exceptions in a chat
@@ -46,6 +47,7 @@ def add_exception(update: Update, context: CallbackContext):
 
 
 @bot_action("delete exceptions")
+@check_user_admin
 def del_exception(update: Update, context: CallbackContext):
     """
     Delete exceptions in a chat
@@ -65,6 +67,8 @@ __help__ = """
 Adding an exception for a bot_action in your chat will change it's behaviour. How it will change depends on the bot_action.
 
 - /exceptions : list all exceptions in chat
+
+***Admin Only***
 
 - /except `<commands list>` : Add exceptions for given commands (space separated)
 
