@@ -146,4 +146,5 @@ __mod_name__ = "Delete"
 
 # create handlers
 dispatcher.add_handler(CommandHandler("del", delete, run_async=True))
+dispatcher.add_handler(CommandHandler("delete", delete, run_async=True))
 dispatcher.add_handler(CommandHandler("purge", purge, run_async=True))
