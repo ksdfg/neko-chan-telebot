@@ -155,7 +155,7 @@ def reply(update: Update, context: CallbackContext) -> None:
         return
 
     # make sure it doesn't reply to message trying to stop or reset a trigger
-    if search("^/(stop|filter) .+", text):
+    if search(r"^/(stop|filter)(@\S+)? .+", text):
         return
 
     # get triggers for the chat
