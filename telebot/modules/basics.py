@@ -40,7 +40,7 @@ def list_modules(update: Update, context: CallbackContext):
     """
     update.effective_message.reply_markdown(
         "The list of Active Modules is as follows :\n\n`"
-        + "`\n`".join(mod.__mod_name__ for mod in imported_mods.values())
+        + "`\n`".join(mod.__mod_name__.title() for mod in imported_mods.values())
         + "`"
     )
 
