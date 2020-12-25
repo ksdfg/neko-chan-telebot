@@ -126,12 +126,14 @@ def purge(update: Update, context: CallbackContext):
         except BadRequest:
             continue
 
-    update.effective_chat.send_message("Just like we do it in china....")
+    # Don't send message after purge if silent/quiet is specified
+    if context.args and context.args[0].lower() not in ('silent', 'quiet'):
+        update.effective_chat.send_message("Just like we do it in china....")
 
 
 __help__ = """
 - /del `<reply>` : delete the quoted message.
-- /purge `<reply>` : delete all messages from replied message to current one.
+- /purge `<reply> [silent|quiet]` : delete all messages from replied message to current one.
 
 If you add an exception to `delete`, I will allow admins to execute commands even if they don't have the permission to delete messages.
 """
