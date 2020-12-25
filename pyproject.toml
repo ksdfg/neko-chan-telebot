@@ -3,7 +3,7 @@ skip-string-normalization = true
 line-length = 120
 
 [tool.poetry]
-name = "neko-chan-telebot"
+name = "telebot"
 version = "0.1.0"
 description = "Updated version of SkittBot with some features from skitt_bot to work with latest version of python-telegram-bot. Now has quite a few original features as well."
 authors = ["ksdfg <ksdfg123@gmail.com>"]
