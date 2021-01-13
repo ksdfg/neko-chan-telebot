@@ -128,7 +128,9 @@ def purge(update: Update, context: CallbackContext):
 
     # Don't send message after purge if silent/quiet is specified
     if context.args and context.args[0].lower() not in ('silent', 'quiet'):
-        update.effective_chat.send_message("Just like we do it in china....")
+        return
+
+    update.effective_chat.send_message("Just like we do it in china....")
 
 
 __help__ = """
