@@ -284,9 +284,18 @@ def ban_kick(update: Update, context: CallbackContext):
         return
 
     # ban user
-    context.bot.kick_chat_member(**kwargs)
-    if action == "kick":
-        context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
+    try:
+        context.bot.kick_chat_member(**kwargs)
+        if action == "kick":
+            context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
+    except BadRequest as e:
+        if e.message == "Not enough rights to restrict/unrestrict chat member":
+            update.effective_message.reply_markdown(
+                "Ask your sugar daddy to give you perms required to use the method `CanRestrictMembers`."
+            )
+            return
+        else:
+            raise e
 
     # announce ban
     reply = (
