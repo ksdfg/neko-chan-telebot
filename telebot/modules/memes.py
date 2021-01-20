@@ -33,7 +33,7 @@ def mock(update: Update, context: CallbackContext) -> None:
     if context.args:
         update.effective_message.reply_text(mock_text(update.effective_message.text.replace("/mock ", "").strip()))
 
-    elif update.effective_message.reply_to_message:
+    elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.text:
         update.effective_message.reply_to_message.reply_text(mock_text(update.effective_message.reply_to_message.text))
         # for future usage
         add_user(
@@ -57,7 +57,7 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
     if context.args:
         update.effective_message.reply_text(transform(update.effective_message.text.replace("/zalgofy ", "").strip()))
 
-    elif update.effective_message.reply_to_message:
+    elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.text:
         update.effective_message.reply_to_message.reply_text(transform(update.effective_message.reply_to_message.text))
         # for future usage
         add_user(
@@ -132,7 +132,7 @@ def owo(update: Update, context: CallbackContext) -> None:
                 "If it still doesn't work, then this must be the language of god's you're trying to translate...."
             )
 
-    elif update.effective_message.reply_to_message:
+    elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.text:
         try:
             update.effective_message.reply_to_message.reply_markdown(
                 transform(update.effective_message.reply_to_message.text_markdown)
@@ -172,7 +172,7 @@ def stretch(update: Update, context: CallbackContext):
             )
         )
 
-    elif update.effective_message.reply_to_message:
+    elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.text:
         update.effective_message.reply_to_message.reply_markdown(
             sub(
                 r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])',
@@ -200,7 +200,7 @@ def vapor(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     if not context.args and not (
-        update.effective_message.reply_to_message and update.effective_message.reply_to_message.text_markdown
+        update.effective_message.reply_to_message and update.effective_message.reply_to_message.text
     ):
         update.effective_message.reply_text(
             "If you're not gonna give me something to meme then bring some catnip atleast..."
