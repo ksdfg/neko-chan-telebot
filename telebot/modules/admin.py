@@ -316,6 +316,39 @@ def ban(update: Update, context: CallbackContext):
     ban_kick(update, context)
 
 
+@bot_action("unban")
+@for_chat_types('supergroup', 'channel')
+@check_user_admin
+@check_bot_admin
+@can_restrict
+def kick(update: Update, context: CallbackContext):
+    """
+    unban a user from a chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # kwargs to pass to the ban_chat_member function call
+    kwargs = {'chat_id': update.effective_chat.id}
+
+    # get user to unban
+    try:
+        kwargs['user_id'], username = get_user_from_message(update.effective_message)
+    except UserError:
+        update.effective_message.reply_text(
+            f"Reply to a message by the user or give username of user you want to unban..."
+        )
+        return
+    except UserRecordError as e:
+        update.effective_message.reply_text(e.message)
+        return
+
+    context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
+
+    update.effective_message.reply_text(
+        f"Someone go to the litter and tell {username} that he's been unbanned....\n\nfor now."
+    )
+
+
 @bot_action("kick")
 @for_chat_types('supergroup', 'channel')
 @check_user_admin
