@@ -272,21 +272,17 @@ def ban_kick(update: Update, context: CallbackContext):
         return
 
     # get datetime till when we have to mute user
-    try:
-        kwargs['until_date'] = get_datetime_form_args(context.args, username)
-    except TimeFormatException:
-        update.effective_message.reply_markdown(
-            "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
-        )
-        return
-    except ValueError:
-        update.effective_message.reply_text("Time needs to be a number, baka!")
-        return
-
-    # ban user
-    context.bot.kick_chat_member(**kwargs)
-    if action == "kick":
-        context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
+    if action == "ban" and context.args:
+        try:
+            kwargs['until_date'] = get_datetime_form_args(context.args, username)
+        except TimeFormatException:
+            update.effective_message.reply_markdown(
+                "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
+            )
+            return
+        except ValueError:
+            update.effective_message.reply_text("Time needs to be a number, baka!")
+            return
 
     # announce ban
     reply = (
@@ -296,10 +292,15 @@ def ban_kick(update: Update, context: CallbackContext):
     )
     if action == "ban":
         reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
-    if kwargs['until_date']:
-        reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
+        if kwargs['until_date']:
+            reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
 
     update.effective_message.reply_markdown(emojize(reply))
+
+    # ban user
+    context.bot.kick_chat_member(**kwargs)
+    if action == "kick":
+        context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
 
 
 @bot_action("ban")
