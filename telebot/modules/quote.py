@@ -11,7 +11,7 @@ from telegram import Update, Message
 from telegram.ext import CommandHandler, CallbackContext
 
 from telebot import dispatcher
-from telebot.functions import bot_action
+from telebot.utils import bot_action
 from telebot.modules.db.users import add_user
 
 

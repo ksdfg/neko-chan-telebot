@@ -5,7 +5,7 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext, CommandHandler
 
 from telebot import dispatcher
-from telebot.functions import bot_action
+from telebot.utils import bot_action
 
 
 @bot_action("urban dict")

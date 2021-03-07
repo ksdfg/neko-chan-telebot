@@ -5,7 +5,7 @@ from telegram import MAX_MESSAGE_LENGTH, Update
 from telegram.ext import CallbackContext, MessageHandler, Filters
 
 from telebot import dispatcher
-from telebot.functions import bot_action
+from telebot.utils import bot_action
 from telebot.modules.db.exceptions import get_exceptions_for_chat
 
 

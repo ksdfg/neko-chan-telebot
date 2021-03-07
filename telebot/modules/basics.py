@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
 from telebot import updater, dispatcher
-from telebot.functions import bot_action, get_user_from_message, UserError, UserRecordError
+from telebot.utils import bot_action, get_user_from_message, UserError, UserRecordError
 from telebot.modules import imported_mods
 
 # default Start Text

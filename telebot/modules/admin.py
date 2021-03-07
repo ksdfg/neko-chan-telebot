@@ -10,7 +10,7 @@ from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import dispatcher
-from telebot.functions import (
+from telebot.utils import (
     check_user_admin,
     check_bot_admin,
     bot_action,
