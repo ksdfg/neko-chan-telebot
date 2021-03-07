@@ -292,7 +292,7 @@ def ban_kick(update: Update, context: CallbackContext):
     )
     if action == "ban":
         reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
-        if kwargs['until_date']:
+        if kwargs.get('until_date'):
             reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
 
     update.effective_message.reply_markdown(emojize(reply))
