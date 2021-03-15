@@ -8,7 +8,7 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler
 
 from telebot import dispatcher
-from telebot.functions import (
+from telebot.utils import (
     check_user_admin,
     check_bot_admin,
     bot_action,

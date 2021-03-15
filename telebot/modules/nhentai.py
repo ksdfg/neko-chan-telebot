@@ -8,7 +8,7 @@ from telegram.utils.helpers import escape_markdown
 from telegraph import Telegraph
 
 from telebot import dispatcher
-from telebot.functions import bot_action
+from telebot.utils import bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 
 

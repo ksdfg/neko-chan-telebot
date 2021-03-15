@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+from os.path import join, abspath, dirname
 from re import match
 from typing import Callable, List, Optional
+from pathlib import Path
 
 from emoji import emojize
 from telegram import Update, ChatPermissions, ChatMember
@@ -10,7 +12,7 @@ from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import dispatcher
-from telebot.functions import (
+from telebot.utils import (
     check_user_admin,
     check_bot_admin,
     bot_action,
@@ -296,6 +298,9 @@ def ban_kick(update: Update, context: CallbackContext):
             reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
 
     update.effective_message.reply_markdown(emojize(reply))
+    # if user is being banned, troll them with banhammer video
+    if action == 'ban':
+        update.effective_chat.send_video("BAACAgUAAxkBAAIZlGBEph6D5yLowRy2O_5QzW7KYjUdAAIOAwACG_cgVhL-2lzHJ8kKHgQ")
 
     # ban user
     context.bot.kick_chat_member(**kwargs)

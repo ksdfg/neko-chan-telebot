@@ -8,7 +8,7 @@ from telegram.ext import CallbackContext, CommandHandler
 from zalgo_text.zalgo import zalgo
 
 from telebot import dispatcher
-from telebot.functions import bot_action
+from telebot.utils import bot_action
 from telebot.modules.db.users import add_user
 
 

@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext
 
 from telebot import dispatcher
-from telebot.functions import bot_action, check_user_admin
+from telebot.utils import bot_action, check_user_admin
 from telebot.modules.db.exceptions import (
     add_command_exception_chats,
     del_command_exception_chats,

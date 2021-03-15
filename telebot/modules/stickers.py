@@ -14,7 +14,7 @@ from telegram.ext import CallbackContext, CommandHandler, ConversationHandler, M
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher, config
-from telebot.functions import bot_action
+from telebot.utils import bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.users import add_user
 
