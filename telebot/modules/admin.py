@@ -300,7 +300,7 @@ def ban_kick(update: Update, context: CallbackContext):
     update.effective_message.reply_markdown(emojize(reply))
     # if user is being banned, troll them with banhammer video
     if action == 'ban':
-        update.effective_chat.send_video("BAACAgUAAxkBAAIZlGBEph6D5yLowRy2O_5QzW7KYjUdAAIOAwACG_cgVhL-2lzHJ8kKHgQ")
+        update.effective_chat.send_video("BAACAgUAAx0CRZJ5DwACExFgW3Ux58a2qb4ZsDbWnMAMOr5UEgACDgMAAhv3IFZpwRWleUpR6x4E")
 
     # ban user
     context.bot.kick_chat_member(**kwargs)
