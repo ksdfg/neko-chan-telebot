@@ -116,6 +116,31 @@ def get_id(update: Update, context: CallbackContext) -> None:
     )
 
 
+@bot_action("file id")
+def get_file_id(update: Update, context: CallbackContext) -> None:
+    """
+    Function to get chat and user ID
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    msg = update.effective_message.reply_to_message
+    if msg.audio:
+        file = msg.audio
+    elif msg.video:
+        file = msg.video
+    elif msg.sticker:
+        file = msg.sticker
+    elif msg.photo:
+        file = msg.photo
+    elif msg.voice:
+        file = msg.voice
+    else:
+        update.effective_message.reply_text("Find the cat that can find your file, cuz this cat can't.")
+        return
+
+    update.effective_message.reply_markdown(f"`{file.file_id}`")
+
+
 @bot_action("info")
 def info(update: Update, context: CallbackContext):
     """
@@ -160,6 +185,8 @@ __help__ = """
 
 - /id : Get the user and chat ID
 
+- /fileid `<reply>` : Get file ID of the file in the quoted message
+
 - /info `[<reply|username>]` : Get details of a user (by replying to their message or giving their username) or yourself
 """
 
@@ -170,4 +197,5 @@ dispatcher.add_handler(CommandHandler("talk", talk, run_async=True))
 dispatcher.add_handler(CommandHandler("help", help, run_async=True))
 dispatcher.add_handler(CommandHandler("modules", list_modules, run_async=True))
 dispatcher.add_handler(CommandHandler("id", get_id, run_async=True))
+dispatcher.add_handler(CommandHandler("fileid", get_file_id, run_async=True))
 dispatcher.add_handler(CommandHandler("info", info, run_async=True))
