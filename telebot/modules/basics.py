@@ -104,18 +104,6 @@ def talk(update: Update, context: CallbackContext) -> None:
     update.message.reply_markdown(f"`{spem}`")
 
 
-@bot_action("id")
-def get_id(update: Update, context: CallbackContext) -> None:
-    """
-    Function to get chat and user ID
-    :param update: object representing the incoming update.
-    :param context: object containing data about the command call.
-    """
-    update.effective_message.reply_markdown(
-        f"Your ID is :\n`{update.effective_user.id}`\n\nThe chat ID is :\n`{update.effective_chat.id}`"
-    )
-
-
 @bot_action("file id")
 def get_file_id(update: Update, context: CallbackContext) -> None:
     """
@@ -141,7 +129,7 @@ def get_file_id(update: Update, context: CallbackContext) -> None:
     update.effective_message.reply_markdown(f"`{file.file_id}`")
 
 
-@bot_action("info")
+@bot_action("id")
 def info(update: Update, context: CallbackContext):
     """
     Function to get user details
@@ -159,13 +147,13 @@ def info(update: Update, context: CallbackContext):
         return
 
     # make info string
-    reply = f"*ID*: `{user.id}`\n"
-    if user.first_name:
-        reply += f"*First Name*: `{user.first_name}`\n"
-    if user.last_name:
-        reply += f"*Last Name*: `{user.last_name}`\n"
-    if user.username:
-        reply += f"*Username*: @{escape_markdown(user.username)}\n\n"
+    reply = f"*Chat ID*: `{update.effective_chat.id}`\n\n*ID*: `{user.id}`\n"
+    if first_name := user.first_name:
+        reply += f"*First Name*: `{first_name}`\n"
+    if last_name := user.last_name:
+        reply += f"*Last Name*: `{last_name}`\n"
+    if username := user.username:
+        reply += f"*Username*: @{escape_markdown(username)}\n\n"
     reply += user.mention_markdown(name="Click here to properly check this kitten out")
 
     # send user info
@@ -183,11 +171,9 @@ __help__ = """
 
 - /modules : List all the active modules
 
-- /id : Get the user and chat ID
+- /id `[<reply|username>]` : Get details of current chat and a user (by replying to their message or giving their username) or yourself
 
 - /fileid `<reply>` : Get file ID of the file in the quoted message
-
-- /info `[<reply|username>]` : Get details of a user (by replying to their message or giving their username) or yourself
 """
 
 
@@ -196,6 +182,5 @@ dispatcher.add_handler(CommandHandler("start", start, run_async=True))
 dispatcher.add_handler(CommandHandler("talk", talk, run_async=True))
 dispatcher.add_handler(CommandHandler("help", help, run_async=True))
 dispatcher.add_handler(CommandHandler("modules", list_modules, run_async=True))
-dispatcher.add_handler(CommandHandler("id", get_id, run_async=True))
+dispatcher.add_handler(CommandHandler("id", info, run_async=True))
 dispatcher.add_handler(CommandHandler("fileid", get_file_id, run_async=True))
-dispatcher.add_handler(CommandHandler("info", info, run_async=True))
