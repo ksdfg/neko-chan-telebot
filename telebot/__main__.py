@@ -18,8 +18,7 @@ if "Basics" in [mod.__mod_name__ for mod in imported_mods.values()]:
         BotCommand(
             command='help', description="[<modules list>] : Display the help text to understand how to use this bot"
         ),
-        BotCommand(command='id', description="Get the user and chat ID"),
-        BotCommand(command='info', description="[<reply|username>] : Get details of a user or yourself"),
+        BotCommand(command='id', description="[<reply|username>] : Get details of chat and a user or yourself"),
     ]
 
 # add commands from stickers
