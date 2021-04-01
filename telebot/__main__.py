@@ -39,9 +39,10 @@ if __name__ == "__main__":
 
     # start bot
     if config.WEBHOOK_URL:
-        updater.start_webhook(listen="0.0.0.0", port=config.PORT, url_path=config.TOKEN)
         updater.bot.delete_webhook()  # in case there's one up
-        updater.bot.set_webhook(url=config.WEBHOOK_URL + config.TOKEN)
+        updater.start_webhook(
+            listen="0.0.0.0", port=config.PORT, url_path=config.TOKEN, webhook_url=config.WEBHOOK_URL + config.TOKEN
+        )
     else:
         updater.start_polling()
 
