@@ -42,14 +42,14 @@ def sauce(update: Update, context: CallbackContext) -> None:
                 f"If you don't know that sauce codes must be only digits, you shouldn't be using this command. "
                 f"`{digits}` is not a sauce, just a sign of your ignorance."
             )
-            return
+            continue
 
         # check if doujin exists
         if not Hentai.exists(code):
             update.effective_message.reply_markdown(
-                f"Doijin for `{code}` doesn't exist, Donald... Please don't use your nuclear launch codes here 😿"
+                f"Doujin for `{code}` doesn't exist, Donald... Please don't use your nuclear launch codes here 😿"
             )
-            return
+            continue
 
         # Fetch doujin data
         doujin = Hentai(code)
