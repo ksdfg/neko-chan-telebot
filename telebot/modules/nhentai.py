@@ -1,78 +1,21 @@
-from string import Template
-
-import requests
-from bs4 import BeautifulSoup
+from hentai import Hentai, Format, Tag
 from telegram import Update, ParseMode
 from telegram.ext import CommandHandler, CallbackContext
 from telegram.utils.helpers import escape_markdown
 from telegraph import Telegraph
 
 from telebot import dispatcher
-from telebot.utils import bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
+from telebot.utils import bot_action
 
 
-def get_info(digits):
-    # generate soup object for doujin
-    soup = BeautifulSoup(requests.get(f"https://nhentai.net/g/{digits}/").text, 'html.parser')
-
-    title = soup.find('h1').text  # title
-
-    # get gallery ID for the doujin pages
-    thumbnail = soup.find("meta", {"itemprop": "image"})
-    gallery_id = thumbnail.get('content').split("/")[-2]
-
-    content = soup.find_all("div", {"class": "tag-container"})  # scrape tag container
-
-    parodies = get_content(content, 0)
-    characters = get_content(content, 1)
-    tags = get_content(content, 2)
-    artist = "#" + content[3].find("span", {"class": "name"}).text.replace(' ', '_').replace('-', '_').replace('.', '_')
-    groups = get_content(content, 4)
-    languages = get_content(content, 5)
-    categories = get_content(content, 6)
-    pages = content[7].find("span", {"class": "name"}).text
-
-    image_template = Template('<img src="https://i.nhentai.net/galleries/$gallery_id/$page_no.$image_type">')
-
-    image_tags = ""
-
-    for page_no in range(1, int(pages) + 1):
-        pg_img = soup.find('a', {'href': f"/g/{digits}/{page_no}/"}).find('img')
-        image_type = pg_img.get('data-src').split(".")[-1]
-        image_tags += (
-            image_template.substitute({'gallery_id': gallery_id, 'page_no': page_no, 'image_type': image_type}) + "\n"
-        )
-
-    return (
-        title,
-        {
-            'Tags': tags,
-            'Parodies': parodies,
-            'Characters': characters,
-            'Artists': artist,
-            'Groups': groups,
-            'Languages': languages,
-            'Categories': categories,
-        },
-        image_tags,
-    )
-
-
-def get_content(content, _id):
-    info = content[_id].find_all("span", {"class": "name"})
-
-    items = []
-    for i in range(len(info)):
-        items.append(info[i].text)
-
-    if not items:
-        return None
-    else:
-        res = ""
-        for item in items:
-            res += f"#{item.replace(' ', '_').replace('-', '_').replace('.', '')} "
-        return res.strip()
+def _generate_anchor_tags(tags: list[Tag]) -> str:
+    """
+    Generate comma separated anchor tags for a given list of Tag objects
+    :param tags: List of Tag objects
+    :return: comma separated anchor tags
+    """
+    return ", ".join(f'<a href="{tag.url}">{tag.name}</a>' for tag in tags)
 
 
 @bot_action("sauce")
@@ -92,16 +35,48 @@ def sauce(update: Update, context: CallbackContext) -> None:
 
     # iterate over each given sauce and fetch the doujin
     for digits in context.args:
-        # get basic info
-        title, data, image_tags = get_info(digits)
+        try:
+            code = int(digits)
+        except ValueError:
+            update.effective_message.reply_markdown(
+                f"If you don't know that sauce codes must be only digits, you shouldn't be using this command. "
+                f"`{digits}` is not a sauce, just a sign of your ignorance."
+            )
+            return
+
+        # check if doujin exists
+        if not Hentai.exists(code):
+            update.effective_message.reply_markdown(
+                f"Doijin for `{code}` doesn't exist, Donald... Please don't use your nuclear launch codes here 😿"
+            )
+            return
+
+        # Fetch doujin data
+        doujin = Hentai(code)
+
+        # get image tags
+        image_tags = "\n".join(f'<img src="{image_url}">' for image_url in doujin.image_urls)
+
+        # make dict with data to be displayed for the doujin
+        data = {
+            "Tags": _generate_anchor_tags(doujin.tag),
+            "Characters": _generate_anchor_tags(doujin.character),
+            "Parodies": _generate_anchor_tags(doujin.parody),
+            "Artists": _generate_anchor_tags(doujin.artist),
+            "Groups": _generate_anchor_tags(doujin.group),
+            "Languages": _generate_anchor_tags(doujin.language),
+            "Categories": _generate_anchor_tags(doujin.category),
+        }
 
         # create telegraph article for the doujin
         telegraph = Telegraph()
         telegraph.create_account(short_name='neko-chan-telebot')
-        article_path = telegraph.create_page(title, html_content=image_tags)['path']
+        article_path = telegraph.create_page(doujin.title(Format.Pretty), html_content=image_tags)['path']
 
         # add details to the reply to be sent to the user
-        text_blob = f"<code>{digits}</code>\n<a href='https://telegra.ph/{article_path}'>{title}</a>"
+        text_blob = (
+            f"<code>{digits}</code>\n<a href='https://telegra.ph/{article_path}'>{doujin.title(Format.Pretty)}</a>"
+        )
         for key, value in data.items():
             if value:
                 text_blob += f"\n\n<code>{key}</code>\n{value}"
@@ -120,7 +95,7 @@ def sauce(update: Update, context: CallbackContext) -> None:
 
 
 __help__ = """
-- /sauce `<digits list>` : Read a doujin from nhentai.net in telegram instant preview by giving it's 5/6 digit code. 
+- /sauce `<digits list>` : Read a doujin from nhentai.net in telegram instant preview by giving it's code. 
 You can give multiple codes, and it will fetch all those doujins. 
 If you don't have an exception set for your chat, it'll send it to you in your private chat.
 """
