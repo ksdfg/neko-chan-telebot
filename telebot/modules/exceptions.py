@@ -78,6 +78,6 @@ Adding an exception for a bot_action in your chat will change it's behaviour. Ho
 __mod_name__ = "Exceptions"
 
 # create handlers
-dispatcher.add_handler(CommandHandler('exceptions', list_exceptions, run_async=True))
-dispatcher.add_handler(CommandHandler('except', add_exception, run_async=True))
-dispatcher.add_handler(CommandHandler('delexcept', del_exception, run_async=True))
+dispatcher.add_handler(CommandHandler("exceptions", list_exceptions, run_async=True))
+dispatcher.add_handler(CommandHandler("except", add_exception, run_async=True))
+dispatcher.add_handler(CommandHandler("delexcept", del_exception, run_async=True))

@@ -105,11 +105,11 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
     if useful_args:
         # get datetime till when we have to mute user
         time, unit = float(useful_args[0][:-1]), useful_args[0][-1]
-        if unit == 'd':
+        if unit == "d":
             until_date = datetime.now(tz=timezone.utc) + timedelta(days=time)
-        elif unit == 'h':
+        elif unit == "h":
             until_date = datetime.now(tz=timezone.utc) + timedelta(hours=time)
-        elif unit == 'm':
+        elif unit == "m":
             until_date = datetime.now(tz=timezone.utc) + timedelta(minutes=time)
         else:
             raise TimeFormatException
@@ -118,7 +118,7 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
 
 
 @bot_action("mute")
-@for_chat_types('supergroup')
+@for_chat_types("supergroup")
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -129,11 +129,11 @@ def mute(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     # kwargs to pass to the restrict_chat_member function call
-    kwargs = {'chat_id': update.effective_chat.id}
+    kwargs = {"chat_id": update.effective_chat.id}
 
     # get user to mute
     try:
-        kwargs['user_id'], username = get_user_from_message(update.effective_message)
+        kwargs["user_id"], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to mute..."
@@ -144,13 +144,13 @@ def mute(update: Update, context: CallbackContext):
         return
 
     # check if user is trying to mute an admin
-    user = update.effective_chat.get_member(kwargs['user_id'])
-    if user.status in ('administrator', 'creator'):
+    user = update.effective_chat.get_member(kwargs["user_id"])
+    if user.status in ("administrator", "creator"):
         update.effective_message.reply_text("I can't mute an admin, baka!")
         return
 
     # set muted permissions
-    kwargs['permissions'] = ChatPermissions(
+    kwargs["permissions"] = ChatPermissions(
         can_send_messages=False,
         can_send_media_messages=False,
         can_send_other_messages=False,
@@ -163,7 +163,7 @@ def mute(update: Update, context: CallbackContext):
 
     # get datetime till when we have to mute user
     try:
-        kwargs['until_date'] = get_datetime_form_args(context.args, username)
+        kwargs["until_date"] = get_datetime_form_args(context.args, username)
     except TimeFormatException:
         update.effective_message.reply_markdown(
             "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
@@ -175,10 +175,10 @@ def mute(update: Update, context: CallbackContext):
 
     # add muted member in db
     if add_muted_member(
-        chat=kwargs['chat_id'],
-        user=kwargs['user_id'],
+        chat=kwargs["chat_id"],
+        user=kwargs["user_id"],
         username=username,
-        until_date=kwargs['until_date'] if 'until_date' in kwargs.keys() else None,
+        until_date=kwargs["until_date"] if "until_date" in kwargs.keys() else None,
     ):
         # mute member
         context.bot.restrict_chat_member(**kwargs)
@@ -186,7 +186,7 @@ def mute(update: Update, context: CallbackContext):
             f"Sewed up @{escape_markdown(username)}'s mouth :smiling_face_with_horns:\nIf you want to be un-muted, "
             f"bribe an admin with some catnip to do it for you..."
         )
-        if kwargs['until_date']:
+        if kwargs["until_date"]:
             reply += f" or wait till `{kwargs['until_date'].strftime('%c')} UTC`"
 
         update.effective_message.reply_markdown(emojize(reply))
@@ -195,7 +195,7 @@ def mute(update: Update, context: CallbackContext):
 
 
 @bot_action("un mute")
-@for_chat_types('supergroup')
+@for_chat_types("supergroup")
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -206,11 +206,11 @@ def unmute(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     # kwargs to pass to the restrict_chat_member function call
-    kwargs = {'chat_id': update.effective_chat.id}
+    kwargs = {"chat_id": update.effective_chat.id}
 
     # get user to un mute
     try:
-        kwargs['user_id'], username = get_user_from_message(update.effective_message)
+        kwargs["user_id"], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to unmute..."
@@ -221,10 +221,10 @@ def unmute(update: Update, context: CallbackContext):
         return
 
     # set default permissions
-    kwargs['permissions'] = context.bot.get_chat(update.effective_chat.id).permissions
+    kwargs["permissions"] = context.bot.get_chat(update.effective_chat.id).permissions
 
     # unmute member
-    if remove_muted_member(chat=kwargs['chat_id'], user=kwargs['user_id']):
+    if remove_muted_member(chat=kwargs["chat_id"], user=kwargs["user_id"]):
         context.bot.restrict_chat_member(**kwargs)
         update.effective_message.reply_text(f"@{username} can now go nyan nyan")
     else:
@@ -240,11 +240,11 @@ def ban_kick(update: Update, context: CallbackContext):
     action = "ban" if match("^/ban.*$", update.effective_message.text) else "kick"
 
     # kwargs to pass to the ban_chat_member function call
-    kwargs = {'chat_id': update.effective_chat.id}
+    kwargs = {"chat_id": update.effective_chat.id}
 
     # get user to ban
     try:
-        kwargs['user_id'], username = get_user_from_message(update.effective_message)
+        kwargs["user_id"], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             f"Reply to a message by the user or give username of user you want to {action}..."
@@ -255,28 +255,28 @@ def ban_kick(update: Update, context: CallbackContext):
         return
 
     # check if user is trying to ban the bot
-    if kwargs['user_id'] == context.bot.id:
+    if kwargs["user_id"] == context.bot.id:
         update.effective_message.reply_markdown(f"Try to {action} me again, I'll meow meow your buttocks.")
         return
 
-    user = update.effective_chat.get_member(kwargs['user_id'])
+    user = update.effective_chat.get_member(kwargs["user_id"])
 
     # check if user is in the group
-    if user.status == 'left':
+    if user.status == "left":
         update.effective_message.reply_text(
             f"If you can't steal catnip from an empty can, you can't {action} someone who isn't in the group."
         )
         return
 
     # check if user is trying to ban an admin
-    if user.status in ('administrator', 'creator'):
+    if user.status in ("administrator", "creator"):
         update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just {action} __you__.")
         return
 
     # get datetime till when we have to mute user
     if action == "ban" and context.args:
         try:
-            kwargs['until_date'] = get_datetime_form_args(context.args, username)
+            kwargs["until_date"] = get_datetime_form_args(context.args, username)
         except TimeFormatException:
             update.effective_message.reply_markdown(
                 "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
@@ -294,22 +294,22 @@ def ban_kick(update: Update, context: CallbackContext):
     )
     if action == "ban":
         reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
-        if kwargs.get('until_date'):
+        if kwargs.get("until_date"):
             reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
 
     update.effective_message.reply_markdown(emojize(reply))
     # if user is being banned, troll them with banhammer video
-    if action == 'ban':
+    if action == "ban":
         update.effective_chat.send_video("BAACAgUAAx0CRZJ5DwACExFgW3Ux58a2qb4ZsDbWnMAMOr5UEgACDgMAAhv3IFZpwRWleUpR6x4E")
 
     # ban user
     context.bot.kick_chat_member(**kwargs)
     if action == "kick":
-        context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
+        context.bot.unban_chat_member(kwargs["chat_id"], kwargs["user_id"])
 
 
 @bot_action("ban")
-@for_chat_types('supergroup', 'channel')
+@for_chat_types("supergroup", "channel")
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -323,7 +323,7 @@ def ban(update: Update, context: CallbackContext):
 
 
 @bot_action("unban")
-@for_chat_types('supergroup', 'channel')
+@for_chat_types("supergroup", "channel")
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -334,11 +334,11 @@ def kick(update: Update, context: CallbackContext):
     :param context: object containing data about the command call.
     """
     # kwargs to pass to the ban_chat_member function call
-    kwargs = {'chat_id': update.effective_chat.id}
+    kwargs = {"chat_id": update.effective_chat.id}
 
     # get user to unban
     try:
-        kwargs['user_id'], username = get_user_from_message(update.effective_message)
+        kwargs["user_id"], username = get_user_from_message(update.effective_message)
     except UserError:
         update.effective_message.reply_text(
             f"Reply to a message by the user or give username of user you want to unban..."
@@ -348,7 +348,7 @@ def kick(update: Update, context: CallbackContext):
         update.effective_message.reply_text(e.message)
         return
 
-    context.bot.unban_chat_member(kwargs['chat_id'], kwargs['user_id'])
+    context.bot.unban_chat_member(kwargs["chat_id"], kwargs["user_id"])
 
     update.effective_message.reply_text(
         f"Someone go to the litter and tell {username} that he's been unbanned....\n\nfor now."
@@ -356,7 +356,7 @@ def kick(update: Update, context: CallbackContext):
 
 
 @bot_action("kick")
-@for_chat_types('supergroup', 'channel')
+@for_chat_types("supergroup", "channel")
 @check_user_admin
 @check_bot_admin
 @can_restrict
@@ -370,7 +370,7 @@ def kick(update: Update, context: CallbackContext):
 
 
 @bot_action("promote")
-@for_chat_types('supergroup', 'channel')
+@for_chat_types("supergroup", "channel")
 @check_user_admin
 @check_bot_admin
 def promote(update: Update, context: CallbackContext):
@@ -447,7 +447,7 @@ def promote(update: Update, context: CallbackContext):
 
 
 @bot_action("demote")
-@for_chat_types('supergroup', 'channel')
+@for_chat_types("supergroup", "channel")
 @check_user_admin
 @check_bot_admin
 def demote(update: Update, context: CallbackContext):
@@ -520,7 +520,7 @@ def demote(update: Update, context: CallbackContext):
 
 
 @bot_action("pin")
-@for_chat_types('supergroup', 'channel')
+@for_chat_types("supergroup", "channel")
 @check_bot_admin
 def pin(update: Update, context: CallbackContext):
     """
@@ -563,7 +563,7 @@ def pin(update: Update, context: CallbackContext):
 
     # Don't always loud pin
     if context.args:
-        disable_notification = context.args[0].lower() in ('silent', 'quiet')
+        disable_notification = context.args[0].lower() in ("silent", "quiet")
     else:
         disable_notification = None
 

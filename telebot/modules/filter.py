@@ -60,13 +60,13 @@ def add_filter_handler(update: Update, context: CallbackContext):
     trigger = trigger.replace(r"\_", "_").replace(r"\*", "*")
 
     # set kwargs to be passed to add_filter function
-    kwargs = {'chat': update.effective_chat.id, 'trigger': trigger}
+    kwargs = {"chat": update.effective_chat.id, "trigger": trigger}
 
     # add content and filter type to kwargs
 
     if content is not None:
-        kwargs['content'] = content
-        kwargs['filter_type'] = "text"
+        kwargs["content"] = content
+        kwargs["filter_type"] = "text"
 
     elif msg.reply_to_message:
         # for future usage
@@ -76,32 +76,32 @@ def add_filter_handler(update: Update, context: CallbackContext):
         )
 
         if msg.reply_to_message.text_markdown:
-            kwargs['content'] = msg.reply_to_message.text_markdown
-            kwargs['filter_type'] = "text"
+            kwargs["content"] = msg.reply_to_message.text_markdown
+            kwargs["filter_type"] = "text"
 
         elif msg.reply_to_message.sticker:
-            kwargs['content'] = msg.reply_to_message.sticker.file_id
-            kwargs['filter_type'] = "sticker"
+            kwargs["content"] = msg.reply_to_message.sticker.file_id
+            kwargs["filter_type"] = "sticker"
 
         elif msg.reply_to_message.document:
-            kwargs['content'] = msg.reply_to_message.document.file_id
-            kwargs['filter_type'] = "document"
+            kwargs["content"] = msg.reply_to_message.document.file_id
+            kwargs["filter_type"] = "document"
 
         elif msg.reply_to_message.photo:
-            kwargs['content'] = msg.reply_to_message.photo[-1].file_id
-            kwargs['filter_type'] = "photo"
+            kwargs["content"] = msg.reply_to_message.photo[-1].file_id
+            kwargs["filter_type"] = "photo"
 
         elif msg.reply_to_message.audio:
-            kwargs['content'] = msg.reply_to_message.audio.file_id
-            kwargs['filter_type'] = "audio"
+            kwargs["content"] = msg.reply_to_message.audio.file_id
+            kwargs["filter_type"] = "audio"
 
         elif msg.reply_to_message.voice:
-            kwargs['content'] = msg.reply_to_message.voice.file_id
-            kwargs['filter_type'] = "voice"
+            kwargs["content"] = msg.reply_to_message.voice.file_id
+            kwargs["filter_type"] = "voice"
 
         elif msg.reply_to_message.video:
-            kwargs['content'] = msg.reply_to_message.video.file_id
-            kwargs['filter_type'] = "video"
+            kwargs["content"] = msg.reply_to_message.video.file_id
+            kwargs["filter_type"] = "video"
 
         else:
             msg.reply_markdown("This cat isn't a random reply generator, baka! Give some content to reply with......")

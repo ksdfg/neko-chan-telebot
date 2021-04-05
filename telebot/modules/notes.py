@@ -101,13 +101,13 @@ def add_note_in_chat(update: Update, context: CallbackContext):
             return
 
     # set kwargs to be passed to add_note function
-    kwargs = {'chat': update.effective_chat.id, 'name': name.replace(r"\_", "_").replace(r"\*", "*")}
+    kwargs = {"chat": update.effective_chat.id, "name": name.replace(r"\_", "_").replace(r"\*", "*")}
 
     # add content and content type to kwargs
 
     if content is not None:
-        kwargs['content'] = content
-        kwargs['content_type'] = "text"
+        kwargs["content"] = content
+        kwargs["content_type"] = "text"
 
     elif msg.reply_to_message:
         # for future usage
@@ -117,32 +117,32 @@ def add_note_in_chat(update: Update, context: CallbackContext):
         )
 
         if msg.reply_to_message.text_markdown:
-            kwargs['content'] = msg.reply_to_message.text_markdown
-            kwargs['content_type'] = "text"
+            kwargs["content"] = msg.reply_to_message.text_markdown
+            kwargs["content_type"] = "text"
 
         elif msg.reply_to_message.sticker:
-            kwargs['content'] = msg.reply_to_message.sticker.file_id
-            kwargs['content_type'] = "sticker"
+            kwargs["content"] = msg.reply_to_message.sticker.file_id
+            kwargs["content_type"] = "sticker"
 
         elif msg.reply_to_message.document:
-            kwargs['content'] = msg.reply_to_message.document.file_id
-            kwargs['content_type'] = "document"
+            kwargs["content"] = msg.reply_to_message.document.file_id
+            kwargs["content_type"] = "document"
 
         elif msg.reply_to_message.photo:
-            kwargs['content'] = msg.reply_to_message.photo[-1].file_id
-            kwargs['content_type'] = "photo"
+            kwargs["content"] = msg.reply_to_message.photo[-1].file_id
+            kwargs["content_type"] = "photo"
 
         elif msg.reply_to_message.audio:
-            kwargs['content'] = msg.reply_to_message.audio.file_id
-            kwargs['content_type'] = "audio"
+            kwargs["content"] = msg.reply_to_message.audio.file_id
+            kwargs["content_type"] = "audio"
 
         elif msg.reply_to_message.voice:
-            kwargs['content'] = msg.reply_to_message.voice.file_id
-            kwargs['content_type'] = "voice"
+            kwargs["content"] = msg.reply_to_message.voice.file_id
+            kwargs["content_type"] = "voice"
 
         elif msg.reply_to_message.video:
-            kwargs['content'] = msg.reply_to_message.video.file_id
-            kwargs['content_type'] = "video"
+            kwargs["content"] = msg.reply_to_message.video.file_id
+            kwargs["content_type"] = "video"
 
         else:
             msg.reply_markdown("This cat isn't a random reply generator, baka! Give some content to reply with......")

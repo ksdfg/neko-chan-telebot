@@ -30,9 +30,9 @@ def regex(update: Update, context: CallbackContext):
     # make sure `s` command is properly terminated
     command = update.effective_message.text
     delimiter = command[1]
-    if command.replace(f'\\{delimiter}', '').count(delimiter) == 2:
+    if command.replace(f"\\{delimiter}", "").count(delimiter) == 2:
         command += delimiter
-    delimiter_regex_safe = delimiter.replace('|', r'\|')  # because | is regex OR
+    delimiter_regex_safe = delimiter.replace("|", r"\|")  # because | is regex OR
     command = search(f"s{delimiter_regex_safe}.*{delimiter_regex_safe}.*{delimiter_regex_safe}[ig]*", command).group()
 
     # execute sed in shell to get output
@@ -53,35 +53,35 @@ def regex(update: Update, context: CallbackContext):
         update.effective_message.reply_to_message.reply_document(
             document=update.effective_message.reply_to_message.document,
             filename=update.effective_message.reply_to_message.document.file_name,
-            caption=result.decode('utf-8'),
+            caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.photo:
         update.effective_message.reply_to_message.reply_photo(
             photo=update.effective_message.reply_to_message.photo[-1].file_id,
-            caption=result.decode('utf-8'),
+            caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.audio:
         update.effective_message.reply_to_message.reply_audio(
             photo=update.effective_message.reply_to_message.audio,
-            caption=result.decode('utf-8'),
+            caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.voice:
         update.effective_message.reply_to_message.reply_voice(
             photo=update.effective_message.reply_to_message.voice,
-            caption=result.decode('utf-8'),
+            caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.video:
         update.effective_message.reply_to_message.reply_video(
             photo=update.effective_message.reply_to_message.video,
-            caption=result.decode('utf-8'),
+            caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     else:
-        update.effective_message.reply_to_message.reply_text(result.decode('utf-8'))
+        update.effective_message.reply_to_message.reply_text(result.decode("utf-8"))
 
 
 __mod_name__ = "Regex"

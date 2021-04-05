@@ -103,16 +103,16 @@ def owo(update: Update, context: CallbackContext) -> None:
         ]
 
         # replace certain characters and add a kaomoji
-        reply_text = sub(r'[rl]', "w", text)
-        reply_text = sub(r'[ｒｌ]', "ｗ", reply_text)
-        reply_text = sub(r'[RL]', 'W', reply_text)
-        reply_text = sub(r'[ＲＬ]', 'Ｗ', reply_text)
-        reply_text = sub(r'n([aeiouａｅｉｏｕ])', r'ny\1', reply_text)
-        reply_text = sub(r'ｎ([ａｅｉｏｕ])', r'ｎｙ\1', reply_text)
-        reply_text = sub(r'N([aeiouAEIOU])', r'Ny\1', reply_text)
-        reply_text = sub(r'Ｎ([ａｅｉｏｕＡＥＩＯＵ])', r'Ｎｙ\1', reply_text)
-        reply_text = sub(r'!+', ' ' + choice(kaomoji), reply_text)
-        reply_text = sub(r'！+', ' ' + choice(kaomoji), reply_text)
+        reply_text = sub(r"[rl]", "w", text)
+        reply_text = sub(r"[ｒｌ]", "ｗ", reply_text)
+        reply_text = sub(r"[RL]", "W", reply_text)
+        reply_text = sub(r"[ＲＬ]", "Ｗ", reply_text)
+        reply_text = sub(r"n([aeiouａｅｉｏｕ])", r"ny\1", reply_text)
+        reply_text = sub(r"ｎ([ａｅｉｏｕ])", r"ｎｙ\1", reply_text)
+        reply_text = sub(r"N([aeiouAEIOU])", r"Ny\1", reply_text)
+        reply_text = sub(r"Ｎ([ａｅｉｏｕＡＥＩＯＵ])", r"Ｎｙ\1", reply_text)
+        reply_text = sub(r"!+", " " + choice(kaomoji), reply_text)
+        reply_text = sub(r"！+", " " + choice(kaomoji), reply_text)
         reply_text = reply_text.replace("ove", "uv")
         reply_text = reply_text.replace("ｏｖｅ", "ｕｖ")
         reply_text += " " + choice(kaomoji)
@@ -166,8 +166,8 @@ def stretch(update: Update, context: CallbackContext):
     if context.args:
         update.effective_message.reply_markdown(
             sub(
-                r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])',
-                (r'\1' * randint(3, 10)),
+                r"([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])",
+                (r"\1" * randint(3, 10)),
                 update.effective_message.text_markdown.replace("/stretch ", "").strip(),
             )
         )
@@ -175,8 +175,8 @@ def stretch(update: Update, context: CallbackContext):
     elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.text:
         update.effective_message.reply_to_message.reply_markdown(
             sub(
-                r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])',
-                (r'\1' * randint(3, 10)),
+                r"([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])",
+                (r"\1" * randint(3, 10)),
                 update.effective_message.reply_to_message.text_markdown,
             )
         )

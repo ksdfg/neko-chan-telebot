@@ -36,14 +36,14 @@ class Config:
 
 # create config object
 config = Config(
-    admin=config('ADMIN', cast=int),
-    token=config('TOKEN'),
-    db_name=config('DATABASE_NAME'),
-    db_uri=config('DATABASE_URL', default=None),
-    webhook_url=config('WEBHOOK_URL', default=False),
-    port=config('PORT', default=80, cast=int),
-    load=config('LOAD', default=False, cast=lambda x: x.split(" ") if x else False),
-    no_load=config('NO_LOAD', default=False, cast=lambda x: x.split(" ") if x else False),
+    admin=config("ADMIN", cast=int),
+    token=config("TOKEN"),
+    db_name=config("DATABASE_NAME"),
+    db_uri=config("DATABASE_URL", default=None),
+    webhook_url=config("WEBHOOK_URL", default=False),
+    port=config("PORT", default=80, cast=int),
+    load=config("LOAD", default=False, cast=lambda x: x.split(" ") if x else False),
+    no_load=config("NO_LOAD", default=False, cast=lambda x: x.split(" ") if x else False),
     superusers=config("SUPERUSERS", default=[], cast=lambda x: map(int, x.split(" "))),
 )
 

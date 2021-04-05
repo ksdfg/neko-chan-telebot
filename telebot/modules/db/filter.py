@@ -10,7 +10,7 @@ class Filter(Document):
     chat = IntField()  # chat ID in which filter is set
     trigger = StringField()  # keyword which will trigger the filter to reply
     content = StringField()  # what to reply on being triggered
-    filter_type = StringField(choices=('text', 'sticker', 'document', 'photo', 'audio', 'voice', 'video'))
+    filter_type = StringField(choices=("text", "sticker", "document", "photo", "audio", "voice", "video"))
 
 
 # create helper functions to be used to interact with the model

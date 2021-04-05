@@ -11,7 +11,7 @@ class Note(DynamicDocument):
     chat = IntField()  # chat ID in which note is to be added
     name = StringField()  # name by which the note will be referred to
     content = StringField()  # content stored within that note
-    content_type = StringField(choices=('text', 'sticker', 'document', 'photo', 'audio', 'voice', 'video'))
+    content_type = StringField(choices=("text", "sticker", "document", "photo", "audio", "voice", "video"))
 
 
 # create helper functions to be used to interact with the model

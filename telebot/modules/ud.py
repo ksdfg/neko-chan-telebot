@@ -18,13 +18,13 @@ def ud(update: Update, context: CallbackContext):
     if context.args:
         try:
             result = choice(
-                get(f'http://api.urbandictionary.com/v0/define?term={" ".join(context.args)}').json()['list']
+                get(f'http://api.urbandictionary.com/v0/define?term={" ".join(context.args)}').json()["list"]
             )
             update.effective_message.reply_markdown(
                 f"***Word***: {' '.join(context.args)}\n\n***Definition***:\n{result['definition']}\n\n",
                 disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup(
-                    [[InlineKeyboardButton(text="Click here to learn more", url=result['permalink'])]]
+                    [[InlineKeyboardButton(text="Click here to learn more", url=result["permalink"])]]
                 ),
             )
         except IndexError:

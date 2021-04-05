@@ -70,8 +70,8 @@ def sauce(update: Update, context: CallbackContext) -> None:
 
         # create telegraph article for the doujin
         telegraph = Telegraph()
-        telegraph.create_account(short_name='neko-chan-telebot')
-        article_path = telegraph.create_page(doujin.title(Format.Pretty), html_content=image_tags)['path']
+        telegraph.create_account(short_name="neko-chan-telebot")
+        article_path = telegraph.create_page(doujin.title(Format.Pretty), html_content=image_tags)["path"]
 
         # add details to the reply to be sent to the user
         text_blob = (
@@ -103,4 +103,4 @@ If you don't have an exception set for your chat, it'll send it to you in your p
 __mod_name__ = "nhentai"
 
 # create handlers
-dispatcher.add_handler(CommandHandler('sauce', sauce, run_async=True))
+dispatcher.add_handler(CommandHandler("sauce", sauce, run_async=True))

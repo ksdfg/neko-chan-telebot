@@ -26,7 +26,7 @@ def check_user_admin(func: Callable):
     def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
         if update.effective_chat.type != "private":
             # check if user is admin
-            if update.effective_chat.get_member(update.effective_user.id).status not in ('administrator', 'creator'):
+            if update.effective_chat.get_member(update.effective_user.id).status not in ("administrator", "creator"):
                 update.effective_message.reply_text(
                     "Get some admin privileges before you try to order me around, baka!"
                 )
@@ -47,7 +47,7 @@ def check_bot_admin(func: Callable):
     def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
         if update.effective_chat.type != "private":
             # check if bot is an admin
-            if update.effective_chat.get_member(context.bot.id).status not in ('administrator', 'creator'):
+            if update.effective_chat.get_member(context.bot.id).status not in ("administrator", "creator"):
                 update.effective_message.reply_text("Ask your sugar daddy to give me admin status plej...")
                 return
 

@@ -40,7 +40,7 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
         else:
             initials = ls[0][0]
         # Generate a temp profile picture similar to telegram
-        font_bold = ImageFont.truetype(join(BASE_DIR, 'Fonts', "LucidaGrandeBold.ttf"), size=60, encoding="unic")
+        font_bold = ImageFont.truetype(join(BASE_DIR, "Fonts", "LucidaGrandeBold.ttf"), size=60, encoding="unic")
         img = Image.new("RGB", (160, 160), color=(assigned_color))
         draw = ImageDraw.Draw(img)
         # put the initials in centre of image
@@ -162,8 +162,8 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
             max_width = 400
 
             # create the ImageFont instances
-            font_normal = ImageFont.truetype(join(BASE_DIR, 'Fonts', "LucidaGrande.ttf"), size=30, encoding="unic")
-            font_bold = ImageFont.truetype(join(BASE_DIR, 'Fonts', "LucidaGrandeBold.ttf"), size=30, encoding="unic")
+            font_normal = ImageFont.truetype(join(BASE_DIR, "Fonts", "LucidaGrande.ttf"), size=30, encoding="unic")
+            font_bold = ImageFont.truetype(join(BASE_DIR, "Fonts", "LucidaGrandeBold.ttf"), size=30, encoding="unic")
 
             # get text_blob
             text_blob = text_wrap(text, font_normal, max_width)
@@ -299,7 +299,7 @@ def quote(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    context.bot.send_chat_action(update.effective_chat.id, 'upload_photo')  # tell chat that a sticker is incoming
+    context.bot.send_chat_action(update.effective_chat.id, "upload_photo")  # tell chat that a sticker is incoming
 
     # make sticker and save on disk
     try:
@@ -331,4 +331,4 @@ __help__ = """
 __mod_name__ = "quote"
 
 # create handlers
-dispatcher.add_handler(CommandHandler('quote', quote, run_async=True))
+dispatcher.add_handler(CommandHandler("quote", quote, run_async=True))
