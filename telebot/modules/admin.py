@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from functools import wraps
-from os.path import join, abspath, dirname
+from pytz import timezone, UTC
 from re import match
 from typing import Callable, List, Optional
-from pathlib import Path
 
 from emoji import emojize
 from telegram import Update, ChatPermissions, ChatMember
@@ -12,6 +11,9 @@ from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import dispatcher
+from telebot.modules.db.exceptions import get_command_exception_chats
+from telebot.modules.db.mute import add_muted_member, remove_muted_member
+from telebot.modules.db.users import add_user
 from telebot.utils import (
     check_user_admin,
     check_bot_admin,
@@ -20,9 +22,6 @@ from telebot.utils import (
     UserError,
     UserRecordError,
 )
-from telebot.modules.db.exceptions import get_command_exception_chats
-from telebot.modules.db.mute import add_muted_member, remove_muted_member
-from telebot.modules.db.users import add_user
 
 
 def for_chat_types(*types):
@@ -106,11 +105,11 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
         # get datetime till when we have to mute user
         time, unit = float(useful_args[0][:-1]), useful_args[0][-1]
         if unit == "d":
-            until_date = datetime.now(tz=timezone.utc) + timedelta(days=time)
+            until_date = datetime.now(tz=timezone("Asia/Kolkata")) + timedelta(days=time)
         elif unit == "h":
-            until_date = datetime.now(tz=timezone.utc) + timedelta(hours=time)
+            until_date = datetime.now(tz=timezone("Asia/Kolkata")) + timedelta(hours=time)
         elif unit == "m":
-            until_date = datetime.now(tz=timezone.utc) + timedelta(minutes=time)
+            until_date = datetime.now(tz=timezone("Asia/Kolkata")) + timedelta(minutes=time)
         else:
             raise TimeFormatException
 
@@ -187,7 +186,7 @@ def mute(update: Update, context: CallbackContext):
             f"bribe an admin with some catnip to do it for you..."
         )
         if kwargs["until_date"]:
-            reply += f" or wait till `{kwargs['until_date'].strftime('%c')} UTC`"
+            reply += f" or wait till `{kwargs['until_date'].strftime('%c')} IST`"
 
         update.effective_message.reply_markdown(emojize(reply))
     else:
