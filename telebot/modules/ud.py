@@ -1,5 +1,3 @@
-from random import choice
-
 from requests import get
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext, CommandHandler
@@ -17,14 +15,11 @@ def ud(update: Update, context: CallbackContext):
     """
     if context.args:
         try:
-            result = choice(
-                get(f'http://api.urbandictionary.com/v0/define?term={" ".join(context.args)}').json()["list"]
-            )
+            result = get(f'https://api.urbandictionary.com/v0/define?term={" ".join(context.args)}').json()["list"][0]
             update.effective_message.reply_markdown(
-                f"***Word***: {' '.join(context.args)}\n\n***Definition***:\n{result['definition']}\n\n",
-                disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup(
-                    [[InlineKeyboardButton(text="Click here to learn more", url=result["permalink"])]]
+                f"***{result['word']}***\n\n{result['definition']}",
+                reply_markup=InlineKeyboardMarkup.from_button(
+                    InlineKeyboardButton(text="Click here to learn more", url=result["permalink"])
                 ),
             )
         except IndexError:
@@ -34,8 +29,8 @@ def ud(update: Update, context: CallbackContext):
             )
     else:
         update.effective_message.reply_markdown(
-            f"***Word***: {update.effective_user.first_name}\n\n"
-            f"***Definition***:\nA dumbass eternally high on cheap catnip who doesn't know that I can't get a word's "
+            f"***{update.effective_user.first_name}***\n\n"
+            f"A dumbass eternally high on cheap catnip who doesn't know that I can't get a word's "
             f"meaning they don't tell me what the bloody word is.\n\n",
         )
 
