@@ -1,8 +1,6 @@
 from hentai import Hentai, Format, Tag
-from telegram import Update, ParseMode
+from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext
-from telegram.utils.helpers import escape_markdown
-from telegraph import Telegraph
 
 from telebot import dispatcher
 from telebot.modules.db.exceptions import get_command_exception_chats
@@ -54,11 +52,9 @@ def sauce(update: Update, context: CallbackContext) -> None:
         # Fetch doujin data
         doujin = Hentai(code)
 
-        # get image tags
-        image_tags = "\n".join(f'<img src="{image_url}">' for image_url in doujin.image_urls)
-
         # make dict with data to be displayed for the doujin
         data = {
+            "Title": f'<a href="{doujin.url}">{doujin.title(Format.Pretty)}</a>',
             "Tags": _generate_anchor_tags(doujin.tag),
             "Characters": _generate_anchor_tags(doujin.character),
             "Parodies": _generate_anchor_tags(doujin.parody),
@@ -68,29 +64,39 @@ def sauce(update: Update, context: CallbackContext) -> None:
             "Categories": _generate_anchor_tags(doujin.category),
         }
 
-        # create telegraph article for the doujin
-        telegraph = Telegraph()
-        telegraph.create_account(short_name="neko-chan-telebot")
-        article_path = telegraph.create_page(doujin.title(Format.Pretty), html_content=image_tags)["path"]
-
         # add details to the reply to be sent to the user
-        text_blob = (
-            f"<code>{digits}</code>\n<a href='https://telegra.ph/{article_path}'>{doujin.title(Format.Pretty)}</a>"
-        )
-        for key, value in data.items():
-            if value:
-                text_blob += f"\n\n<code>{key}</code>\n{value}"
+        text_blob = "\n\n".join(f"{key}\n{value}" for key, value in data.items())
+
+        # button with nhentai link
+        markup = InlineKeyboardMarkup.from_button(InlineKeyboardButton(text="Link to nHentai", url=doujin.url))
 
         # send message
         if exception:
-            update.message.reply_html(text_blob)
+            update.message.reply_photo(
+                photo=doujin.image_urls[0],
+                caption=text_blob,
+                parse_mode=ParseMode.HTML,
+                reply_markup=markup,
+            )
         else:
-            context.bot.send_message(chat_id=update.effective_user.id, text=text_blob, parse_mode=ParseMode.HTML)
+            context.bot.send_photo(
+                chat_id=update.effective_user.id,
+                photo=doujin.image_urls[0],
+                caption=text_blob,
+                parse_mode=ParseMode.HTML,
+                reply_markup=markup,
+            )
 
     # if called from a chat without exception in it, then send him a reminder to check it
     if not exception and update.effective_chat.type != "private":
-        update.message.reply_markdown(
-            f"[Let's enjoy this together in our private chat...](https://t.me/{escape_markdown(context.bot.username)}"
+        update.message.reply_text(
+            "Let's enjoy this together, without anybody else distracting us...",
+            reply_markup=InlineKeyboardMarkup.from_button(
+                InlineKeyboardButton(
+                    text="Go to Private Chat",
+                    url=context.bot.link,
+                )
+            ),
         )
 
 
