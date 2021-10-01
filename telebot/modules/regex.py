@@ -5,8 +5,8 @@ from telegram import MAX_MESSAGE_LENGTH, Update
 from telegram.ext import CallbackContext, MessageHandler, Filters
 
 from telebot import dispatcher
-from telebot.utils import bot_action
 from telebot.modules.db.exceptions import get_exceptions_for_chat
+from telebot.utils import bot_action
 
 
 @bot_action("regex")
@@ -64,19 +64,19 @@ def regex(update: Update, context: CallbackContext):
         )
     elif update.effective_message.reply_to_message.audio:
         update.effective_message.reply_to_message.reply_audio(
-            photo=update.effective_message.reply_to_message.audio,
+            audio=update.effective_message.reply_to_message.audio,
             caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.voice:
         update.effective_message.reply_to_message.reply_voice(
-            photo=update.effective_message.reply_to_message.voice,
+            voice=update.effective_message.reply_to_message.voice,
             caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.video:
         update.effective_message.reply_to_message.reply_video(
-            photo=update.effective_message.reply_to_message.video,
+            video=update.effective_message.reply_to_message.video,
             caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
