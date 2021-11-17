@@ -20,6 +20,7 @@ python-telegram-bot = "^13.0"
 spongemock = "^0.3.4"
 zalgo-text = "^0.6"
 hentai = "^3.2.5"
+telegraph = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"

@@ -323,6 +323,20 @@ python-versions = "*"
 pyperclip = ">=1.5.27"
 
 [[package]]
+name = "telegraph"
+version = "2.1.0"
+description = "Telegraph API wrapper"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = "*"
+
+[package.extras]
+aio = ["httpx"]
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -416,7 +430,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.9.5"
-content-hash = "d8d9e5f0fe2e46037c62a09cddafc0a46f7fa7adc81eb9bec82536874fd64a27"
+content-hash = "5b75905f86e42064a23811594455a11775ad6235dad56086242ad671e8fd550a"
 
 [metadata.files]
 appdirs = [
@@ -711,6 +725,10 @@ soupsieve = [
 spongemock = [
     {file = "spongemock-0.3.4-py2.py3-none-any.whl", hash = "sha256:6a7df0a929a8d0f55cae1b2cfb45db471775f6fda0f2c2239d9935dbe6ac500b"},
     {file = "spongemock-0.3.4.tar.gz", hash = "sha256:40c1316d9ece635d727ac2b3c6e22e5f9d85ba402ee4dc6eeef5a8e8c17ff892"},
+]
+telegraph = [
+    {file = "telegraph-2.1.0-py3-none-any.whl", hash = "sha256:fed87d8fbc4edf1f57de575d9f9bf1baf0a626341e97b8452e59144c0decd8ba"},
+    {file = "telegraph-2.1.0.tar.gz", hash = "sha256:7ea37bc8708da3fe366827cabfd93bec58b6fa080cd65dec7fb5f97285225690"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
