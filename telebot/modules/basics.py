@@ -6,8 +6,8 @@ from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
 from telebot import updater, dispatcher
-from telebot.utils import bot_action, get_user_from_message, UserError, UserRecordError
 from telebot.modules import imported_mods
+from telebot.utils import bot_action, get_user_from_message, UserError, UserRecordError
 
 # default Start Text
 
@@ -92,13 +92,13 @@ def talk(update: Update, context: CallbackContext) -> None:
     :param context: object containing data about the command call.
     """
     # get word (meow if not given)
-    word = "meow "
+    word = "meow"
     if context.args:
-        word = context.args[0] + " "
+        word = context.args[0].strip()
 
     # make spem
-    spem = (word * choice(range(100))).rstrip()
-    if word != "meow ":
+    spem = " ".join(word for _ in range(choice(range(100))))
+    if word != "meow":
         spem += "\n\nmeow"
 
     update.message.reply_markdown(f"`{spem}`")
@@ -176,10 +176,9 @@ __help__ = """
 - /fileid `<reply>` : Get file ID of the file in the quoted message
 """
 
-
 # create handlers
 dispatcher.add_handler(CommandHandler("start", start, run_async=True))
-dispatcher.add_handler(CommandHandler("talk", talk, run_async=True))
+dispatcher.add_handler(CommandHandler(["talk"], talk, run_async=True))
 dispatcher.add_handler(CommandHandler("help", help, run_async=True))
 dispatcher.add_handler(CommandHandler("modules", list_modules, run_async=True))
 dispatcher.add_handler(CommandHandler("id", info, run_async=True))
