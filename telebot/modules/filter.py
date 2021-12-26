@@ -171,20 +171,21 @@ def reply(update: Update, context: CallbackContext) -> None:
             content, filter_type = get_filter(update.effective_chat.id, trigger)
 
             # send reply according to type
-            if filter_type == "text":
-                msg.reply_markdown(content)
-            elif filter_type == "sticker":
-                msg.reply_sticker(content)
-            elif filter_type == "document":
-                msg.reply_document(content)
-            elif filter_type == "photo":
-                msg.reply_photo(content)
-            elif filter_type == "audio":
-                msg.reply_audio(content)
-            elif filter_type == "voice":
-                msg.reply_voice(content)
-            elif filter_type == "video":
-                msg.reply_video(content)
+            match filter_type:
+                case "text":
+                    msg.reply_markdown(content)
+                case "sticker":
+                    msg.reply_sticker(content)
+                case "document":
+                    msg.reply_document(content)
+                case "photo":
+                    msg.reply_photo(content)
+                case "audio":
+                    msg.reply_audio(content)
+                case "voice":
+                    msg.reply_voice(content)
+                case "video":
+                    msg.reply_video(content)
 
             break
 

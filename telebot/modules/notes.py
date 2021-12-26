@@ -32,20 +32,21 @@ def fetch_note(update: Update, context: CallbackContext):
     content, content_type = get_note(update.effective_chat.id, name)
 
     # send reply according to type
-    if content_type == "text":
-        update.effective_message.reply_markdown(content)
-    elif content_type == "sticker":
-        update.effective_message.reply_sticker(content)
-    elif content_type == "document":
-        update.effective_message.reply_document(content)
-    elif content_type == "photo":
-        update.effective_message.reply_photo(content)
-    elif content_type == "audio":
-        update.effective_message.reply_audio(content)
-    elif content_type == "voice":
-        update.effective_message.reply_voice(content)
-    elif content_type == "video":
-        update.effective_message.reply_video(content)
+    match content_type:
+        case "text":
+            update.effective_message.reply_markdown(content)
+        case "sticker":
+            update.effective_message.reply_sticker(content)
+        case "document":
+            update.effective_message.reply_document(content)
+        case "photo":
+            update.effective_message.reply_photo(content)
+        case "audio":
+            update.effective_message.reply_audio(content)
+        case "voice":
+            update.effective_message.reply_voice(content)
+        case "video":
+            update.effective_message.reply_video(content)
 
 
 @bot_action("notes")
