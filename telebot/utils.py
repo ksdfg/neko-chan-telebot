@@ -1,7 +1,6 @@
-from collections import Callable
 from functools import wraps
 from traceback import print_exc, format_exc
-from typing import Tuple
+from typing import Callable, Tuple
 
 from emoji import emojize
 from telegram import Update, Message, MessageEntity
