@@ -4,11 +4,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-python@master
+    - uses: actions/setup-python@v2
       with:
-        python-version: 3.8.3
-    - uses: actions/checkout@master
+        python-version: 3.10.1
+    - uses: actions/checkout@v2
     - run: |
-          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-          pip install $($HOME/.poetry/bin/poetry export --dev --without-hashes | grep black | cut -d';' -f1)
-          black --check .
+          curl -sSL https://install.python-poetry.org | python3 -
+          pip install $(poetry export --dev --without-hashes | grep black | cut -d';' -f1)
+          black --check --target-version py310 .
