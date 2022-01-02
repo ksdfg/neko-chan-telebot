@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Union
+from typing import List
 
 from mongoengine import DynamicDocument, IntField, StringField, DateTimeField
 
@@ -61,7 +61,7 @@ def remove_muted_member(chat: int, user: int) -> bool:
         return False
 
 
-def fetch_muted_member(chat: int, username: str) -> Union[int, bool]:
+def fetch_muted_member(chat: int, username: str) -> int | bool:
     """
     Fetch user ID of muted member
     :param chat: chat ID member is muted in

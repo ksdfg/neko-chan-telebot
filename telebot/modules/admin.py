@@ -93,7 +93,6 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
     :param username: username quoted in the message, if any
     :return:
     """
-    until_date = None
 
     # get all args other than the username
     useful_args = []
@@ -104,16 +103,15 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
     if useful_args:
         # get datetime till when we have to mute user
         time, unit = float(useful_args[0][:-1]), useful_args[0][-1]
-        if unit == "d":
-            until_date = datetime.now(tz=timezone("Asia/Kolkata")) + timedelta(days=time)
-        elif unit == "h":
-            until_date = datetime.now(tz=timezone("Asia/Kolkata")) + timedelta(hours=time)
-        elif unit == "m":
-            until_date = datetime.now(tz=timezone("Asia/Kolkata")) + timedelta(minutes=time)
-        else:
-            raise TimeFormatException
-
-    return until_date
+        match unit:
+            case "d":
+                return datetime.now(tz=timezone("Asia/Kolkata")) + timedelta(days=time)
+            case "h":
+                return datetime.now(tz=timezone("Asia/Kolkata")) + timedelta(hours=time)
+            case "m":
+                return datetime.now(tz=timezone("Asia/Kolkata")) + timedelta(minutes=time)
+            case _:
+                raise TimeFormatException
 
 
 @bot_action("mute")
