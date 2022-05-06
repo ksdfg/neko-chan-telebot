@@ -234,7 +234,7 @@ def kang(update: Update, context: CallbackContext) -> None:
     """
     # check for exception, but skip exception if user is a superuser
     if update.effective_user.id not in config.SUPERUSERS and update.effective_chat.id in get_command_exception_chats(
-        "kang"
+            "kang"
     ):
         return
 
@@ -724,7 +724,7 @@ def reorder1(update: Update, context: CallbackContext):
     # store sticker to reorder
     reorder[
         str(update.effective_user.id) + str(update.effective_chat.id)
-    ] = update.effective_message.reply_to_message.sticker.file_id
+        ] = update.effective_message.reply_to_message.sticker.file_id
 
     update.effective_message.reply_markdown(
         "Please send the sticker that is going to be on the `left` of this sticker __after__ the reorder, or /cancel to stop"

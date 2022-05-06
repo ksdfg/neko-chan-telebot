@@ -1,4 +1,5 @@
 from hentai import Hentai, Format, Tag
+from requests import get
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext
 from telegraph import Telegraph
