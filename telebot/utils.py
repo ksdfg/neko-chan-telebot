@@ -1,8 +1,11 @@
+import time
 from functools import wraps
+from http import HTTPStatus
 from traceback import print_exc, format_exc
 from typing import Callable, Tuple
 
 from emoji import emojize
+from requests import post
 from telegram import Update, Message, MessageEntity
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
@@ -116,6 +119,22 @@ def log(update: Update, func_name: str, extra_text: str = ""):
         print(extra_text)
 
 
+def create_gist(err: str) -> str:
+    """
+    Function to create gists with errors
+    :param err: error to set in gist
+    :return: url to the created gis
+    """
+    headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {config.GITHUB_TOKEN}"}
+    body = {"description": "error from neko chan", "files": {f"neko-chan-errors-{time.time()}": {"content": err}}}
+
+    response = post("https://api.github.com/gists", headers=headers, json=body)
+    if response.status_code != HTTPStatus.CREATED:
+        raise Exception(f"invalid status code from gist: {response.status_code}")
+
+    return response.json().get("html_url")
+
+
 def bot_action(func_name: str = None, extra_text: str = ""):
     """
     Function to log bot activity and execute bot_action
@@ -161,17 +180,27 @@ def bot_action(func_name: str = None, extra_text: str = ""):
                     )
                 else:
                     print_exc()
+                    try:
+                        err = create_gist(format_exc())
+                    except:
+                        err = f"```{format_exc()}```"
+
                     update.effective_message.reply_markdown(
-                        f"```{format_exc()}```\n\n"
+                        f"{err}\n\n"
                         f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with "
                         "some catnip to fix it for you..."
                     )
             except:
                 print_exc()
+                try:
+                    err = create_gist(format_exc())
+                except:
+                    err = f"```{format_exc()}```"
+
                 update.effective_message.reply_markdown(
-                    f"```{format_exc()}```\n\n"
-                    f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with some "
-                    "catnip to fix it for you..."
+                    f"{err}\n\n"
+                    f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with "
+                    "some catnip to fix it for you..."
                 )
 
         return inner
