@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from functools import wraps
-from pytz import timezone, UTC
 from re import match
 from typing import Callable, List, Optional
 
 from emoji import emojize
+from pytz import timezone
 from telegram import Update, ChatPermissions, ChatMember
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler
@@ -518,6 +518,7 @@ def demote(update: Update, context: CallbackContext):
 
 @bot_action("pin")
 @for_chat_types("supergroup", "channel")
+@check_user_admin
 @check_bot_admin
 def pin(update: Update, context: CallbackContext):
     """
