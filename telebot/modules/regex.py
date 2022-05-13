@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext, MessageHandler, Filters
 
 from telebot import dispatcher
 from telebot.modules.db.exceptions import get_exceptions_for_chat
-from telebot.utils import bot_action
+from telebot.utils import bot_action, CommandDescription
 
 
 @bot_action("regex")
@@ -86,18 +86,22 @@ def regex(update: Update, context: CallbackContext):
 
 __mod_name__ = "Regex"
 
-__help__ = f"""
-- `s/<text1>/<text2>/[<flags>]` : Reply to a message with this to perform a sed operation on that message, replacing all \
-occurrences of 'text1' with 'text2'. Flags are optional, and currently include 'i' for ignore case, 'g' for global, \
-or nothing. Delimiters include `/`, `_`, `|`, and `:`. Text grouping is supported. The resulting message cannot be \
-larger than {MAX_MESSAGE_LENGTH} characters.
+__exception_desc__ = f"Add an exception to `regex` to disable this module."
 
-*Reminder:* Sed uses some special characters to make matching easier, such as these: `+*.?\\`
-If you want to use these characters, make sure you escape them!
-eg: \\?.
-
-Add an exception to `regex` to disable this module.
-"""
+__commands__ = [
+    CommandDescription(
+        command="`s/<text1>/<text2>[/<flags>]`",
+        description=(
+            "Reply to a message with this to perform a sed operation on that message, replacing all occurrences of 'text1' "
+            "with 'text2'. Flags are optional, and currently include 'i' for ignore case, 'g' for global, or nothing. "
+            "Delimiters include `/`, `_`, `|`, and `:`. Text grouping is supported. The resulting message cannot be larger "
+            f"than {MAX_MESSAGE_LENGTH} characters.\n\n"
+            "*Reminder:* Sed uses some special characters to make matching easier, such as these: `+*.?\\` If you want to use "
+            "these characters, make sure you escape them! eg: \\?."
+        ),
+        is_slash_command=False,
+    )
+]
 
 # ad handlers
 dispatcher.add_handler(MessageHandler(Filters.regex(compile("^s([/:|_]).*([/:|_]).*")), regex, run_async=True))

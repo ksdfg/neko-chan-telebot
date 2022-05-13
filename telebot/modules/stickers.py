@@ -14,9 +14,9 @@ from telegram.ext import CallbackContext, CommandHandler, ConversationHandler, M
 from telegram.utils.helpers import escape_markdown
 
 from telebot import dispatcher, config
-from telebot.utils import bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.users import add_user
+from telebot.utils import bot_action, CommandDescription
 
 
 @bot_action("sticker id")
@@ -234,7 +234,7 @@ def kang(update: Update, context: CallbackContext) -> None:
     """
     # check for exception, but skip exception if user is a superuser
     if update.effective_user.id not in config.SUPERUSERS and update.effective_chat.id in get_command_exception_chats(
-            "kang"
+        "kang"
     ):
         return
 
@@ -724,7 +724,7 @@ def reorder1(update: Update, context: CallbackContext):
     # store sticker to reorder
     reorder[
         str(update.effective_user.id) + str(update.effective_chat.id)
-        ] = update.effective_message.reply_to_message.sticker.file_id
+    ] = update.effective_message.reply_to_message.sticker.file_id
 
     update.effective_message.reply_markdown(
         "Please send the sticker that is going to be on the `left` of this sticker __after__ the reorder, or /cancel to stop"
@@ -795,23 +795,49 @@ def reorder_cancel(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 
-__help__ = r"""
-- /stickerid `<reply>` : reply to a sticker (animated or non animated) to me to tell you its file ID.
-
-- /getsticker `<reply>` : reply to a sticker (non animated) to me to upload its raw PNG file.
-
-- /packs : list out all of your packs
-
-- /kang `<reply> [<emojis>]` : reply to a sticker (animated or non animated) or a picture to add it to your pack. Won't do anything if you have an exception set in the chat.
-
-- /migrate `<reply>` : reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s).
-
-- /delsticker `<reply>` : reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from said pack.
-
-- /reorder `<reply>` [<new position>] : reply to a sticker (animated or non animated) belonging to a pack made by me to change it's position (index starting from 0) in the pack.
-"""
-
 __mod_name__ = "Stickers"
+
+__commands__ = [
+    CommandDescription(
+        command="kang",
+        args="<reply> [<emojis>]",
+        description=(
+            "reply to a sticker (animated or non animated) or a picture to add it to your pack. Won't do anything if "
+            "you have an exception set in the chat"
+        ),
+    ),
+    CommandDescription(command="packs", description="list out all of your packs"),
+    CommandDescription(
+        command="migrate",
+        args="<reply>",
+        description=(
+            "reply to a sticker (animated or non animated) to migrate the entire sticker set it belongs to into your pack(s)"
+        ),
+    ),
+    CommandDescription(
+        command="delsticker",
+        args="<reply>",
+        description="reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from said pack",
+    ),
+    CommandDescription(
+        command="reorder",
+        args="<reply>  [<new position>]",
+        description=(
+            "reply to a sticker (animated or non animated) belonging to a pack made by me to change it's position "
+            "(index starting from 0) in the pack"
+        ),
+    ),
+    CommandDescription(
+        command="getsticker",
+        args="<reply>",
+        description="reply to a sticker (non animated) to me to upload its raw PNG file",
+    ),
+    CommandDescription(
+        command="stickerid",
+        args="<reply>",
+        description="reply to a sticker (animated or non animated) to me to tell you its file ID",
+    ),
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("stickerid", sticker_id, run_async=True))

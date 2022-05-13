@@ -8,14 +8,15 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler
 
 from telebot import dispatcher
+from telebot.modules.db.exceptions import get_command_exception_chats
+from telebot.modules.db.users import add_user
 from telebot.utils import (
     check_user_admin,
     check_bot_admin,
     bot_action,
     check_reply_to_message,
+    CommandDescription,
 )
-from telebot.modules.db.exceptions import get_command_exception_chats
-from telebot.modules.db.users import add_user
 
 
 def check_bot_can_delete(func: Callable):
@@ -139,6 +140,16 @@ If you add an exception to `delete`, I will allow admins to execute commands eve
 """
 
 __mod_name__ = "Delete"
+
+__exception_desc__ = (
+    "If you add an exception to `delete`, I will allow admins to execute commands even if they don't have the "
+    "permission to delete messages."
+)
+
+__commands__ = [
+    CommandDescription(command="del", args="<reply>", description="delete the quoted message"),
+    CommandDescription(command="purge", args="<reply> [silent|quiet]", description="delete the quoted message"),
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("del", delete, run_async=True))

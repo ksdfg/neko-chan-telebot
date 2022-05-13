@@ -21,6 +21,7 @@ from telebot.utils import (
     get_user_from_message,
     UserError,
     UserRecordError,
+    CommandDescription,
 )
 
 
@@ -573,27 +574,60 @@ def pin(update: Update, context: CallbackContext):
     )
 
 
-__help__ = """
-- /pin `<reply> [silent|quiet]` : pin replied message in the chat.
-
-***Admin only :***
-
-- /promote `<reply|username> [<title>]` : promotes a user (whose username you've given as argument, or whose message you are quoting) to admin
-
-- /demote `<reply|username>` : demotes an admin (whose username you've given as argument, or whose message you are quoting)
-
-- /mute `<reply|username> [x<m|h|d>]` : mutes a user (whose username you've given as argument, or whose message you are quoting) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
-
-- /unmute `<reply|username>`: un-mutes a user (whose username you've given as argument, or whose message you are quoting)
-
-- /ban `<reply|username> [x<m|h|d>]`: ban a user from the chat (whose username you've given as argument, or whose message you are quoting) for x time, or until they are added back. m = minutes, h = hours, d = days.
-
-- /kick `<reply|username>` : kick a user from the chat (whose username you've given as argument, or whose message you are quoting)
-
-If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the individual permissions.
-"""
-
 __mod_name__ = "Admin"
+
+__exception_desc__ = (
+    "If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the "
+    "individual permissions."
+)
+
+__commands__ = [
+    CommandDescription(
+        command="pin", args="<reply> [silent|quiet]", description="pin replied message in the chat", is_admin=True
+    ),
+    CommandDescription(
+        command="promote",
+        args="<reply|username> [<title>]",
+        description="promotes a user (whose username you've given as argument, or whose message you are quoting) to admin",
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="demote",
+        args="<reply|username>",
+        description="demotes an admin (whose username you've given as argument, or whose message you are quoting)",
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="mute",
+        args="<reply|username> [x<m|h|d>]",
+        description=(
+            "mutes a user (whose username you've given as argument, or whose message you are quoting) for x time, "
+            "or until they are un-muted. m = minutes, h = hours, d = days."
+        ),
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="unmute",
+        args="<reply|username>",
+        description="un-mutes a user (whose username you've given as argument, or whose message you are quoting)",
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="ban",
+        args="<reply|username> [x<m|h|d>]",
+        description=(
+            "ban a user from the chat (whose username you've given as argument, or whose message you are quoting) "
+            "for x time, or until they are added back. m = minutes, h = hours, d = days."
+        ),
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="kick",
+        args="<reply|username>",
+        description="kick a user from the chat (whose username you've given as argument, or whose message you are quoting)",
+        is_admin=True,
+    ),
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("promote", promote, run_async=True))
