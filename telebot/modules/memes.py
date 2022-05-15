@@ -8,8 +8,8 @@ from telegram.ext import CallbackContext, CommandHandler
 from zalgo_text.zalgo import zalgo
 
 from telebot import dispatcher
-from telebot.utils import bot_action
 from telebot.modules.db.users import add_user
+from telebot.utils import bot_action, CommandDescription
 
 
 @bot_action("runs")
@@ -240,6 +240,16 @@ __help__ = """
 """
 
 __mod_name__ = "memes"
+
+__commands__ = [
+    CommandDescription(command="mock", args="<reply|message>", description="MoCk LikE sPOnGEbob"),
+    CommandDescription(
+        command="zalgofy", args="<reply|message>", description="ͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ"
+    ),
+    CommandDescription(command="owo", args="<reply|message>", description="translate normie to moe weeb"),
+    CommandDescription(command="stretch", args="<reply|message>", description="talk like the sloth from zootopia"),
+    CommandDescription(command="vapor", args="<reply|message>", description="ｖａｐｏｒｗａｖｅ ａｅｓｔｈｅｔｉｃｓ"),
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("runs", runs, run_async=True))

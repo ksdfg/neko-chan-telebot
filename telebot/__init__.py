@@ -15,6 +15,7 @@ class Config:
         port=False,
         load=None,
         no_load=None,
+        preview_commands=None,
         superusers=None,
     ):
         """
@@ -42,6 +43,7 @@ class Config:
 
         self.LOAD = load
         self.NO_LOAD = no_load
+        self.PREVIEW_COMMANDS = preview_commands
 
         self.SUPERUSERS = superusers
 
@@ -57,6 +59,7 @@ config = Config(
     port=config("PORT", default=80, cast=int),
     load=config("LOAD", default=False, cast=lambda x: x.split(" ") if x else False),
     no_load=config("NO_LOAD", default=False, cast=lambda x: x.split(" ") if x else False),
+    preview_commands=config("PREVIEW_COMMANDS", default=[], cast=lambda x: x.split(" ") if x else []),
     superusers=config("SUPERUSERS", default=[], cast=lambda x: map(int, x.split(" "))),
 )
 

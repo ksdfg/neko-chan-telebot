@@ -1,12 +1,11 @@
 from hentai import Hentai, Format, Tag
-from requests import get
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext
 from telegraph import Telegraph
 
 from telebot import dispatcher
 from telebot.modules.db.exceptions import get_command_exception_chats
-from telebot.utils import bot_action
+from telebot.utils import bot_action, CommandDescription
 
 
 def _generate_anchor_tags(tags: list[Tag]) -> str:
@@ -99,13 +98,19 @@ def sauce(update: Update, context: CallbackContext) -> None:
         )
 
 
-__help__ = """
-- /sauce `<digits list>` : Read a doujin from nhentai.net in telegram instant preview by giving it's code. 
-You can give multiple codes, and it will fetch all those doujins. 
-If you don't have an exception set for your chat, it'll send it to you in your private chat.
-"""
-
 __mod_name__ = "nhentai"
+
+__commands__ = [
+    CommandDescription(
+        command="sauce",
+        args="<digits list>",
+        description=(
+            "Read a doujin from nhentai.net in telegram instant preview by giving it's code.\n"
+            "You can give multiple codes, and it will fetch all those doujins.\n"
+            "If you don't have an exception set for `sauc in your chat, it'll send it to you in your private chat."
+        ),
+    )
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("sauce", sauce, run_async=True))

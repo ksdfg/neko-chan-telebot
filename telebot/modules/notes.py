@@ -3,10 +3,10 @@ from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import dispatcher
-from telebot.utils import check_user_admin, bot_action
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.notes import get_note, get_notes_for_chat, add_note, del_note
 from telebot.modules.db.users import add_user
+from telebot.utils import check_user_admin, bot_action, CommandDescription
 
 
 @bot_action("get note")
@@ -196,6 +196,27 @@ If you add an exception for `notes` in the chat, it will make sure that none of 
 """
 
 __mod_name__ = "Notes"
+
+__exception_desc__ = (
+    "If you add an exception for `notes` in the chat, it will make sure that none of these commands do anything. "
+    "Adding exceptions for individual commands has no effect."
+)
+
+__commands__ = [
+    CommandDescription(
+        command="get",
+        args="<note name>",
+        description="Get the note with this note name. Can also be called via `#<note name>`",
+    ),
+    CommandDescription(command="notes or /saved", description="list all saved notes in this chat"),
+    CommandDescription(
+        command="save",
+        args="<note name> <reply|note data>",
+        description="saves replied message or `note data` as a note with name `note name`",
+        is_admin=True,
+    ),
+    CommandDescription(command="clear", args="<note name>", description="clear note with this name", is_admin=True),
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("get", fetch_note, run_async=True))

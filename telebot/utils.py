@@ -15,6 +15,35 @@ from telebot import config
 from telebot.modules.db.users import add_user, get_user
 
 
+# Class to represent all the info required to describe how to use a command
+class CommandDescription:
+    def __init__(
+        self,
+        command: str,
+        description: str,
+        args: str = "",
+        is_admin: bool = False,
+        is_slash_command: bool = True,
+    ):
+        self.command = command
+        self.args = args
+        self.description = description
+        self.is_admin = is_admin
+        self.is_slash_command = is_slash_command
+
+    def help_text(self) -> str:
+        """
+        :return: text to append to help command text blobs
+        """
+        return f"- {'/' if self.is_admin else ''}{self.command} {f'`{self.args}` ' if self.args else ''}:{' *(admin only)*' if self.is_admin else ''} {self.description}"
+
+    def bot_command_description(self) -> str:
+        """
+        :return: description to set in bot command previews
+        """
+        return f"{f'{self.args} :' if self.args else ''}{' (admin only)' if self.is_admin else ''} {self.description.split('.')[0]}"
+
+
 # Some Helper Functions
 
 

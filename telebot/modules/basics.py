@@ -1,3 +1,4 @@
+from collections import defaultdict
 from random import choice
 
 from emoji import emojize
@@ -7,7 +8,7 @@ from telegram.utils.helpers import escape_markdown
 
 from telebot import updater, dispatcher
 from telebot.modules import imported_mods
-from telebot.utils import bot_action, get_user_from_message, UserError, UserRecordError
+from telebot.utils import bot_action, get_user_from_message, UserError, UserRecordError, CommandDescription
 
 # default Start Text
 
@@ -15,7 +16,7 @@ START_TEXT = emojize(
     f"""
 NyaHello World! :cat:
 
-I'm `{updater.bot.first_name}`, a cute little bot that does rendum shit rn.
+I'm *{updater.bot.first_name}*, a cute little bot that does rendum shit.
 """,
     use_aliases=True,
 )
@@ -52,27 +53,39 @@ def help(update: Update, context: CallbackContext):
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    text_blob = START_TEXT + "\n_Use following commands to use me_ (*blush*):\n"
+    help_texts: dict[str, dict[str, list[CommandDescription] | str | None]] = defaultdict(lambda: {})
 
     if not context.args:
         # meme descriptions of basic commands
-        text_blob += """
-- /help `[<modules list>]` : Recursion ftw
-
-- /start : Turn me on
-
-- /talk `[<word>]` : Make me meow... if you tell me what to meow then I'll do that too
-
-- /modules : Let me tell you what all I can do to please you
-        """
+        help_texts[""]["command_descriptions"] = [
+            CommandDescription(command="start", description="Start the bot! Gives a small welcome message"),
+            CommandDescription(command="help", args="[<modules list>]", description="Recursion ftw"),
+            CommandDescription(command="modules", description="List all the active modules"),
+            CommandDescription(
+                command="talk", args="[<word>]", description="Say <word> (or meow, if not given) rendum number of times"
+            ),
+        ]
     else:
         # add help strings of all imported modules too
         for module in context.args:
             try:
                 mod = imported_mods[module.lower()]
-                text_blob += f"\n`{mod.__mod_name__}`\n{mod.__help__}"
+                help_texts[mod.__mod_name__]["command_descriptions"] = [cd for cd in mod.__commands__]
+                if hasattr(mod, "__exception_desc__"):
+                    help_texts[mod.__mod_name__]["exception_desc"] = mod.__exception_desc__
             except KeyError:
                 continue
+
+    # initialize the text blob with start texts
+    text_blob = START_TEXT + "\n_Use following commands to use me_ (*blush*):"
+
+    # append help texts for all the modules
+    for mod_name, values in help_texts.items():
+        if mod_name:
+            text_blob += f"\n\n*{mod_name}*"
+        text_blob += "\n\n" + "\n\n".join(cd.help_text() for cd in values["command_descriptions"])
+        if values.get("exception_desc"):
+            text_blob += f"\n\n{values['exception_desc']}"
 
     # Add informational footer
     text_blob += (
@@ -162,19 +175,24 @@ def info(update: Update, context: CallbackContext):
 
 __mod_name__ = "Basics"
 
-__help__ = """
-- /help `[<modules list>]` : Display the help text to understand how to use this bot
-
-- /start : Start the bot! Gives a small welcome message
-
-- /talk `[<word>]` : Say <word> (or meow, if not given) rendum number of times
-
-- /modules : List all the active modules
-
-- /id `[<reply|username>]` : Get details of current chat and a user (by replying to their message or giving their username) or yourself
-
-- /fileid `<reply>` : Get file ID of the file in the quoted message
-"""
+__commands__ = [
+    CommandDescription(
+        command="help", args="[<modules list>]", description="Display the help text to understand how to use this bot"
+    ),
+    CommandDescription(command="start", description="Start the bot! Gives a small welcome message"),
+    CommandDescription(
+        command="talk", args="[<word>]", description="Say <word> (or meow, if not given) rendum number of times"
+    ),
+    CommandDescription(command="modules", description="List all the active modules"),
+    CommandDescription(
+        command="id",
+        args="[<reply|username>]",
+        description="Get details of current chat and a user (by replying to their message or giving their username) or yourself",
+    ),
+    CommandDescription(
+        command="fileid", args="<reply|username>", description="Get file ID of the file in the quoted message"
+    ),
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("start", start, run_async=True))
