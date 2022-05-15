@@ -66,6 +66,7 @@ def sauce(update: Update, context: CallbackContext) -> None:
             "Code": f'<a href="https://telegra.ph/{article_path}">{code}</a>',
             "Title": f'<a href="{doujin.url}">{doujin.title(Format.Pretty)}</a>',
             "Tags": _generate_anchor_tags(doujin.tag),
+            "Pages": f'<a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">{len(doujin.pages)}</a>',
             "Characters": _generate_anchor_tags(doujin.character),
             "Parodies": _generate_anchor_tags(doujin.parody),
             "Artists": _generate_anchor_tags(doujin.artist),
@@ -75,7 +76,7 @@ def sauce(update: Update, context: CallbackContext) -> None:
         }
 
         # add details to the reply to be sent to the user
-        text_blob = "\n\n".join(f"{key}\n{value}" for key, value in data.items())
+        text_blob = "\n\n".join(f"{key}\n{value}" for key, value in data.items() if value)
 
         # button with nhentai link
         markup = InlineKeyboardMarkup.from_button(InlineKeyboardButton(text="Link to nHentai", url=doujin.url))
