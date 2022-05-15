@@ -17,12 +17,6 @@ from telebot.modules.db.users import add_user, get_user
 
 # Class to represent all the info required to describe how to use a command
 class CommandDescription:
-    command: str
-    args: str
-    description: str
-    is_admin: bool
-    is_slash_command: bool
-
     def __init__(
         self,
         command: str,
