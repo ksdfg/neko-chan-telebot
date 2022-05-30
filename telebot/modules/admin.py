@@ -295,10 +295,13 @@ def ban_kick(update: Update, context: CallbackContext):
         if kwargs.get("until_date"):
             reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
 
-    update.effective_message.reply_markdown(emojize(reply))
-    # if user is being banned, troll them with banhammer video
     if action == "ban":
-        update.effective_chat.send_video("BAACAgUAAx0CRZJ5DwACExFgW3Ux58a2qb4ZsDbWnMAMOr5UEgACDgMAAhv3IFZpwRWleUpR6x4E")
+        # if user is being banned, troll them with banhammer video
+        update.effective_message.reply_video(
+            "BAACAgUAAx0CRZJ5DwACExFgW3Ux58a2qb4ZsDbWnMAMOr5UEgACDgMAAhv3IFZpwRWleUpR6x4E", caption=emojize(reply)
+        )
+    else:
+        update.effective_message.reply_markdown(emojize(reply))
 
     # ban user
     context.bot.kick_chat_member(**kwargs)
@@ -325,7 +328,7 @@ def ban(update: Update, context: CallbackContext):
 @check_user_admin
 @check_bot_admin
 @can_restrict
-def kick(update: Update, context: CallbackContext):
+def unban(update: Update, context: CallbackContext):
     """
     unban a user from a chat
     :param update: object representing the incoming update.
@@ -622,6 +625,14 @@ __commands__ = [
         is_admin=True,
     ),
     CommandDescription(
+        command="unban",
+        args="<reply|username>",
+        description=(
+            "unban a user from the chat (whose username you've given as argument, or whose message you are quoting)."
+        ),
+        is_admin=True,
+    ),
+    CommandDescription(
         command="kick",
         args="<reply|username>",
         description="kick a user from the chat (whose username you've given as argument, or whose message you are quoting)",
@@ -635,5 +646,6 @@ dispatcher.add_handler(CommandHandler("demote", demote, run_async=True))
 dispatcher.add_handler(CommandHandler("mute", mute, run_async=True))
 dispatcher.add_handler(CommandHandler("unmute", unmute, run_async=True))
 dispatcher.add_handler(CommandHandler("ban", ban, run_async=True))
+dispatcher.add_handler(CommandHandler("unban", unban, run_async=True))
 dispatcher.add_handler(CommandHandler("kick", kick, run_async=True))
 dispatcher.add_handler(CommandHandler("pin", pin, run_async=True))
