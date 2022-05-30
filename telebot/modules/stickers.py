@@ -266,7 +266,7 @@ def kang(update: Update, context: CallbackContext) -> None:
 
     # file name to download sticker file as
     rendum_str = uuid4()
-    kang_sticker = f"{user.id}_{rendum_str}_kang_sticker." + "tgs" if is_animated else "png"
+    kang_sticker = f"{user.id}_{rendum_str}_kang_sticker.{'tgs' if is_animated else 'png'}"
 
     # If user has replied to some message
     if is_animated:
