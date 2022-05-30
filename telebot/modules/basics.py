@@ -132,7 +132,7 @@ def get_file_id(update: Update, context: CallbackContext) -> None:
     elif msg.sticker:
         file = msg.sticker
     elif msg.photo:
-        file = msg.photo
+        file = msg.photo[-1]
     elif msg.voice:
         file = msg.voice
     else:
