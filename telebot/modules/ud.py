@@ -3,7 +3,7 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext, CommandHandler
 
 from telebot import dispatcher
-from telebot.utils import bot_action
+from telebot.utils import bot_action, CommandDescription
 
 
 @bot_action("urban dict")
@@ -35,10 +35,12 @@ def ud(update: Update, context: CallbackContext):
         )
 
 
-__help__ = """
- - /ud `<word>`: Type the word or expression you want to search use.
- """
-
 __mod_name__ = "Urban-Dictionary"
+
+__commands__ = [
+    CommandDescription(
+        command="ud", args="<word>", description="search what the word means according to urban dictionary"
+    ),
+]
 
 dispatcher.add_handler(CommandHandler("ud", ud, run_async=True))

@@ -5,10 +5,10 @@ from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler, MessageHandler, Filters
 
 from telebot import dispatcher
-from telebot.utils import log, bot_action, check_user_admin
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.filter import get_triggers_for_chat, add_filter, get_filter, del_filter
 from telebot.modules.db.users import add_user
+from telebot.utils import log, bot_action, check_user_admin, CommandDescription
 
 
 @bot_action("list filters")
@@ -190,19 +190,28 @@ def reply(update: Update, context: CallbackContext) -> None:
             break
 
 
-__help__ = """
-- /filters : list all active filters in the chat
-
-*Admin Only*
-
-- /filter `<trigger> [<content>|<reply>]` : add a filter
-
-- /stop `<triggers list>` : delete active filters; give all filters to delete seperated by a space.
-
-If you add an exception for `filter` in the chat, it will make sure that none of these commands do anything. Adding exceptions for individual commands has no effect.
-"""
-
 __mod_name__ = "Filters"
+
+__exception_desc__ = (
+    "If you add an exception for `filter` in the chat, it will make sure that none of these commands do anything. "
+    "Adding exceptions for individual commands has no effect."
+)
+
+__commands__ = [
+    CommandDescription(command="filters", description="list all active filters in the chat"),
+    CommandDescription(
+        command="filter",
+        args="<trigger> [<content>|<reply>]",
+        description="delete active filters; give all filters to delete seperated by a space",
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="stop",
+        args="<triggers list>",
+        description="delete active filters; give all filters to delete seperated by a space",
+        is_admin=True,
+    ),
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("filters", list_filters, run_async=True))

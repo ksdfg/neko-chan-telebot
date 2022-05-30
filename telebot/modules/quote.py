@@ -11,8 +11,8 @@ from telegram import Update, Message
 from telegram.ext import CommandHandler, CallbackContext
 
 from telebot import dispatcher
-from telebot.utils import bot_action
 from telebot.modules.db.users import add_user
+from telebot.utils import bot_action, CommandDescription
 
 
 def _message_to_sticker(update: Update, context: CallbackContext) -> str:
@@ -324,11 +324,13 @@ def quote(update: Update, context: CallbackContext):
         remove(file_name)
 
 
-__help__ = """
-- /quote `<reply>` : Reply to a message to get it's quote as a sticker.
-"""
-
 __mod_name__ = "quote"
+
+__commands__ = [
+    CommandDescription(
+        command="quote", args="<reply>", description="reply to a message to get it's quote as a sticker"
+    ),
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("quote", quote, run_async=True))

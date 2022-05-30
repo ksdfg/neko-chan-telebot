@@ -1,12 +1,13 @@
+from requests.exceptions import RetryError, ConnectionError
+from urllib3.exceptions import ResponseError
 from hentai import Hentai, Format, Tag
-from requests import get
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext
 from telegraph import Telegraph
 
 from telebot import dispatcher
 from telebot.modules.db.exceptions import get_command_exception_chats
-from telebot.utils import bot_action
+from telebot.utils import bot_action, CommandDescription
 
 
 def _generate_anchor_tags(tags: list[Tag]) -> str:
@@ -45,11 +46,21 @@ def sauce(update: Update, context: CallbackContext) -> None:
             continue
 
         # check if doujin exists
-        if not Hentai.exists(code):
-            update.effective_message.reply_markdown(
-                f"Doujin for `{code}` doesn't exist, Donald... Please don't use your nuclear launch codes here 😿"
+        try:
+            if not Hentai.exists(code):
+                update.effective_message.reply_markdown(
+                    f"Doujin for `{code}` doesn't exist, Donald... Please don't use your nuclear launch codes here 😿"
+                )
+                continue
+        except (RetryError, ConnectionError) as error:
+            update.effective_message.reply_photo(
+                photo="AgACAgUAAxkBAAIauWKRKcWqOYT12lsjjZHlbXJelyn9AAJSrzEbOxyQVGyS3QaxOtPQAQADAgADeAADJAQ",
+                caption="Cloudflare won't release any doujins from the horni jail known to most as a browser...",
+                reply_markup=InlineKeyboardMarkup.from_button(
+                    InlineKeyboardButton(text="Link to nHentai", url=f"https://nhentai.net/g/{code}")
+                ),
             )
-            continue
+            return
 
         # Fetch doujin data
         doujin = Hentai(code)
@@ -67,6 +78,7 @@ def sauce(update: Update, context: CallbackContext) -> None:
             "Code": f'<a href="https://telegra.ph/{article_path}">{code}</a>',
             "Title": f'<a href="{doujin.url}">{doujin.title(Format.Pretty)}</a>',
             "Tags": _generate_anchor_tags(doujin.tag),
+            "Pages": f'<a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">{len(doujin.pages)}</a>',
             "Characters": _generate_anchor_tags(doujin.character),
             "Parodies": _generate_anchor_tags(doujin.parody),
             "Artists": _generate_anchor_tags(doujin.artist),
@@ -76,7 +88,7 @@ def sauce(update: Update, context: CallbackContext) -> None:
         }
 
         # add details to the reply to be sent to the user
-        text_blob = "\n\n".join(f"{key}\n{value}" for key, value in data.items())
+        text_blob = "\n\n".join(f"{key}\n{value}" for key, value in data.items() if value)
 
         # button with nhentai link
         markup = InlineKeyboardMarkup.from_button(InlineKeyboardButton(text="Link to nHentai", url=doujin.url))
@@ -99,13 +111,19 @@ def sauce(update: Update, context: CallbackContext) -> None:
         )
 
 
-__help__ = """
-- /sauce `<digits list>` : Read a doujin from nhentai.net in telegram instant preview by giving it's code. 
-You can give multiple codes, and it will fetch all those doujins. 
-If you don't have an exception set for your chat, it'll send it to you in your private chat.
-"""
-
 __mod_name__ = "nhentai"
+
+__commands__ = [
+    CommandDescription(
+        command="sauce",
+        args="<digits list>",
+        description=(
+            "Read a doujin from nhentai.net in telegram instant preview by giving it's code.\n"
+            "You can give multiple codes, and it will fetch all those doujins.\n"
+            "If you don't have an exception set for `sauc in your chat, it'll send it to you in your private chat."
+        ),
+    )
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("sauce", sauce, run_async=True))

@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from functools import wraps
-from pytz import timezone, UTC
 from re import match
 from typing import Callable, List, Optional
 
 from emoji import emojize
+from pytz import timezone
 from telegram import Update, ChatPermissions, ChatMember
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler
@@ -21,6 +21,7 @@ from telebot.utils import (
     get_user_from_message,
     UserError,
     UserRecordError,
+    CommandDescription,
 )
 
 
@@ -294,10 +295,13 @@ def ban_kick(update: Update, context: CallbackContext):
         if kwargs.get("until_date"):
             reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
 
-    update.effective_message.reply_markdown(emojize(reply))
-    # if user is being banned, troll them with banhammer video
     if action == "ban":
-        update.effective_chat.send_video("BAACAgUAAx0CRZJ5DwACExFgW3Ux58a2qb4ZsDbWnMAMOr5UEgACDgMAAhv3IFZpwRWleUpR6x4E")
+        # if user is being banned, troll them with banhammer video
+        update.effective_message.reply_video(
+            "BAACAgUAAx0CRZJ5DwACExFgW3Ux58a2qb4ZsDbWnMAMOr5UEgACDgMAAhv3IFZpwRWleUpR6x4E", caption=emojize(reply)
+        )
+    else:
+        update.effective_message.reply_markdown(emojize(reply))
 
     # ban user
     context.bot.kick_chat_member(**kwargs)
@@ -324,7 +328,7 @@ def ban(update: Update, context: CallbackContext):
 @check_user_admin
 @check_bot_admin
 @can_restrict
-def kick(update: Update, context: CallbackContext):
+def unban(update: Update, context: CallbackContext):
     """
     unban a user from a chat
     :param update: object representing the incoming update.
@@ -518,6 +522,7 @@ def demote(update: Update, context: CallbackContext):
 
 @bot_action("pin")
 @for_chat_types("supergroup", "channel")
+@check_user_admin
 @check_bot_admin
 def pin(update: Update, context: CallbackContext):
     """
@@ -572,27 +577,68 @@ def pin(update: Update, context: CallbackContext):
     )
 
 
-__help__ = """
-- /pin `<reply> [silent|quiet]` : pin replied message in the chat.
-
-***Admin only :***
-
-- /promote `<reply|username> [<title>]` : promotes a user (whose username you've given as argument, or whose message you are quoting) to admin
-
-- /demote `<reply|username>` : demotes an admin (whose username you've given as argument, or whose message you are quoting)
-
-- /mute `<reply|username> [x<m|h|d>]` : mutes a user (whose username you've given as argument, or whose message you are quoting) for x time, or until they are un-muted. m = minutes, h = hours, d = days.
-
-- /unmute `<reply|username>`: un-mutes a user (whose username you've given as argument, or whose message you are quoting)
-
-- /ban `<reply|username> [x<m|h|d>]`: ban a user from the chat (whose username you've given as argument, or whose message you are quoting) for x time, or until they are added back. m = minutes, h = hours, d = days.
-
-- /kick `<reply|username>` : kick a user from the chat (whose username you've given as argument, or whose message you are quoting)
-
-If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the individual permissions.
-"""
-
 __mod_name__ = "Admin"
+
+__exception_desc__ = (
+    "If you add an exception to `admin`, I will allow admins to execute commands even if they don't have the "
+    "individual permissions."
+)
+
+__commands__ = [
+    CommandDescription(
+        command="pin", args="<reply> [silent|quiet]", description="pin replied message in the chat", is_admin=True
+    ),
+    CommandDescription(
+        command="promote",
+        args="<reply|username> [<title>]",
+        description="promotes a user (whose username you've given as argument, or whose message you are quoting) to admin",
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="demote",
+        args="<reply|username>",
+        description="demotes an admin (whose username you've given as argument, or whose message you are quoting)",
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="mute",
+        args="<reply|username> [x<m|h|d>]",
+        description=(
+            "mutes a user (whose username you've given as argument, or whose message you are quoting) for x time, "
+            "or until they are un-muted. m = minutes, h = hours, d = days."
+        ),
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="unmute",
+        args="<reply|username>",
+        description="un-mutes a user (whose username you've given as argument, or whose message you are quoting)",
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="ban",
+        args="<reply|username> [x<m|h|d>]",
+        description=(
+            "ban a user from the chat (whose username you've given as argument, or whose message you are quoting) "
+            "for x time, or until they are added back. m = minutes, h = hours, d = days."
+        ),
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="unban",
+        args="<reply|username>",
+        description=(
+            "unban a user from the chat (whose username you've given as argument, or whose message you are quoting)."
+        ),
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="kick",
+        args="<reply|username>",
+        description="kick a user from the chat (whose username you've given as argument, or whose message you are quoting)",
+        is_admin=True,
+    ),
+]
 
 # create handlers
 dispatcher.add_handler(CommandHandler("promote", promote, run_async=True))
@@ -600,5 +646,6 @@ dispatcher.add_handler(CommandHandler("demote", demote, run_async=True))
 dispatcher.add_handler(CommandHandler("mute", mute, run_async=True))
 dispatcher.add_handler(CommandHandler("unmute", unmute, run_async=True))
 dispatcher.add_handler(CommandHandler("ban", ban, run_async=True))
+dispatcher.add_handler(CommandHandler("unban", unban, run_async=True))
 dispatcher.add_handler(CommandHandler("kick", kick, run_async=True))
 dispatcher.add_handler(CommandHandler("pin", pin, run_async=True))
