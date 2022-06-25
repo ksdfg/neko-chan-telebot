@@ -1,6 +1,6 @@
 import math
 import os
-from enum import Enum
+from enum import IntEnum
 from os import remove
 from pathlib import Path
 from re import search
@@ -91,7 +91,7 @@ def get_sticker(update: Update, context: CallbackContext) -> None:
         update.effective_message.reply_text("Please reply to a sticker for me to upload its PNG.")
 
 
-class StickerType(Enum):
+class StickerType(IntEnum):
     STATIC = 0
     ANIMATED = 1
     VIDEO = 2
