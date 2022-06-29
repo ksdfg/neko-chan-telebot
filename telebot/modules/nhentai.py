@@ -1,6 +1,5 @@
-from requests.exceptions import RetryError, ConnectionError
-from urllib3.exceptions import ResponseError
 from hentai import Hentai, Format, Tag
+from requests.exceptions import RetryError, ConnectionError
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext
 from telegraph import Telegraph
@@ -52,9 +51,9 @@ def sauce(update: Update, context: CallbackContext) -> None:
                     f"Doujin for `{code}` doesn't exist, Donald... Please don't use your nuclear launch codes here 😿"
                 )
                 continue
-        except (RetryError, ConnectionError) as error:
+        except (RetryError, ConnectionError):
             update.effective_message.reply_photo(
-                photo="AgACAgUAAxkBAAIauWKRKcWqOYT12lsjjZHlbXJelyn9AAJSrzEbOxyQVGyS3QaxOtPQAQADAgADeAADJAQ",
+                photo="AgACAgUAAxkBAAIbvGK8i-yYUEjJlj-7fRFRIiEYJJgEAAKJrjEbdyDpVQABrlvQnNj2uwEAAwIAA3gAAykE",
                 caption="Cloudflare won't release any doujins from the horni jail known to most as a browser...",
                 reply_markup=InlineKeyboardMarkup.from_button(
                     InlineKeyboardButton(text="Link to nHentai", url=f"https://nhentai.net/g/{code}")
