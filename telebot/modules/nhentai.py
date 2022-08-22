@@ -1,3 +1,5 @@
+from os.path import join, dirname
+
 from hentai import Hentai, Format, Tag
 from requests.exceptions import RetryError, ConnectionError
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
@@ -52,13 +54,14 @@ def sauce(update: Update, context: CallbackContext) -> None:
                 )
                 continue
         except (RetryError, ConnectionError):
-            update.effective_message.reply_photo(
-                photo="AgACAgUAAxkBAAIbvGK8i-yYUEjJlj-7fRFRIiEYJJgEAAKJrjEbdyDpVQABrlvQnNj2uwEAAwIAA3gAAykE",
-                caption="Cloudflare won't release any doujins from the horni jail known to most as a browser...",
-                reply_markup=InlineKeyboardMarkup.from_button(
-                    InlineKeyboardButton(text="Link to nHentai", url=f"https://nhentai.net/g/{code}")
-                ),
-            )
+            with open(join(dirname(__file__), "assets", "horni_jail.jpg"), "rb") as f:
+                update.effective_message.reply_photo(
+                    photo=f,
+                    caption="Cloudflare won't release any doujins from the horni jail known to most as a browser...",
+                    reply_markup=InlineKeyboardMarkup.from_button(
+                        InlineKeyboardButton(text="Link to nHentai", url=f"https://nhentai.net/g/{code}")
+                    ),
+                )
             return
 
         # Fetch doujin data

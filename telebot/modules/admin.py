@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from functools import wraps
+from os.path import join, dirname
 from re import match
 from typing import Callable, List, Optional
 
@@ -285,21 +286,16 @@ def ban_kick(update: Update, context: CallbackContext):
             return
 
     # announce ban
-    reply = (
-        f"{'Banned' if action == 'ban' else 'Kicked'} "
-        f"@{escape_markdown(username)} to the litter "
-        f":smiling_face_with_horns:"
-    )
+    reply = f"{'Banned' if action == 'ban' else 'Kicked'} " f"@{username} to the litter " f":smiling_face_with_horns:"
     if action == "ban":
         reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
         if kwargs.get("until_date"):
-            reply += f"\n\nBanned till `{kwargs['until_date'].strftime('%c')} UTC`"
+            reply += f"\n\nBanned till <code>{kwargs['until_date'].strftime('%c')} UTC</code>"
 
     if action == "ban":
         # if user is being banned, troll them with banhammer video
-        update.effective_message.reply_video(
-            "BAACAgUAAx0CRZJ5DwACExFgW3Ux58a2qb4ZsDbWnMAMOr5UEgACDgMAAhv3IFZpwRWleUpR6x4E", caption=emojize(reply)
-        )
+        with open(join(dirname(__file__), "assets", "ban.mp4"), "rb") as f:
+            update.effective_message.reply_video(video=f, caption=emojize(reply))
     else:
         update.effective_message.reply_markdown(emojize(reply))
 
