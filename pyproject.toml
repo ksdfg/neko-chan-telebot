@@ -9,7 +9,7 @@ authors = ["ksdfg <ksdfg123@gmail.com>"]
 license = "GPL-3.0"
 
 [tool.poetry.dependencies]
-python = "3.10.1"
+python = "^3.10"
 dnspython = "^2.1.0"
 emoji = "^1.6.1"
 mongoengine = "^0.23.1"
