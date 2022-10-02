@@ -430,7 +430,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "6a85e5ab9e561ee3868ec25dc4b1f2cc1b8e9377554e507d95a33cd582c08b3e"
+content-hash = "a3e8811b2684704077d5cec78589920e545562f30e00928e3deb81005bc51090"
 
 [metadata.files]
 APScheduler = [
