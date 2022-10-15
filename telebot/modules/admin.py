@@ -12,6 +12,7 @@ from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown, mention_markdown
 
 from telebot import dispatcher
+from telebot.modules.db.chat_commands import enable_commands_for_chat, disable_commands_for_chat
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.mute import add_muted_member, remove_muted_member
 from telebot.modules.db.users import add_user
@@ -577,6 +578,56 @@ def pin(update: Update, context: CallbackContext):
     )
 
 
+@bot_action("enable")
+@check_user_admin
+def enable_command(update: Update, context: CallbackContext):
+    """
+    Enable commands for given chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # check if any commands were passed
+    if not context.args:
+        update.effective_message.reply_text("I'm a cat, not a psychic! Mention the commands you want to enable...")
+        return
+
+    # enable commands in db
+    responses = enable_commands_for_chat(update.effective_chat.id, context.args)
+    if not responses:
+        raise Exception("no commands were enabled ;-;")
+
+    # format response and send to user
+    if len(responses) > 1:
+        update.effective_message.reply_markdown("\n".join(f"- {response}" for response in responses))
+    else:
+        update.effective_message.reply_markdown(responses[0])
+
+
+@bot_action("disable")
+@check_user_admin
+def disable_command(update: Update, context: CallbackContext):
+    """
+    Disable commands for given chat
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    # check if any commands were passed
+    if not context.args:
+        update.effective_message.reply_text("I'm a cat, not a psychic! Mention the commands you want to disable...")
+        return
+
+    # disable commands in db
+    responses = disable_commands_for_chat(update.effective_chat.id, context.args)
+    if not responses:
+        raise Exception("no commands were disabled ;-;")
+
+    # format response and send to user
+    if len(responses) > 1:
+        update.effective_message.reply_markdown("\n".join(f"- {response}" for response in responses))
+    else:
+        update.effective_message.reply_markdown(responses[0])
+
+
 __mod_name__ = "Admin"
 
 __exception_desc__ = (
@@ -585,6 +636,21 @@ __exception_desc__ = (
 )
 
 __commands__ = [
+    CommandDescription(
+        command="enable",
+        args="<commands>",
+        description=(
+            "enable commands (space separated) to be used in chat; by default, all commands are enabled, "
+            "and calling this command will start an exclusive list of commands that can be used in this chat"
+        ),
+        is_admin=True,
+    ),
+    CommandDescription(
+        command="disable",
+        args="<commands>",
+        description="disable commands (space separated) from being used in chat",
+        is_admin=True,
+    ),
     CommandDescription(
         command="pin", args="<reply> [silent|quiet]", description="pin replied message in the chat", is_admin=True
     ),
@@ -649,3 +715,5 @@ dispatcher.add_handler(CommandHandler("ban", ban, run_async=True))
 dispatcher.add_handler(CommandHandler("unban", unban, run_async=True))
 dispatcher.add_handler(CommandHandler("kick", kick, run_async=True))
 dispatcher.add_handler(CommandHandler("pin", pin, run_async=True))
+dispatcher.add_handler(CommandHandler("enable", enable_command, run_async=True))
+dispatcher.add_handler(CommandHandler("disable", disable_command, run_async=True))
