@@ -1,3 +1,4 @@
+from os.path import join, dirname
 from random import choice, randint
 from re import sub
 
@@ -227,6 +228,23 @@ def vapor(update: Update, context: CallbackContext):
         update.effective_message.reply_to_message.reply_markdown(f"`{aesthetic_text}`")
 
 
+@bot_action("sadge")
+def sadge(update: Update, context: CallbackContext) -> None:
+    """
+    Quotes from Bennett Foddy's Getting over it
+    :param update: object representing the incoming update.
+    :param context: object containing data about the command call.
+    """
+    with open(join(dirname(__file__), "assets", "bennett_foddy.txt"), "r") as f:
+        bennett_foddy: list[str] = [line.strip() for line in f.read().split("---")]
+
+    # If user replied to an original message, let quote be a reply to that message
+    if update.effective_message.reply_to_message:
+        update.effective_message.reply_to_message.reply_markdown(f"```\n{choice(bennett_foddy)}\n```")
+    else:
+        update.effective_chat.send_message(f"```\n{choice(bennett_foddy)}\n```", parse_mode="markdown")
+
+
 __help__ = """
 - /mock `<reply|message>` : MoCk LikE sPOnGEbob
 
@@ -249,6 +267,7 @@ __commands__ = [
     CommandDescription(command="owo", args="<reply|message>", description="translate normie to moe weeb"),
     CommandDescription(command="stretch", args="<reply|message>", description="talk like the sloth from zootopia"),
     CommandDescription(command="vapor", args="<reply|message>", description="ｖａｐｏｒｗａｖｅ ａｅｓｔｈｅｔｉｃｓ"),
+    CommandDescription(command="sadge", args="<reply>", description="try getting over it"),
 ]
 
 # create handlers
@@ -258,3 +277,4 @@ dispatcher.add_handler(CommandHandler("zalgofy", zalgofy, run_async=True))
 dispatcher.add_handler(CommandHandler("owo", owo, run_async=True))
 dispatcher.add_handler(CommandHandler("stretch", stretch, run_async=True))
 dispatcher.add_handler(CommandHandler("vapor", vapor, run_async=True))
+dispatcher.add_handler(CommandHandler("sadge", sadge, run_async=True))
