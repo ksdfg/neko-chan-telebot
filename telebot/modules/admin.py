@@ -286,7 +286,7 @@ def ban_kick(update: Update, context: CallbackContext):
             return
 
     # announce ban
-    reply = f"{'Banned' if action == 'ban' else 'Kicked'} " f"@{username} to the litter " f":smiling_face_with_horns:"
+    reply = f"{'Banned' if action == 'ban' else 'Kicked'} @{username} to the litter :smiling_face_with_horns:"
     if action == "ban":
         reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
         if kwargs.get("until_date"):
@@ -300,7 +300,7 @@ def ban_kick(update: Update, context: CallbackContext):
         update.effective_message.reply_markdown(emojize(reply))
 
     # ban user
-    context.bot.kick_chat_member(**kwargs)
+    context.bot.ban_chat_member(**kwargs)
     if action == "kick":
         context.bot.unban_chat_member(kwargs["chat_id"], kwargs["user_id"])
 
