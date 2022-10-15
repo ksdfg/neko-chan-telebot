@@ -6,7 +6,7 @@ from typing import Callable, List, Optional
 
 from emoji import emojize
 from pytz import timezone
-from telegram import Update, ChatPermissions, ChatMember
+from telegram import Update, ChatPermissions, ChatMember, ParseMode
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown, mention_markdown
@@ -293,14 +293,15 @@ def ban_kick(update: Update, context: CallbackContext):
     if action == "ban":
         reply += "\nIf you want to be added again, bribe an admin with some catnip to add you..."
         if kwargs.get("until_date"):
-            reply += f"\n\nBanned till <code>{kwargs['until_date'].strftime('%c')} UTC</code>"
+            until_date = kwargs["until_date"].astimezone(timezone("Asia/Kolkata")).strftime("%c")
+            reply += f"\n\nBanned till <code>{until_date} IST</code>"
 
     if action == "ban":
         # if user is being banned, troll them with banhammer video
         with open(join(dirname(__file__), "assets", "ban.mp4"), "rb") as f:
-            update.effective_message.reply_video(video=f, caption=emojize(reply))
+            update.effective_message.reply_video(video=f, caption=emojize(reply), parse_mode=ParseMode.HTML)
     else:
-        update.effective_message.reply_markdown(emojize(reply))
+        update.effective_message.reply_text(emojize(reply), parse_mode=ParseMode.HTML)
 
     # ban user
     context.bot.ban_chat_member(**kwargs)
