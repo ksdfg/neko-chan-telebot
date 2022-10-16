@@ -8,10 +8,11 @@ from telebot import dispatcher
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.filter import get_triggers_for_chat, add_filter, get_filter, del_filter
 from telebot.modules.db.users import add_user
-from telebot.utils import log, bot_action, check_user_admin, CommandDescription
+from telebot.utils import log, bot_action, check_user_admin, CommandDescription, check_command
 
 
 @bot_action("list filters")
+@check_command("filters")
 def list_filters(update: Update, context: CallbackContext):
     """
     List all the filter triggers in a chat
@@ -32,6 +33,7 @@ def list_filters(update: Update, context: CallbackContext):
 
 
 @bot_action("add filter")
+@check_command("filter")
 @check_user_admin
 def add_filter_handler(update: Update, context: CallbackContext):
     """
@@ -116,6 +118,7 @@ def add_filter_handler(update: Update, context: CallbackContext):
 
 
 @bot_action("delete filters")
+@check_command("stop")
 @check_user_admin
 def del_filter_handler(update: Update, context: CallbackContext):
     """
@@ -137,7 +140,7 @@ def del_filter_handler(update: Update, context: CallbackContext):
         )
 
 
-@bot_action()
+@bot_action("respond to filter")
 def reply(update: Update, context: CallbackContext) -> None:
     """
     Reply when a filter is triggered

@@ -6,10 +6,11 @@ from telebot import dispatcher
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.notes import get_note, get_notes_for_chat, add_note, del_note
 from telebot.modules.db.users import add_user
-from telebot.utils import check_user_admin, bot_action, CommandDescription
+from telebot.utils import check_user_admin, bot_action, CommandDescription, check_command
 
 
 @bot_action("get note")
+@check_command("get")
 def fetch_note(update: Update, context: CallbackContext):
     """
     Fetch note
@@ -50,6 +51,7 @@ def fetch_note(update: Update, context: CallbackContext):
 
 
 @bot_action("notes")
+@check_command("notes")
 def notes_for_chat(update: Update, context: CallbackContext):
     """
     List out all the notes in a chat
@@ -76,6 +78,7 @@ def notes_for_chat(update: Update, context: CallbackContext):
 
 
 @bot_action("add note")
+@check_command("save")
 @check_user_admin
 def add_note_in_chat(update: Update, context: CallbackContext):
     """
@@ -158,6 +161,7 @@ def add_note_in_chat(update: Update, context: CallbackContext):
 
 
 @bot_action("delete note")
+@check_command("clear")
 @check_user_admin
 def del_note_in_chat(update: Update, context: CallbackContext):
     """

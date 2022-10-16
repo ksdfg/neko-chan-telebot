@@ -12,6 +12,7 @@ from telegram.ext import CallbackContext
 from telegram.utils.helpers import mention_markdown
 
 from telebot import config
+from telebot.modules.db.chat_commands import check_command_for_chat
 from telebot.modules.db.users import add_user, get_user
 
 
@@ -231,6 +232,43 @@ def bot_action(func_name: str = None, extra_text: str = ""):
                     f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with "
                     "some catnip to fix it for you..."
                 )
+
+        return inner
+
+    return wrapper
+
+
+def check_command(command: str = None):
+    """
+    Check if a given command is enabled for chat
+    :param command: name of the command being called
+    :return: None
+    """
+
+    def wrapper(func: Callable):
+        """
+        a wrapper that will safely execute the command after checking if it is enabled
+        :param func: function to execute for given bot_action
+        :return: wrapper function
+        """
+
+        @wraps(func)
+        def inner(update: Update, context: CallbackContext, *args, **kwargs):
+            """
+            check command and execute the function
+            :param update: object representing the incoming update.
+            :param context: object containing data about the bot_action call.
+            :param args: anything extra
+            :param kwargs: anything extra
+            :return: inner function to execute
+            """
+            if not check_command_for_chat(update.effective_chat.id, command):
+                update.effective_message.reply_text(
+                    "This command is forbidden in this chat! If you want to do forbidden stuff, go to Alabama..."
+                )
+                return
+
+            return func(update, context, *args, **kwargs)
 
         return inner
 

@@ -6,10 +6,11 @@ from telegram.ext import CallbackContext, MessageHandler, Filters
 
 from telebot import dispatcher
 from telebot.modules.db.exceptions import get_exceptions_for_chat
-from telebot.utils import bot_action, CommandDescription
+from telebot.utils import bot_action, CommandDescription, check_command
 
 
 @bot_action("regex")
+@check_command("regex")
 def regex(update: Update, context: CallbackContext):
     """
     Replace text using sed and regex

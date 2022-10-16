@@ -8,7 +8,7 @@ from telegraph import Telegraph
 
 from telebot import dispatcher
 from telebot.modules.db.exceptions import get_command_exception_chats
-from telebot.utils import bot_action, CommandDescription
+from telebot.utils import bot_action, CommandDescription, check_command
 
 
 def _generate_anchor_tags(tags: list[Tag]) -> str:
@@ -21,6 +21,7 @@ def _generate_anchor_tags(tags: list[Tag]) -> str:
 
 
 @bot_action("sauce")
+@check_command("sauce")
 def sauce(update: Update, context: CallbackContext) -> None:
     """
     Fetch the doujin for all the sauces given by user, make telegraph article and send it to user for easy reading
