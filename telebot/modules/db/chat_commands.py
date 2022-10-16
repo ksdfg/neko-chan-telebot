@@ -67,7 +67,7 @@ def disable_commands_for_chat(chat: int, commands: list[str]) -> list[str]:
     # check if command is already disabled
     # if not, append command to the object's enabled commands list, and remove it from the disabled list
     for command in commands:
-        if commands in chat_command.disabled_commands:
+        if command in chat_command.disabled_commands:
             responses.append(f"Command `{escape_markdown(command)}` is already disabled for given chat")
         else:
             chat_command.disabled_commands.append(command)
