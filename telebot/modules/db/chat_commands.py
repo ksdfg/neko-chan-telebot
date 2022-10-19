@@ -19,8 +19,7 @@ def enable_commands_for_chat(chat: int, commands: list[str]) -> list[str]:
     :return: message to be replied to the user in telegram
     """
     # fetch or initialize chat command for given chat
-    chat_commands: list[ChatCommand] = ChatCommand.objects(chat=chat)
-    if chat_commands:
+    if chat_commands := ChatCommand.objects(chat=chat):
         chat_command = chat_commands[0]
     else:
         chat_command = ChatCommand(chat=chat)
@@ -56,8 +55,7 @@ def disable_commands_for_chat(chat: int, commands: list[str]) -> list[str]:
     :return: message to be replied to the user in telegram
     """
     # fetch or initialize chat command for given chat
-    chat_commands: list[ChatCommand] = ChatCommand.objects(chat=chat)
-    if chat_commands:
+    if chat_commands := ChatCommand.objects(chat=chat):
         chat_command = chat_commands[0]
     else:
         chat_command = ChatCommand(chat=chat)
@@ -92,10 +90,8 @@ def check_command_for_chat(chat: int, command: str) -> bool:
     :param command: command to check
     :return: True if command is enabled, else False
     """
-    chat_commands: list[ChatCommand] = ChatCommand.objects(chat=chat)
-
     # if no chat command document exists, then all commands are enabled
-    if not chat_commands:
+    if not (chat_commands := ChatCommand.objects(chat=chat)):
         return True
     chat_command = chat_commands[0]
 

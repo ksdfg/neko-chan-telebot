@@ -592,8 +592,7 @@ def enable_command(update: Update, context: CallbackContext):
         return
 
     # enable commands in db
-    responses = enable_commands_for_chat(update.effective_chat.id, context.args)
-    if not responses:
+    if not (responses := enable_commands_for_chat(update.effective_chat.id, context.args)):
         raise Exception("no commands were enabled ;-;")
 
     # format response and send to user
@@ -617,8 +616,7 @@ def disable_command(update: Update, context: CallbackContext):
         return
 
     # disable commands in db
-    responses = disable_commands_for_chat(update.effective_chat.id, context.args)
-    if not responses:
+    if not (responses := disable_commands_for_chat(update.effective_chat.id, context.args)):
         raise Exception("no commands were disabled ;-;")
 
     # format response and send to user
