@@ -8,7 +8,14 @@ from telegram.utils.helpers import escape_markdown
 
 from telebot import updater, dispatcher
 from telebot.modules import imported_mods
-from telebot.utils import bot_action, get_user_from_message, UserError, UserRecordError, CommandDescription
+from telebot.utils import (
+    bot_action,
+    get_user_from_message,
+    UserError,
+    UserRecordError,
+    CommandDescription,
+    check_command,
+)
 
 # default Start Text
 
@@ -98,6 +105,7 @@ def help(update: Update, context: CallbackContext):
 
 
 @bot_action("talk")
+@check_command("talk")
 def talk(update: Update, context: CallbackContext) -> None:
     """
     Repeat a given word random number of times
@@ -118,6 +126,7 @@ def talk(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("file id")
+@check_command("fileid")
 def get_file_id(update: Update, context: CallbackContext) -> None:
     """
     Function to get chat and user ID
@@ -143,6 +152,7 @@ def get_file_id(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("id")
+@check_command("id")
 def info(update: Update, context: CallbackContext):
     """
     Function to get user details

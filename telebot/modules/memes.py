@@ -10,10 +10,11 @@ from zalgo_text.zalgo import zalgo
 
 from telebot import dispatcher
 from telebot.modules.db.users import add_user
-from telebot.utils import bot_action, CommandDescription
+from telebot.utils import bot_action, CommandDescription, check_command
 
 
 @bot_action("runs")
+@check_command("runs")
 def runs(update: Update, context: CallbackContext) -> None:
     """
     Insulting reply whenever someone uses /runs
@@ -25,6 +26,7 @@ def runs(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("mock")
+@check_command("mock")
 def mock(update: Update, context: CallbackContext) -> None:
     """
     Mock a message like spongebob, and reply
@@ -47,6 +49,7 @@ def mock(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("zalgofy")
+@check_command("zalgofy")
 def zalgofy(update: Update, context: CallbackContext) -> None:
     """
     Corrupt the way the text looks, and reply
@@ -71,6 +74,7 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("owo")
+@check_command("owo")
 def owo(update: Update, context: CallbackContext) -> None:
     """
     Change a message to look like it was said by a moe weeb
@@ -158,6 +162,7 @@ def owo(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("stretch")
+@check_command("stretch")
 def stretch(update: Update, context: CallbackContext):
     """
     Stretch the vowels in a message by a random count
@@ -194,6 +199,7 @@ def stretch(update: Update, context: CallbackContext):
 
 
 @bot_action("vapor")
+@check_command("vapor")
 def vapor(update: Update, context: CallbackContext):
     """
     Make a message look more ａｅｓｔｈｅｔｉｃ
@@ -229,6 +235,7 @@ def vapor(update: Update, context: CallbackContext):
 
 
 @bot_action("sadge")
+@check_command("sadge")
 def sadge(update: Update, context: CallbackContext) -> None:
     """
     Quotes from Bennett Foddy's Getting over it

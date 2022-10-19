@@ -7,10 +7,11 @@ from telebot.modules.db.exceptions import (
     del_command_exception_chats,
     get_exceptions_for_chat,
 )
-from telebot.utils import bot_action, check_user_admin, CommandDescription
+from telebot.utils import bot_action, check_user_admin, CommandDescription, check_command
 
 
-@bot_action()
+@bot_action("list exceptions")
+@check_command("exceptions")
 def list_exceptions(update: Update, context: CallbackContext):
     """
     List all exceptions
@@ -29,6 +30,7 @@ def list_exceptions(update: Update, context: CallbackContext):
 
 
 @bot_action("add exception")
+@check_command("except")
 @check_user_admin
 def add_exception(update: Update, context: CallbackContext):
     """
@@ -47,6 +49,7 @@ def add_exception(update: Update, context: CallbackContext):
 
 
 @bot_action("delete exceptions")
+@check_command("delexcept")
 @check_user_admin
 def del_exception(update: Update, context: CallbackContext):
     """

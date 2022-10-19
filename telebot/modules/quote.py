@@ -12,7 +12,7 @@ from telegram.ext import CommandHandler, CallbackContext
 
 from telebot import dispatcher
 from telebot.modules.db.users import add_user
-from telebot.utils import bot_action, CommandDescription
+from telebot.utils import bot_action, CommandDescription, check_command
 
 
 def _message_to_sticker(update: Update, context: CallbackContext) -> str:
@@ -293,6 +293,7 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
 
 
 @bot_action("quote")
+@check_command("quote")
 def quote(update: Update, context: CallbackContext):
     """
     convert message into quote and reply

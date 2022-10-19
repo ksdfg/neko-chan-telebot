@@ -16,6 +16,7 @@ from telebot.utils import (
     bot_action,
     check_reply_to_message,
     CommandDescription,
+    check_command,
 )
 
 
@@ -70,6 +71,7 @@ def check_user_can_delete(func: Callable):
 
 
 @bot_action("delete")
+@check_command("delete")
 @check_reply_to_message(error_msg="I'm a cat, not a psychic! Reply to the message you want to delete...")
 @check_user_admin
 @check_user_can_delete
@@ -103,6 +105,7 @@ def delete(update: Update, context: CallbackContext):
 
 
 @bot_action("purge")
+@check_command("purge")
 @check_user_admin
 @check_reply_to_message(error_msg="I'm a cat, not a psychic! Reply to the message you want to start deleting from...")
 @check_user_can_delete

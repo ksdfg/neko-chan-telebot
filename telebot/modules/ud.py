@@ -3,10 +3,11 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext, CommandHandler
 
 from telebot import dispatcher
-from telebot.utils import bot_action, CommandDescription
+from telebot.utils import bot_action, CommandDescription, check_command
 
 
 @bot_action("urban dict")
+@check_command("ud")
 def ud(update: Update, context: CallbackContext):
     """
     Reply with all the imported modules

@@ -28,10 +28,11 @@ from telegram.utils.helpers import escape_markdown
 from telebot import dispatcher, config
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.users import add_user
-from telebot.utils import bot_action, CommandDescription
+from telebot.utils import bot_action, CommandDescription, check_command
 
 
 @bot_action("sticker id")
+@check_command("stickerid")
 def sticker_id(update: Update, context: CallbackContext) -> None:
     """
     Reply with the file ID of a given sticker
@@ -53,6 +54,7 @@ def sticker_id(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("get sticker")
+@check_command("getsticker")
 def get_sticker(update: Update, context: CallbackContext) -> None:
     """
     Reply with the PNG image as a document for a given sticker
@@ -410,6 +412,7 @@ class CustomSticker(BaseModel):
 
 
 @bot_action("kang")
+@check_command("kang")
 def kang(update: Update, context: CallbackContext) -> None:
     """
     Add a sticker to user's pack
@@ -479,6 +482,7 @@ def kang(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("migrate pack")
+@check_command("migrate")
 def migrate(update: Update, context: CallbackContext) -> None:
     """
     Migrate all stickers from a given pack into user's pack(s)
@@ -610,6 +614,7 @@ def migrate(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("delete sticker")
+@check_command("delsticker")
 def del_sticker(update: Update, context: CallbackContext) -> None:
     """
     Delete a sticker form one of the user's packs
@@ -647,6 +652,7 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
 
 
 @bot_action("list packs")
+@check_command("packs")
 def packs(update: Update, context: CallbackContext):
     """
     List all the packs of a user
@@ -678,6 +684,7 @@ reorder = {}
 
 
 @bot_action("reorder step 1")
+@check_command("reorder")
 def reorder1(update: Update, context: CallbackContext):
     """
     First step in reordering sticker in pack - take input of sticker who's position is to be changed
@@ -775,6 +782,7 @@ def reorder2(update: Update, context: CallbackContext):
 
 
 @bot_action("reorder cancel")
+@check_command("cancel")
 def reorder_cancel(update: Update, context: CallbackContext):
     """
     Last step in reordering sticker in pack - take input of sticker which is now gonna be on the left of the reordered sticker
