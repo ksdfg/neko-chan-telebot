@@ -12,7 +12,7 @@ if __name__ == "__main__":
     updater.bot.set_my_commands(bot_commands)
 
     # connect to database
-    connect(config.DB_NAME, "default", host=config.DB_URI)
+    connect(config.DATABASE_NAME, "default", host=config.DATABASE_URL)
 
     # start bot
     if config.WEBHOOK_URL:
