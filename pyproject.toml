@@ -20,7 +20,7 @@ spongemock = "^0.3.4"
 zalgo-text = "^0.6"
 hentai = "^3.2.10"
 telegraph = "^2.1.0"
-pydantic = "^1.10.2"
+pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"
