@@ -633,7 +633,7 @@ __exception_desc__ = (
     "individual permissions."
 )
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="enable",
         args="<commands>",
@@ -702,7 +702,7 @@ __commands__ = [
         description="kick a user from the chat (whose username you've given as argument, or whose message you are quoting)",
         is_admin=True,
     ),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("promote", promote, run_async=True))

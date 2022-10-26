@@ -327,11 +327,11 @@ def quote(update: Update, context: CallbackContext):
 
 __mod_name__ = "quote"
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="quote", args="<reply>", description="reply to a message to get it's quote as a sticker"
     ),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("quote", quote, run_async=True))

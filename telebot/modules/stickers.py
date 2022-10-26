@@ -799,7 +799,7 @@ def reorder_cancel(update: Update, context: CallbackContext):
 
 __mod_name__ = "Stickers"
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="kang",
         args="<reply> [<emojis>]",
@@ -839,7 +839,7 @@ __commands__ = [
         args="<reply>",
         description="reply to a sticker (animated or non animated) to me to tell you its file ID",
     ),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("stickerid", sticker_id, run_async=True))

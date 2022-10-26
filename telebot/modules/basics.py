@@ -185,7 +185,7 @@ def info(update: Update, context: CallbackContext):
 
 __mod_name__ = "Basics"
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="help", args="[<modules list>]", description="Display the help text to understand how to use this bot"
     ),
@@ -202,7 +202,7 @@ __commands__ = [
     CommandDescription(
         command="fileid", args="<reply|username>", description="Get file ID of the file in the quoted message"
     ),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("start", start, run_async=True))

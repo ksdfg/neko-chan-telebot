@@ -89,7 +89,7 @@ __mod_name__ = "Regex"
 
 __exception_desc__ = f"Add an exception to `regex` to disable this module."
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="`s/<text1>/<text2>[/<flags>]`",
         description=(
@@ -101,8 +101,8 @@ __commands__ = [
             "these characters, make sure you escape them! eg: \\?."
         ),
         is_slash_command=False,
-    )
-]
+    ),
+)
 
 # ad handlers
 dispatcher.add_handler(MessageHandler(Filters.regex(compile("^s([/:|_]).*([/:|_]).*")), regex, run_async=True))
