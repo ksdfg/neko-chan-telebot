@@ -89,7 +89,7 @@ def owo(update: Update, context: CallbackContext) -> None:
         :return: owo-fied text
         """
         # list of all kaomojis to use in owo
-        kaomoji = [
+        kaomoji = (
             r"`(・\`ω´・)`",
             "`;;w;;`",
             "`owo`",
@@ -105,7 +105,7 @@ def owo(update: Update, context: CallbackContext) -> None:
             "`(♥_♥)`",
             "`*(^O^)*`",
             "`((+_+))`",
-        ]
+        )
 
         # replace certain characters and add a kaomoji
         reply_text = sub(r"[rl]", "w", text)
