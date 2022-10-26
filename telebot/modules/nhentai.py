@@ -123,7 +123,7 @@ __commands__ = (
         description=(
             "Read a doujin from nhentai.net in telegram instant preview by giving it's code.\n"
             "You can give multiple codes, and it will fetch all those doujins.\n"
-            "If you don't have an exception set for `sauc in your chat, it'll send it to you in your private chat."
+            "If you don't have an exception set for `sauce` in your chat, it'll send it to you in your private chat."
         ),
     ),
 )
