@@ -757,10 +757,11 @@ def reorder2(update: Update, context: CallbackContext):
     # get position of sticker in sticker pack
     old_index = new_index = -1
     pack = context.bot.get_sticker_set(set_name)
+    user_chat = reorder[str(update.effective_user.id) + str(update.effective_chat.id)]
     for i, s in enumerate(pack.stickers):
         if s.file_id == sticker.file_id:
             new_index = i
-        elif s.file_id == reorder[str(update.effective_user.id) + str(update.effective_chat.id)]:
+        elif s.file_id == user_chat:
             old_index = i
         if -1 not in (new_index, old_index):
             break
