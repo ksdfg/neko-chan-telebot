@@ -59,7 +59,7 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
         :return: name of user, message to be quoted and assigned color
         """
         # List consisting tuples of RGB for random color generation similar to telegram
-        head_tg = [
+        head_tg = (
             (238, 73, 40),
             (65, 169, 3),
             (224, 150, 2),
@@ -68,7 +68,7 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
             (252, 67, 128),
             (0, 161, 196),
             (235, 112, 2),
-        ]
+        )
         assigned_color = random.choice(head_tg)
 
         # Get Name and message quote
