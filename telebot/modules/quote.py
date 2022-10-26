@@ -41,7 +41,7 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
             initials = ls[0][0]
         # Generate a temp profile picture similar to telegram
         font_bold = ImageFont.truetype(join(BASE_DIR, "Fonts", "LucidaGrandeBold.ttf"), size=60, encoding="unic")
-        img = Image.new("RGB", (160, 160), color=(assigned_color))
+        img = Image.new("RGB", (160, 160), color=assigned_color)
         draw = ImageDraw.Draw(img)
         # put the initials in centre of image
         text_width, text_height = draw.textsize(initials, font_bold)
