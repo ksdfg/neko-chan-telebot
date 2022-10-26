@@ -821,7 +821,7 @@ __commands__ = (
         command="delsticker",
         args="<reply>",
         description="reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from "
-                    "said pack",
+        "said pack",
     ),
     CommandDescription(
         command="reorder",

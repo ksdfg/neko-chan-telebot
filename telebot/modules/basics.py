@@ -198,7 +198,7 @@ __commands__ = (
         command="id",
         args="[<reply|username>]",
         description="Get details of current chat and a user (by replying to their message or giving their username) "
-                    "or yourself",
+        "or yourself",
     ),
     CommandDescription(
         command="fileid", args="<reply|username>", description="Get file ID of the file in the quoted message"
