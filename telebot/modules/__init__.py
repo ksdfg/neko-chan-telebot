@@ -1,5 +1,5 @@
 import glob
-import importlib
+from importlib import import_module
 from os.path import dirname, basename, isfile
 
 from telegram import BotCommand
@@ -20,7 +20,7 @@ for module_name in ALL_MODULES:
     if (config.LOAD and module_name not in config.LOAD) or (config.NO_LOAD and module_name in config.NO_LOAD):
         continue
 
-    imported_module = importlib.import_module("telebot.modules." + module_name)
+    imported_module = import_module("telebot.modules." + module_name)
 
     # add imported module to the dict of modules, to be used later
     if not hasattr(imported_module, "__mod_name__"):
