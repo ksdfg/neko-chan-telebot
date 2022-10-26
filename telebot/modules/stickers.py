@@ -579,7 +579,7 @@ def migrate(update: Update, context: CallbackContext) -> None:
                     case "Stickers_too_much":
                         print(len(sticker_pack.stickers))
 
-            # updsate sticker pack
+            # update sticker pack
             sticker_pack = context.bot.get_sticker_set(pack_name)
 
         # if current pack is full
