@@ -89,7 +89,7 @@ def owo(update: Update, context: CallbackContext) -> None:
         :return: owo-fied text
         """
         # list of all kaomojis to use in owo
-        kaomoji = [
+        kaomoji = (
             r"`(・\`ω´・)`",
             "`;;w;;`",
             "`owo`",
@@ -105,7 +105,7 @@ def owo(update: Update, context: CallbackContext) -> None:
             "`(♥_♥)`",
             "`*(^O^)*`",
             "`((+_+))`",
-        ]
+        )
 
         # replace certain characters and add a kaomoji
         reply_text = sub(r"[rl]", "w", text)
@@ -266,7 +266,7 @@ __help__ = """
 
 __mod_name__ = "memes"
 
-__commands__ = [
+__commands__ = (
     CommandDescription(command="mock", args="<reply|message>", description="MoCk LikE sPOnGEbob"),
     CommandDescription(
         command="zalgofy", args="<reply|message>", description="ͩ͠o̴͕r͌̈ȓ͡ṵ̠p̟͜tͯ͞ t̷͂ḣ͞ȩ͗ t̪̉e̢̪x̨͑t̼ͨ"
@@ -275,7 +275,7 @@ __commands__ = [
     CommandDescription(command="stretch", args="<reply|message>", description="talk like the sloth from zootopia"),
     CommandDescription(command="vapor", args="<reply|message>", description="ｖａｐｏｒｗａｖｅ ａｅｓｔｈｅｔｉｃｓ"),
     CommandDescription(command="sadge", args="<reply>", description="try getting over it"),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("runs", runs, run_async=True))

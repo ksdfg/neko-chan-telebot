@@ -68,7 +68,7 @@ def del_exception(update: Update, context: CallbackContext):
 
 __mod_name__ = "Exceptions"
 
-__commands__ = [
+__commands__ = (
     CommandDescription(command="exceptions", description="list all exceptions in chat"),
     CommandDescription(
         command="except",
@@ -82,7 +82,7 @@ __commands__ = [
         description="Delete exceptions for given commands (space separated)",
         is_admin=True,
     ),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("exceptions", list_exceptions, run_async=True))

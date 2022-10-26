@@ -149,10 +149,10 @@ __exception_desc__ = (
     "permission to delete messages."
 )
 
-__commands__ = [
+__commands__ = (
     CommandDescription(command="del", args="<reply>", description="delete the quoted message"),
     CommandDescription(command="purge", args="<reply> [silent|quiet]", description="delete the quoted message"),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("del", delete, run_async=True))

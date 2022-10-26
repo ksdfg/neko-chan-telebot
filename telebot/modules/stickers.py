@@ -579,7 +579,7 @@ def migrate(update: Update, context: CallbackContext) -> None:
                     case "Stickers_too_much":
                         print(len(sticker_pack.stickers))
 
-            # updsate sticker pack
+            # update sticker pack
             sticker_pack = context.bot.get_sticker_set(pack_name)
 
         # if current pack is full
@@ -757,10 +757,11 @@ def reorder2(update: Update, context: CallbackContext):
     # get position of sticker in sticker pack
     old_index = new_index = -1
     pack = context.bot.get_sticker_set(set_name)
+    user_chat = reorder[str(update.effective_user.id) + str(update.effective_chat.id)]
     for i, s in enumerate(pack.stickers):
         if s.file_id == sticker.file_id:
             new_index = i
-        elif s.file_id == reorder[str(update.effective_user.id) + str(update.effective_chat.id)]:
+        elif s.file_id == user_chat:
             old_index = i
         if -1 not in (new_index, old_index):
             break
@@ -799,7 +800,7 @@ def reorder_cancel(update: Update, context: CallbackContext):
 
 __mod_name__ = "Stickers"
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="kang",
         args="<reply> [<emojis>]",
@@ -819,7 +820,8 @@ __commands__ = [
     CommandDescription(
         command="delsticker",
         args="<reply>",
-        description="reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from said pack",
+        description="reply to a sticker (animated or non animated) belonging to a pack made by me to remove it from "
+        "said pack",
     ),
     CommandDescription(
         command="reorder",
@@ -839,7 +841,7 @@ __commands__ = [
         args="<reply>",
         description="reply to a sticker (animated or non animated) to me to tell you its file ID",
     ),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("stickerid", sticker_id, run_async=True))

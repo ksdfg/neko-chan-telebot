@@ -116,17 +116,17 @@ def sauce(update: Update, context: CallbackContext) -> None:
 
 __mod_name__ = "nhentai"
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="sauce",
         args="<digits list>",
         description=(
             "Read a doujin from nhentai.net in telegram instant preview by giving it's code.\n"
             "You can give multiple codes, and it will fetch all those doujins.\n"
-            "If you don't have an exception set for `sauc in your chat, it'll send it to you in your private chat."
+            "If you don't have an exception set for `sauce` in your chat, it'll send it to you in your private chat."
         ),
-    )
-]
+    ),
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("sauce", sauce, run_async=True))

@@ -41,7 +41,7 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
             initials = ls[0][0]
         # Generate a temp profile picture similar to telegram
         font_bold = ImageFont.truetype(join(BASE_DIR, "Fonts", "LucidaGrandeBold.ttf"), size=60, encoding="unic")
-        img = Image.new("RGB", (160, 160), color=(assigned_color))
+        img = Image.new("RGB", (160, 160), color=assigned_color)
         draw = ImageDraw.Draw(img)
         # put the initials in centre of image
         text_width, text_height = draw.textsize(initials, font_bold)
@@ -59,7 +59,7 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
         :return: name of user, message to be quoted and assigned color
         """
         # List consisting tuples of RGB for random color generation similar to telegram
-        head_tg = [
+        head_tg = (
             (238, 73, 40),
             (65, 169, 3),
             (224, 150, 2),
@@ -68,7 +68,7 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
             (252, 67, 128),
             (0, 161, 196),
             (235, 112, 2),
-        ]
+        )
         assigned_color = random.choice(head_tg)
 
         # Get Name and message quote
@@ -327,11 +327,11 @@ def quote(update: Update, context: CallbackContext):
 
 __mod_name__ = "quote"
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="quote", args="<reply>", description="reply to a message to get it's quote as a sticker"
     ),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("quote", quote, run_async=True))

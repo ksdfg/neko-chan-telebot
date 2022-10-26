@@ -38,10 +38,10 @@ def ud(update: Update, context: CallbackContext):
 
 __mod_name__ = "Urban-Dictionary"
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="ud", args="<word>", description="search what the word means according to urban dictionary"
     ),
-]
+)
 
 dispatcher.add_handler(CommandHandler("ud", ud, run_async=True))

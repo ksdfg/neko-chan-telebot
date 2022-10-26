@@ -98,12 +98,7 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
     """
 
     # get all args other than the username
-    useful_args = []
-    for arg in args:
-        if username not in arg:
-            useful_args.append(arg)
-
-    if useful_args:
+    if useful_args := [arg for arg in args if username not in arg]:
         # get datetime till when we have to mute user
         time, unit = float(useful_args[0][:-1]), useful_args[0][-1]
         match unit:
@@ -430,12 +425,7 @@ def promote(update: Update, context: CallbackContext):
         reply += f"Everyone say NyaHello to {mention_markdown(user_id, username)}, our new admin!"
 
         # get all args other than the username
-        useful_args = []
-        for arg in context.args:
-            if username not in arg:
-                useful_args.append(arg)
-
-        if useful_args:
+        if useful_args := [arg for arg in context.args if username not in arg]:
             title = " ".join(useful_args)
             context.bot.set_chat_administrator_custom_title(update.effective_chat.id, user_id, title)
             reply += f"\nThey have been granted the title of `{title}`."
@@ -633,7 +623,7 @@ __exception_desc__ = (
     "individual permissions."
 )
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="enable",
         args="<commands>",
@@ -702,7 +692,7 @@ __commands__ = [
         description="kick a user from the chat (whose username you've given as argument, or whose message you are quoting)",
         is_admin=True,
     ),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("promote", promote, run_async=True))

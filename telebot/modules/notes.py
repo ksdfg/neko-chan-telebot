@@ -206,7 +206,7 @@ __exception_desc__ = (
     "Adding exceptions for individual commands has no effect."
 )
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="get",
         args="<note name>",
@@ -220,7 +220,7 @@ __commands__ = [
         is_admin=True,
     ),
     CommandDescription(command="clear", args="<note name>", description="clear note with this name", is_admin=True),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("get", fetch_note, run_async=True))

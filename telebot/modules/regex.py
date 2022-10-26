@@ -89,20 +89,20 @@ __mod_name__ = "Regex"
 
 __exception_desc__ = f"Add an exception to `regex` to disable this module."
 
-__commands__ = [
+__commands__ = (
     CommandDescription(
         command="`s/<text1>/<text2>[/<flags>]`",
         description=(
-            "Reply to a message with this to perform a sed operation on that message, replacing all occurrences of 'text1' "
-            "with 'text2'. Flags are optional, and currently include 'i' for ignore case, 'g' for global, or nothing. "
-            "Delimiters include `/`, `_`, `|`, and `:`. Text grouping is supported. The resulting message cannot be larger "
-            f"than {MAX_MESSAGE_LENGTH} characters.\n\n"
-            "*Reminder:* Sed uses some special characters to make matching easier, such as these: `+*.?\\` If you want to use "
-            "these characters, make sure you escape them! eg: \\?."
+            "Reply to a message with this to perform a sed operation on that message, replacing all occurrences of "
+            "'text1' with 'text2'. Flags are optional, and currently include 'i' for ignore case, 'g' for global, "
+            "or nothing. Delimiters include `/`, `_`, `|`, and `:`. Text grouping is supported. The resulting message "
+            f"cannot be larger than {MAX_MESSAGE_LENGTH} characters.\n\n *Reminder:* Sed uses some special characters "
+            f"to make matching easier, such as these: `+*.?\\` If you want to use these characters, make sure you "
+            f"escape them! eg: \\?. "
         ),
         is_slash_command=False,
-    )
-]
+    ),
+)
 
 # ad handlers
 dispatcher.add_handler(MessageHandler(Filters.regex(compile("^s([/:|_]).*([/:|_]).*")), regex, run_async=True))

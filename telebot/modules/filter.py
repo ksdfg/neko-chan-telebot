@@ -200,7 +200,7 @@ __exception_desc__ = (
     "Adding exceptions for individual commands has no effect."
 )
 
-__commands__ = [
+__commands__ = (
     CommandDescription(command="filters", description="list all active filters in the chat"),
     CommandDescription(
         command="filter",
@@ -214,7 +214,7 @@ __commands__ = [
         description="delete active filters; give all filters to delete seperated by a space",
         is_admin=True,
     ),
-]
+)
 
 # create handlers
 dispatcher.add_handler(CommandHandler("filters", list_filters, run_async=True))
