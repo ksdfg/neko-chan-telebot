@@ -23,21 +23,20 @@ class User(DynamicDocument):
 def add_user(user_id: int, username: str):
     """
     Add/Update a user in the database
+    If the username has changed, that'll be updated
     :param user_id: ID of the user we want to add
     :param username: username of the user we want to add
     :return:
     """
-    User(id=user_id, username=username).save()
+    User(id=user_id, username=username).update(username=username, upsert=True)
 
 
 def get_user(username: str) -> Optional[int]:
     """
     get the user ID of a user
-    :param username: username of the user who's ID we want to fetch
-    :return: ID of the user
+    :param username: username of the user whose ID we want to fetch
+    :return: ID of the user, if a user with that username exists in the database
     """
-    user = User.objects(username=username).first()
-    if user:
+    if user := User.objects(username=username).first():
         return user.id
-    else:
-        return None
+    return None
