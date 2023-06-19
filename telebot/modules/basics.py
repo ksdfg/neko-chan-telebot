@@ -6,7 +6,7 @@ from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 from telegram.helpers import escape_markdown
 
-from telebot import updater, application
+from telebot import application
 from telebot.modules import imported_mods
 from telebot.utils import (
     bot_action,
@@ -23,7 +23,7 @@ START_TEXT = emojize(
     f"""
 NyaHello World! :cat:
 
-I'm *{updater.bot.first_name}*, a cute little bot that does rendum shit.
+I'm *{application.bot.first_name}*, a cute little bot that does rendum shit.
 """,
     use_aliases=True,
 )

@@ -55,7 +55,7 @@ def check_user_admin(func: Callable):
     """
 
     @wraps(func)
-    def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
+    async def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
         if update.effective_chat.type != "private":
             # check if user is admin
             user = await update.effective_chat.get_member(update.effective_user.id)
@@ -65,7 +65,7 @@ def check_user_admin(func: Callable):
                 )
                 return
 
-        return func(update, context, *args, **kwargs)
+        return await func(update, context, *args, **kwargs)
 
     return wrapper
 
@@ -77,14 +77,15 @@ def check_bot_admin(func: Callable):
     """
 
     @wraps(func)
-    def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
+    async def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
         if update.effective_chat.type != "private":
             # check if bot is an admin
-            if await update.effective_chat.get_member(context.bot.id).status not in ("administrator", "creator"):
+            bot = await update.effective_chat.get_member(context.bot.id)
+            if bot.status not in ("administrator", "creator"):
                 await update.effective_message.reply_text("Ask your sugar daddy to give me admin status plej...")
                 return
 
-        return func(update, context, *args, **kwargs)
+        return await func(update, context, *args, **kwargs)
 
     return wrapper
 
@@ -104,7 +105,7 @@ def check_reply_to_message(error_msg: str):
         """
 
         @wraps(func)
-        def inner(update: Update, context: CallbackContext, *args, **kwargs):
+        async def inner(update: Update, context: CallbackContext, *args, **kwargs):
             """
             check and execute the function
             :param update: object representing the incoming update.
@@ -123,7 +124,7 @@ def check_reply_to_message(error_msg: str):
                 except:
                     print_exc()
 
-                return func(update, context, *args, **kwargs)  # execute the function
+                return await func(update, context, *args, **kwargs)  # execute the function
 
             else:
                 await update.effective_message.reply_markdown(error_msg)
@@ -182,7 +183,7 @@ def bot_action(func_name: str = None, extra_text: str = ""):
         """
 
         @wraps(func)
-        def inner(update: Update, context: CallbackContext, *args, **kwargs):
+        async def inner(update: Update, context: CallbackContext, *args, **kwargs):
             """
             log and execute the function
             :param update: object representing the incoming update.
@@ -200,7 +201,7 @@ def bot_action(func_name: str = None, extra_text: str = ""):
                 log(update, func_name, extra_text)
 
             try:
-                return func(update, context, *args, **kwargs)
+                return await func(update, context, *args, **kwargs)
             except BadRequest as e:
                 if e.message == "Message is too long":
                     await update.effective_message.reply_text(
@@ -254,7 +255,7 @@ def check_command(command: str = None):
         """
 
         @wraps(func)
-        def inner(update: Update, context: CallbackContext, *args, **kwargs):
+        async def inner(update: Update, context: CallbackContext, *args, **kwargs):
             """
             check command and execute the function
             :param update: object representing the incoming update.
@@ -269,7 +270,7 @@ def check_command(command: str = None):
                 )
                 return
 
-            return func(update, context, *args, **kwargs)
+            return await func(update, context, *args, **kwargs)
 
         return inner
 
