@@ -1,17 +1,18 @@
 from re import compile, search
 from subprocess import Popen, PIPE, check_output, CalledProcessError, STDOUT
 
-from telegram import MAX_MESSAGE_LENGTH, Update
-from telegram.ext import CallbackContext, MessageHandler, Filters
+from telegram import Update
+from telegram.constants import MessageLimit
+from telegram.ext import MessageHandler, filters, ContextTypes
 
-from telebot import dispatcher
+from telebot import application
 from telebot.modules.db.exceptions import get_exceptions_for_chat
 from telebot.utils import bot_action, CommandDescription, check_command
 
 
 @bot_action("regex")
 @check_command("regex")
-def regex(update: Update, context: CallbackContext):
+async def regex(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Replace text using sed and regex
     :param update: object representing the incoming update.
@@ -25,7 +26,7 @@ def regex(update: Update, context: CallbackContext):
         update.effective_message.reply_to_message
         and (update.effective_message.reply_to_message.text or update.effective_message.reply_to_message.caption)
     ):
-        update.effective_message.reply_text("Gimme text to replace stuff in, baka!")
+        await update.effective_message.reply_text("Gimme text to replace stuff in, baka!")
         return
 
     # make sure `s` command is properly terminated
@@ -46,43 +47,43 @@ def regex(update: Update, context: CallbackContext):
         text_input = Popen(("echo", content), stdout=PIPE, stderr=STDOUT)
         result = check_output(("sed", "-r", command), stdin=text_input.stdout, stderr=STDOUT)
     except CalledProcessError as e:
-        update.effective_message.reply_markdown(f"```{e.output.decode()}```")
+        await update.effective_message.reply_markdown(f"```{e.output.decode()}```")
         return
 
     # reply with the output text
     if update.effective_message.reply_to_message.document:
-        update.effective_message.reply_to_message.reply_document(
+        await update.effective_message.reply_to_message.reply_document(
             document=update.effective_message.reply_to_message.document,
             filename=update.effective_message.reply_to_message.document.file_name,
             caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.photo:
-        update.effective_message.reply_to_message.reply_photo(
+        await update.effective_message.reply_to_message.reply_photo(
             photo=update.effective_message.reply_to_message.photo[-1].file_id,
             caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.audio:
-        update.effective_message.reply_to_message.reply_audio(
+        await update.effective_message.reply_to_message.reply_audio(
             audio=update.effective_message.reply_to_message.audio,
             caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.voice:
-        update.effective_message.reply_to_message.reply_voice(
+        await update.effective_message.reply_to_message.reply_voice(
             voice=update.effective_message.reply_to_message.voice,
             caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     elif update.effective_message.reply_to_message.video:
-        update.effective_message.reply_to_message.reply_video(
+        await update.effective_message.reply_to_message.reply_video(
             video=update.effective_message.reply_to_message.video,
             caption=result.decode("utf-8"),
             reply_markup=update.effective_message.reply_to_message.reply_markup,
         )
     else:
-        update.effective_message.reply_to_message.reply_text(result.decode("utf-8"))
+        await update.effective_message.reply_to_message.reply_text(result.decode("utf-8"))
 
 
 __mod_name__ = "Regex"
@@ -96,13 +97,13 @@ __commands__ = (
             "Reply to a message with this to perform a sed operation on that message, replacing all occurrences of "
             "'text1' with 'text2'. Flags are optional, and currently include 'i' for ignore case, 'g' for global, "
             "or nothing. Delimiters include `/`, `_`, `|`, and `:`. Text grouping is supported. The resulting message "
-            f"cannot be larger than {MAX_MESSAGE_LENGTH} characters.\n\n *Reminder:* Sed uses some special characters "
-            f"to make matching easier, such as these: `+*.?\\` If you want to use these characters, make sure you "
-            f"escape them! eg: \\?. "
+            f"cannot be larger than {MessageLimit.MAX_TEXT_LENGTH} characters.\n\n *Reminder:* Sed uses some special "
+            f"characters to make matching easier, such as these: `+*.?\\` If you want to use these characters, make "
+            f"sure you escape them! eg: \\?. "
         ),
         is_slash_command=False,
     ),
 )
 
 # ad handlers
-dispatcher.add_handler(MessageHandler(Filters.regex(compile("^s([/:|_]).*([/:|_]).*")), regex, run_async=True))
+application.add_handler(MessageHandler(filters.Regex(compile("^s([/:|_]).*([/:|_]).*")), regex, block=False))

@@ -2,9 +2,9 @@ from re import IGNORECASE, search, escape
 
 from emoji import emojize
 from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, ContextTypes, filters
 
-from telebot import dispatcher
+from telebot import application
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.filter import get_triggers_for_chat, add_filter, get_filter, del_filter
 from telebot.modules.db.users import add_user
@@ -13,7 +13,7 @@ from telebot.utils import log, bot_action, check_user_admin, CommandDescription,
 
 @bot_action("list filters")
 @check_command("filters")
-def list_filters(update: Update, context: CallbackContext):
+async def list_filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     List all the filter triggers in a chat
     :param update: object representing the incoming update.
@@ -25,17 +25,17 @@ def list_filters(update: Update, context: CallbackContext):
 
     filters = get_triggers_for_chat(update.effective_chat.id)
     if filters:
-        update.message.reply_markdown(
+        await update.message.reply_markdown(
             "Active filter triggers in this chat are as follows -\n`" + "`\n`".join(filters) + "`"
         )
     else:
-        update.message.reply_markdown(emojize("No active filters in this chat :crying_cat_face:"))
+        await update.message.reply_markdown(emojize("No active filters in this chat :crying_cat_face:"))
 
 
 @bot_action("add filter")
 @check_command("filter")
 @check_user_admin
-def add_filter_handler(update: Update, context: CallbackContext):
+async def add_filter_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Add a filter in a chat
     :param update: object representing the incoming update.
@@ -120,7 +120,7 @@ def add_filter_handler(update: Update, context: CallbackContext):
 @bot_action("delete filters")
 @check_command("stop")
 @check_user_admin
-def del_filter_handler(update: Update, context: CallbackContext):
+async def del_filter_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Delete a filter from the chat
     :param update: object representing the incoming update.
@@ -133,15 +133,15 @@ def del_filter_handler(update: Update, context: CallbackContext):
     if context.args:
         # iterate over the triggers given and delete them from DB
         for trigger in context.args:
-            update.effective_message.reply_markdown(del_filter(chat=update.effective_chat.id, trigger=trigger))
+            await update.effective_message.reply_markdown(del_filter(chat=update.effective_chat.id, trigger=trigger))
     else:
-        update.effective_message.reply_markdown(
+        await update.effective_message.reply_markdown(
             "I can't stop meowing if you don't tell me what to stop meowing to, baka!"
         )
 
 
 @bot_action("respond to filter")
-def reply(update: Update, context: CallbackContext) -> None:
+async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Reply when a filter is triggered
     :param update: object representing the incoming update.
@@ -217,7 +217,7 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("filters", list_filters, run_async=True))
-dispatcher.add_handler(CommandHandler("filter", add_filter_handler, run_async=True))
-dispatcher.add_handler(CommandHandler("stop", del_filter_handler, run_async=True))
-dispatcher.add_handler(MessageHandler(Filters.all, reply, run_async=True), group=69)
+application.add_handler(CommandHandler("filters", list_filters, block=False))
+application.add_handler(CommandHandler("filter", add_filter_handler, block=False))
+application.add_handler(CommandHandler("stop", del_filter_handler, block=False))
+application.add_handler(MessageHandler(filters.ALL, reply, block=False), group=69)

@@ -5,9 +5,9 @@ from typing import Callable
 
 from telegram import Update
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import CallbackContext, CommandHandler, ContextTypes
 
-from telebot import dispatcher
+from telebot import application
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.users import add_user
 from telebot.utils import (
@@ -31,9 +31,9 @@ def check_bot_can_delete(func: Callable):
         # check if bot has perms to delete a message
         if (
             update.effective_chat.type != "private"
-            and not update.effective_chat.get_member(context.bot.id).can_delete_messages
+            and not await update.effective_chat.get_member(context.bot.id).can_delete_messages
         ):
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 "Bribe your sugar daddy with some catnip and ask him to allow me to delete messages..."
             )
             return
@@ -57,9 +57,9 @@ def check_user_can_delete(func: Callable):
             and update.effective_message.reply_to_message.from_user.id != update.effective_user.id
             and update.effective_chat.id not in get_command_exception_chats("delete")
         ):
-            user = update.effective_chat.get_member(update.effective_user.id)
+            user = await update.effective_chat.get_member(update.effective_user.id)
             if not user.can_delete_messages and user.status != "creator":
-                update.effective_message.reply_markdown(
+                await update.effective_message.reply_markdown(
                     "Ask your sugar daddy to give you perms required to use the method `CanDeleteMessages`, "
                     "or add an exception to module `delete`."
                 )
@@ -77,7 +77,7 @@ def check_user_can_delete(func: Callable):
 @check_user_can_delete
 @check_bot_admin
 @check_bot_can_delete
-def delete(update: Update, context: CallbackContext):
+async def delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Delete the quoted message
     :param update: object representing the incoming update.
@@ -92,12 +92,12 @@ def delete(update: Update, context: CallbackContext):
 
     # delete message
     try:
-        context.bot.delete_message(update.effective_chat.id, update.effective_message.reply_to_message.message_id)
-        context.bot.delete_message(update.effective_chat.id, update.effective_message.message_id)
+        await context.bot.delete_message(update.effective_chat.id, update.effective_message.reply_to_message.message_id)
+        await context.bot.delete_message(update.effective_chat.id, update.effective_message.message_id)
     except BadRequest as e:
         if match("^Message can't be deleted", e.message):
             print_exc()
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 "I don't know why but I can't delete that...\nTelegram is high on catnip as usual."
             )
         else:
@@ -111,7 +111,7 @@ def delete(update: Update, context: CallbackContext):
 @check_user_can_delete
 @check_bot_admin
 @check_bot_can_delete
-def purge(update: Update, context: CallbackContext):
+async def purge(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Delete all messages from quoted message
     :param update: object representing the incoming update.
@@ -126,13 +126,13 @@ def purge(update: Update, context: CallbackContext):
     # delete messages
     for id_ in range(update.effective_message.message_id, update.effective_message.reply_to_message.message_id - 1, -1):
         try:
-            context.bot.delete_message(update.effective_chat.id, id_)
+            await context.bot.delete_message(update.effective_chat.id, id_)
         except BadRequest:
             continue
 
     # Don't send message after purge if silent/quiet is specified
     if not (context.args and context.args[0].lower() in ("silent", "quiet")):
-        update.effective_chat.send_message("Just like we do it in china....")
+        await update.effective_chat.send_message("Just like we do it in china....")
 
 
 __help__ = """
@@ -155,6 +155,6 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("del", delete, run_async=True))
-dispatcher.add_handler(CommandHandler("delete", delete, run_async=True))
-dispatcher.add_handler(CommandHandler("purge", purge, run_async=True))
+application.add_handler(CommandHandler("del", delete, block=False))
+application.add_handler(CommandHandler("delete", delete, block=False))
+application.add_handler(CommandHandler("purge", purge, block=False))

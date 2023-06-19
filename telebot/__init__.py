@@ -1,5 +1,5 @@
 from pydantic import HttpUrl, BaseSettings
-from telegram.ext import Updater
+from telegram.ext import Application
 
 
 # class for configuration of a bot
@@ -29,6 +29,5 @@ class Config(BaseSettings):
 # create config object
 config = Config()
 
-# create updater and dispatcher
-updater = Updater(config.TOKEN, use_context=True)
-dispatcher = updater.dispatcher
+# create updater and application
+application = Application.builder().token(config.TOKEN).build()

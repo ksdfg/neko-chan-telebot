@@ -9,18 +9,19 @@ authors = ["ksdfg <ksdfg123@gmail.com>"]
 license = "GPL-3.0"
 
 [tool.poetry.dependencies]
-python = "3.10.8"
+python = "^3.11"
 dnspython = "^2.2.1"
-emoji = "1.6.1"
 mongoengine = "^0.24.2"
 Pillow = "^9.2.0"
 python-decouple = "^3.6"
-python-telegram-bot = "^13.14"
+python-telegram-bot = "^20.0"
 spongemock = "^0.3.4"
 zalgo-text = "^0.6"
 hentai = "^3.2.10"
 telegraph = "^2.1.0"
-pydantic = {extras = ["dotenv"], version = "^1.10.2"}
+pydantic = { extras = ["dotenv"], version = "^1.10.2" }
+emoji = "^2.5.1"
+pytz = "^2023.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"

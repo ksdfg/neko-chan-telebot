@@ -2,11 +2,12 @@ from os.path import join, dirname
 
 from hentai import Hentai, Format, Tag
 from requests.exceptions import RetryError, ConnectionError
-from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CommandHandler, CallbackContext
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.constants import ParseMode
+from telegram.ext import CommandHandler, ContextTypes
 from telegraph import Telegraph
 
-from telebot import dispatcher
+from telebot import application
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.utils import bot_action, CommandDescription, check_command
 
@@ -22,7 +23,7 @@ def _generate_anchor_tags(tags: list[Tag]) -> str:
 
 @bot_action("sauce")
 @check_command("sauce")
-def sauce(update: Update, context: CallbackContext) -> None:
+async def sauce(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Fetch the doujin for all the sauces given by user, make telegraph article and send it to user for easy reading
     :param update: object representing the incoming update.
@@ -30,7 +31,7 @@ def sauce(update: Update, context: CallbackContext) -> None:
     """
     # check if any args were given
     if not context.args:
-        update.effective_message.reply_text("Please give some codes to fetch, this cat can't read your mind...")
+        await update.effective_message.reply_text("Please give some codes to fetch, this cat can't read your mind...")
         return
 
     # check if exception for sauce is added in current chat
@@ -41,7 +42,7 @@ def sauce(update: Update, context: CallbackContext) -> None:
         try:
             code = int(digits)
         except ValueError:
-            update.effective_message.reply_markdown(
+            await update.effective_message.reply_markdown(
                 f"If you don't know that sauce codes must be only digits, you shouldn't be using this command. "
                 f"`{digits}` is not a sauce, just a sign of your ignorance."
             )
@@ -50,13 +51,13 @@ def sauce(update: Update, context: CallbackContext) -> None:
         # check if doujin exists
         try:
             if not Hentai.exists(code):
-                update.effective_message.reply_markdown(
+                await update.effective_message.reply_markdown(
                     f"Doujin for `{code}` doesn't exist, Donald... Please don't use your nuclear launch codes here 😿"
                 )
                 continue
         except (RetryError, ConnectionError):
             with open(join(dirname(__file__), "assets", "horni_jail.jpg"), "rb") as f:
-                update.effective_message.reply_photo(
+                await update.effective_message.reply_photo(
                     photo=f,
                     caption="Cloudflare won't release any doujins from the horni jail known to most as a browser...",
                     reply_markup=InlineKeyboardMarkup.from_button(
@@ -98,15 +99,15 @@ def sauce(update: Update, context: CallbackContext) -> None:
 
         # send message
         if exception:
-            update.message.reply_html(text=text_blob, reply_markup=markup)
+            await update.message.reply_html(text=text_blob, reply_markup=markup)
         else:
-            context.bot.send_message(
+            await context.bot.send_message(
                 chat_id=update.effective_user.id, text=text_blob, parse_mode=ParseMode.HTML, reply_markup=markup
             )
 
     # if called from a chat without exception in it, then send him a reminder to check it
     if not exception and update.effective_chat.type != "private":
-        update.message.reply_text(
+        await update.message.reply_text(
             "Let's enjoy this together, without anybody else distracting us...",
             reply_markup=InlineKeyboardMarkup.from_button(
                 InlineKeyboardButton(text="Go to Private Chat", url=context.bot.link)
@@ -129,4 +130,4 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("sauce", sauce, run_async=True))
+application.add_handler(CommandHandler("sauce", sauce, block=False))

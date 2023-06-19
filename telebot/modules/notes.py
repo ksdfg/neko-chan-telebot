@@ -1,8 +1,8 @@
 from emoji import emojize
 from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, ContextTypes, filters
 
-from telebot import dispatcher
+from telebot import application
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.notes import get_note, get_notes_for_chat, add_note, del_note
 from telebot.modules.db.users import add_user
@@ -11,7 +11,7 @@ from telebot.utils import check_user_admin, bot_action, CommandDescription, chec
 
 @bot_action("get note")
 @check_command("get")
-def fetch_note(update: Update, context: CallbackContext):
+async def fetch_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Fetch note
     :param update: object representing the incoming update.
@@ -26,7 +26,7 @@ def fetch_note(update: Update, context: CallbackContext):
     elif context.args:
         name = context.args[0]
     else:
-        update.effective_message.reply_text("I can't fetch a note if you don't tell me it's name, baka!")
+        await update.effective_message.reply_text("I can't fetch a note if you don't tell me it's name, baka!")
         return
 
     # get note
@@ -35,24 +35,24 @@ def fetch_note(update: Update, context: CallbackContext):
     # send reply according to type
     match content_type:
         case "text":
-            update.effective_message.reply_markdown(content)
+            await update.effective_message.reply_markdown(content)
         case "sticker":
-            update.effective_message.reply_sticker(content)
+            await update.effective_message.reply_sticker(content)
         case "document":
-            update.effective_message.reply_document(content)
+            await update.effective_message.reply_document(content)
         case "photo":
-            update.effective_message.reply_photo(content)
+            await update.effective_message.reply_photo(content)
         case "audio":
-            update.effective_message.reply_audio(content)
+            await update.effective_message.reply_audio(content)
         case "voice":
-            update.effective_message.reply_voice(content)
+            await update.effective_message.reply_voice(content)
         case "video":
-            update.effective_message.reply_video(content)
+            await update.effective_message.reply_video(content)
 
 
 @bot_action("notes")
 @check_command("notes")
-def notes_for_chat(update: Update, context: CallbackContext):
+async def notes_for_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     List out all the notes in a chat
     :param update: object representing the incoming update.
@@ -71,16 +71,18 @@ def notes_for_chat(update: Update, context: CallbackContext):
             reply += f"\n- `{note}`"
         reply += emojize("\n\nI remember all of this! Praise me lots! :grinning_cat_face:")
 
-        update.effective_message.reply_markdown(reply)
+        await update.effective_message.reply_markdown(reply)
 
     else:
-        update.effective_message.reply_text("No one told me to remember anything, so I got high on catnip instead.....")
+        await update.effective_message.reply_text(
+            "No one told me to remember anything, so I got high on catnip instead....."
+        )
 
 
 @bot_action("add note")
 @check_command("save")
 @check_user_admin
-def add_note_in_chat(update: Update, context: CallbackContext):
+async def add_note_in_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Add a note in the chat
     :param update: object representing the incoming update.
@@ -163,7 +165,7 @@ def add_note_in_chat(update: Update, context: CallbackContext):
 @bot_action("delete note")
 @check_command("clear")
 @check_user_admin
-def del_note_in_chat(update: Update, context: CallbackContext):
+async def del_note_in_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Delete a note from the chat
     :param update: object representing the incoming update.
@@ -176,9 +178,9 @@ def del_note_in_chat(update: Update, context: CallbackContext):
     if context.args:
         # iterate over the triggers given and delete them from DB
         for name in context.args:
-            update.effective_message.reply_markdown(del_note(chat=update.effective_chat.id, name=name))
+            await update.effective_message.reply_markdown(del_note(chat=update.effective_chat.id, name=name))
     else:
-        update.effective_message.reply_markdown(
+        await update.effective_message.reply_markdown(
             "Oi, you can't make me forget something without reminding me of what to forget, baka!"
         )
 
@@ -223,9 +225,9 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("get", fetch_note, run_async=True))
-dispatcher.add_handler(MessageHandler(Filters.regex(r"^#[^\s].+$"), fetch_note, run_async=True))
-dispatcher.add_handler(CommandHandler("notes", notes_for_chat, run_async=True))
-dispatcher.add_handler(CommandHandler("saved", notes_for_chat, run_async=True))
-dispatcher.add_handler(CommandHandler("save", add_note_in_chat, run_async=True))
-dispatcher.add_handler(CommandHandler("clear", del_note_in_chat, run_async=True))
+application.add_handler(CommandHandler("get", fetch_note, block=False))
+application.add_handler(MessageHandler(filters.Regex(r"^#[^\s].+$"), fetch_note, block=False))
+application.add_handler(CommandHandler("notes", notes_for_chat, block=False))
+application.add_handler(CommandHandler("saved", notes_for_chat, block=False))
+application.add_handler(CommandHandler("save", add_note_in_chat, block=False))
+application.add_handler(CommandHandler("clear", del_note_in_chat, block=False))
