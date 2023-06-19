@@ -1,5 +1,5 @@
 from mongoengine import Document, IntField, StringField, ListField
-from telegram.utils.helpers import escape_markdown
+from telegram.helpers import escape_markdown
 
 
 class ChatCommand(Document):

@@ -1,7 +1,7 @@
 from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext
+from telegram.ext import CommandHandler, ContextTypes
 
-from telebot import dispatcher
+from telebot import application
 from telebot.modules.db.exceptions import (
     add_command_exception_chats,
     del_command_exception_chats,
@@ -12,58 +12,60 @@ from telebot.utils import bot_action, check_user_admin, CommandDescription, chec
 
 @bot_action("list exceptions")
 @check_command("exceptions")
-def list_exceptions(update: Update, context: CallbackContext):
+async def list_exceptions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     List all exceptions
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
     if update.effective_chat.type == "private":
-        update.effective_message.reply_text("You can't list exceptions in private chats.")
+        await update.effective_message.reply_text("You can't list exceptions in private chats.")
         return
 
     commands = ", ".join(get_exceptions_for_chat(update.effective_chat.id))
     if commands:
-        update.effective_message.reply_markdown(f"You have exceptions set for the following commands:\n`{commands}`")
+        await update.effective_message.reply_markdown(
+            f"You have exceptions set for the following commands:\n`{commands}`"
+        )
     else:
-        update.effective_message.reply_text("You don't have any exceptions set!")
+        await update.effective_message.reply_text("You don't have any exceptions set!")
 
 
 @bot_action("add exception")
 @check_command("except")
 @check_user_admin
-def add_exception(update: Update, context: CallbackContext):
+async def add_exception(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Add exceptions in a chat
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
     if update.effective_chat.type == "private":
-        update.effective_message.reply_text("You can't add exceptions in private chats.")
+        await update.effective_message.reply_text("You can't add exceptions in private chats.")
         return
 
     for command in context.args:
         reply = add_command_exception_chats(command, update.effective_chat.id)
         print(reply)
-        update.effective_message.reply_markdown(reply)
+        await update.effective_message.reply_markdown(reply)
 
 
 @bot_action("delete exceptions")
 @check_command("delexcept")
 @check_user_admin
-def del_exception(update: Update, context: CallbackContext):
+async def del_exception(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Delete exceptions in a chat
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
     if update.effective_chat.type == "private":
-        update.effective_message.reply_text("You can't delete exceptions in private chats.")
+        await update.effective_message.reply_text("You can't delete exceptions in private chats.")
         return
 
     for command in context.args:
         reply = del_command_exception_chats(command, update.effective_chat.id)
-        update.effective_message.reply_markdown(reply)
+        await update.effective_message.reply_markdown(reply)
 
 
 __mod_name__ = "Exceptions"
@@ -85,6 +87,6 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("exceptions", list_exceptions, run_async=True))
-dispatcher.add_handler(CommandHandler("except", add_exception, run_async=True))
-dispatcher.add_handler(CommandHandler("delexcept", del_exception, run_async=True))
+application.add_handler(CommandHandler("exceptions", list_exceptions, block=False))
+application.add_handler(CommandHandler("except", add_exception, block=False))
+application.add_handler(CommandHandler("delexcept", del_exception, block=False))

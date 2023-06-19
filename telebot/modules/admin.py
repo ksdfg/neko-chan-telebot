@@ -6,12 +6,13 @@ from typing import Callable, List, Optional
 
 from emoji import emojize
 from pytz import timezone
-from telegram import Update, ChatPermissions, ChatMember, ParseMode
+from telegram import Update, ChatPermissions, ChatMember
+from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext, CommandHandler
-from telegram.utils.helpers import escape_markdown, mention_markdown
+from telegram.ext import CallbackContext, CommandHandler, ContextTypes
+from telegram.helpers import escape_markdown, mention_markdown
 
-from telebot import dispatcher
+from telebot import application
 from telebot.modules.db.chat_commands import enable_commands_for_chat, disable_commands_for_chat
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.mute import add_muted_member, remove_muted_member
@@ -43,7 +44,7 @@ def for_chat_types(*types):
         @wraps(func)
         def inner(update: Update, context: CallbackContext, *args, **kwargs):
             if update.effective_chat.type not in types:
-                update.effective_message.reply_text(f"Sorry, can't do that in a {update.effective_chat.type}...")
+                await update.effective_message.reply_text(f"Sorry, can't do that in a {update.effective_chat.type}...")
                 return
 
             func(update, context, *args, **kwargs)
@@ -65,16 +66,16 @@ def can_restrict(func: Callable):
             "admin"
         ):
             # check bot
-            if not update.effective_chat.get_member(context.bot.id).can_restrict_members:
-                update.effective_message.reply_markdown(
+            if not await update.effective_chat.get_member(context.bot.id).can_restrict_members:
+                await update.effective_message.reply_markdown(
                     "Ask your sugar daddy to give me perms required to use the method `CanRestrictMembers`."
                 )
                 return
 
             # check user
-            user = update.effective_chat.get_member(update.effective_user.id)
+            user = await update.effective_chat.get_member(update.effective_user.id)
             if not user.can_restrict_members and user.status != "creator":
-                update.effective_message.reply_markdown(
+                await update.effective_message.reply_markdown(
                     "Ask your sugar daddy to give you perms required to use the method `CanRestrictMembers`."
                 )
                 return
@@ -117,7 +118,7 @@ def get_datetime_form_args(args: List[str], username: str = "") -> Optional[date
 @check_user_admin
 @check_bot_admin
 @can_restrict
-def mute(update: Update, context: CallbackContext):
+async def mute(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Mute a user, temporarily or permanently
     :param update: object representing the incoming update.
@@ -131,18 +132,18 @@ def mute(update: Update, context: CallbackContext):
         user_id, username = get_user_from_message(update.effective_message)
         kwargs["user_id"] = user_id
     except UserError:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to mute..."
         )
         return
     except UserRecordError as e:
-        update.effective_message.reply_text(e.message)
+        await update.effective_message.reply_text(e.message)
         return
 
     # check if user is trying to mute an admin
-    user = update.effective_chat.get_member(kwargs["user_id"])
+    user = await update.effective_chat.get_member(kwargs["user_id"])
     if user.status in ("administrator", "creator"):
-        update.effective_message.reply_text("I can't mute an admin, baka!")
+        await update.effective_message.reply_text("I can't mute an admin, baka!")
         return
 
     # set muted permissions
@@ -161,12 +162,12 @@ def mute(update: Update, context: CallbackContext):
     try:
         kwargs["until_date"] = get_datetime_form_args(context.args, username)
     except TimeFormatException:
-        update.effective_message.reply_markdown(
+        await update.effective_message.reply_markdown(
             "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
         )
         return
     except ValueError:
-        update.effective_message.reply_text("Time needs to be a number, baka!")
+        await update.effective_message.reply_text("Time needs to be a number, baka!")
         return
 
     # add muted member in db
@@ -177,7 +178,7 @@ def mute(update: Update, context: CallbackContext):
         until_date=kwargs["until_date"] if "until_date" in kwargs.keys() else None,
     ):
         # mute member
-        context.bot.restrict_chat_member(**kwargs)
+        await context.bot.restrict_chat_member(**kwargs)
         reply = (
             f"Sewed up @{escape_markdown(username)}'s mouth :smiling_face_with_horns:\nIf you want to be un-muted, "
             f"bribe an admin with some catnip to do it for you..."
@@ -185,9 +186,9 @@ def mute(update: Update, context: CallbackContext):
         if kwargs["until_date"]:
             reply += f" or wait till `{kwargs['until_date'].strftime('%c')} IST`"
 
-        update.effective_message.reply_markdown(emojize(reply))
+        await update.effective_message.reply_markdown(emojize(reply))
     else:
-        update.effective_message.reply_text("Couldn't save record in db....")
+        await update.effective_message.reply_text("Couldn't save record in db....")
 
 
 @bot_action("un mute")
@@ -195,7 +196,7 @@ def mute(update: Update, context: CallbackContext):
 @check_user_admin
 @check_bot_admin
 @can_restrict
-def unmute(update: Update, context: CallbackContext):
+async def unmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Unmute a muted user
     :param update: object representing the incoming update.
@@ -209,26 +210,26 @@ def unmute(update: Update, context: CallbackContext):
         user_id, username = get_user_from_message(update.effective_message)
         kwargs["user_id"] = user_id
     except UserError:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to unmute..."
         )
         return
     except UserRecordError as e:
-        update.effective_message.reply_text(e.message)
+        await update.effective_message.reply_text(e.message)
         return
 
     # set default permissions
-    kwargs["permissions"] = context.bot.get_chat(update.effective_chat.id).permissions
+    kwargs["permissions"] = await context.bot.get_chat(update.effective_chat.id).permissions
 
     # unmute member
     if remove_muted_member(chat=kwargs["chat_id"], user=kwargs["user_id"]):
-        context.bot.restrict_chat_member(**kwargs)
-        update.effective_message.reply_text(f"@{username} can now go nyan nyan")
+        await context.bot.restrict_chat_member(**kwargs)
+        await update.effective_message.reply_text(f"@{username} can now go nyan nyan")
     else:
-        update.effective_message.reply_text("Couldn't remove record from db....")
+        await update.effective_message.reply_text("Couldn't remove record from db....")
 
 
-def ban_kick(update: Update, context: CallbackContext):
+async def ban_kick(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     ban or kick a user from a chat
     :param update: object representing the incoming update.
@@ -244,31 +245,31 @@ def ban_kick(update: Update, context: CallbackContext):
         user_id, username = get_user_from_message(update.effective_message)
         kwargs["user_id"] = user_id
     except UserError:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             f"Reply to a message by the user or give username of user you want to {action}..."
         )
         return
     except UserRecordError as e:
-        update.effective_message.reply_text(e.message)
+        await update.effective_message.reply_text(e.message)
         return
 
     # check if user is trying to ban the bot
     if kwargs["user_id"] == context.bot.id:
-        update.effective_message.reply_markdown(f"Try to {action} me again, I'll meow meow your buttocks.")
+        await update.effective_message.reply_markdown(f"Try to {action} me again, I'll meow meow your buttocks.")
         return
 
-    user = update.effective_chat.get_member(kwargs["user_id"])
+    user = await update.effective_chat.get_member(kwargs["user_id"])
 
     # check if user is in the group
     if user.status == "left":
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             f"If you can't steal catnip from an empty can, you can't {action} someone who isn't in the group."
         )
         return
 
     # check if user is trying to ban an admin
     if user.status in ("administrator", "creator"):
-        update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just {action} __you__.")
+        await update.effective_message.reply_markdown(f"Try to {action} an admin again, I might just {action} __you__.")
         return
 
     # get datetime till when we have to mute user
@@ -276,12 +277,12 @@ def ban_kick(update: Update, context: CallbackContext):
         try:
             kwargs["until_date"] = get_datetime_form_args(context.args, username)
         except TimeFormatException:
-            update.effective_message.reply_markdown(
+            await update.effective_message.reply_markdown(
                 "Please give the unit of time as one of the following\n\n`m` = minutes\n`h` = hours\n`d` = days"
             )
             return
         except ValueError:
-            update.effective_message.reply_text("Time needs to be a number, baka!")
+            await update.effective_message.reply_text("Time needs to be a number, baka!")
             return
 
     # announce ban
@@ -295,14 +296,14 @@ def ban_kick(update: Update, context: CallbackContext):
     if action == "ban":
         # if user is being banned, troll them with banhammer video
         with open(join(dirname(__file__), "assets", "ban.mp4"), "rb") as f:
-            update.effective_message.reply_video(video=f, caption=emojize(reply), parse_mode=ParseMode.HTML)
+            await update.effective_message.reply_video(video=f, caption=emojize(reply), parse_mode=ParseMode.HTML)
     else:
-        update.effective_message.reply_text(emojize(reply), parse_mode=ParseMode.HTML)
+        await update.effective_message.reply_text(emojize(reply), parse_mode=ParseMode.HTML)
 
     # ban user
-    context.bot.ban_chat_member(**kwargs)
+    await context.bot.ban_chat_member(**kwargs)
     if action == "kick":
-        context.bot.unban_chat_member(kwargs["chat_id"], kwargs["user_id"])
+        await context.bot.unban_chat_member(kwargs["chat_id"], kwargs["user_id"])
 
 
 @bot_action("ban")
@@ -310,7 +311,7 @@ def ban_kick(update: Update, context: CallbackContext):
 @check_user_admin
 @check_bot_admin
 @can_restrict
-def ban(update: Update, context: CallbackContext):
+async def ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     ban a user from a chat
     :param update: object representing the incoming update.
@@ -324,7 +325,7 @@ def ban(update: Update, context: CallbackContext):
 @check_user_admin
 @check_bot_admin
 @can_restrict
-def unban(update: Update, context: CallbackContext):
+async def unban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     unban a user from a chat
     :param update: object representing the incoming update.
@@ -337,17 +338,17 @@ def unban(update: Update, context: CallbackContext):
     try:
         kwargs["user_id"], username = get_user_from_message(update.effective_message)
     except UserError:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             f"Reply to a message by the user or give username of user you want to unban..."
         )
         return
     except UserRecordError as e:
-        update.effective_message.reply_text(e.message)
+        await update.effective_message.reply_text(e.message)
         return
 
-    context.bot.unban_chat_member(kwargs["chat_id"], kwargs["user_id"])
+    await context.bot.unban_chat_member(kwargs["chat_id"], kwargs["user_id"])
 
-    update.effective_message.reply_text(
+    await update.effective_message.reply_text(
         f"Someone go to the litter and tell {username} that he's been unbanned....\n\nfor now."
     )
 
@@ -357,7 +358,7 @@ def unban(update: Update, context: CallbackContext):
 @check_user_admin
 @check_bot_admin
 @can_restrict
-def kick(update: Update, context: CallbackContext):
+async def kick(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     kick a user from a chat
     :param update: object representing the incoming update.
@@ -370,7 +371,7 @@ def kick(update: Update, context: CallbackContext):
 @for_chat_types("supergroup", "channel")
 @check_user_admin
 @check_bot_admin
-def promote(update: Update, context: CallbackContext):
+async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Promote a user to give him admin rights
     :param update: object representing the incoming update.
@@ -378,19 +379,19 @@ def promote(update: Update, context: CallbackContext):
     """
     # check if user has enough perms
     if update.effective_chat.id not in get_command_exception_chats("admin"):
-        user = update.effective_chat.get_member(update.effective_user.id)
+        user = await update.effective_chat.get_member(update.effective_user.id)
         if not user.can_promote_members and user.status != "creator":
-            update.effective_message.reply_markdown(
+            await update.effective_message.reply_markdown(
                 "Ask your sugar daddy to give you perms required to use the method `CanPromoteMembers`."
             )
             return
 
     # get bot member object to check it's perms
-    bot: ChatMember = update.effective_chat.get_member(context.bot.id)
+    bot: ChatMember = await update.effective_chat.get_member(context.bot.id)
 
     # check if bot can promote users
     if not bot.can_promote_members:
-        update.effective_message.reply_markdown(
+        await update.effective_message.reply_markdown(
             "Ask your sugar daddy to give me perms required to use the method `CanPromoteMembers`."
         )
         return
@@ -399,18 +400,18 @@ def promote(update: Update, context: CallbackContext):
     try:
         user_id, username = get_user_from_message(update.effective_message)
     except UserError:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to promote..."
         )
         return
     except UserRecordError as e:
-        update.effective_message.reply_text(e.message)
+        await update.effective_message.reply_text(e.message)
         return
 
     # promote member
     reply = ""
     try:
-        context.bot.promote_chat_member(
+        await context.bot.promote_chat_member(
             chat_id=update.effective_chat.id,
             user_id=user_id,
             can_change_info=bot.can_change_info,
@@ -427,13 +428,13 @@ def promote(update: Update, context: CallbackContext):
         # get all args other than the username
         if useful_args := [arg for arg in context.args if username not in arg]:
             title = " ".join(useful_args)
-            context.bot.set_chat_administrator_custom_title(update.effective_chat.id, user_id, title)
+            await context.bot.set_chat_administrator_custom_title(update.effective_chat.id, user_id, title)
             reply += f"\nThey have been granted the title of `{title}`."
 
-        update.effective_message.reply_markdown(reply.strip())
+        await update.effective_message.reply_markdown(reply.strip())
 
     except BadRequest:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "This cat can't meow at it's superiors.... and neither can I change their perms or title."
         )
 
@@ -442,7 +443,7 @@ def promote(update: Update, context: CallbackContext):
 @for_chat_types("supergroup", "channel")
 @check_user_admin
 @check_bot_admin
-def demote(update: Update, context: CallbackContext):
+async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Demote a user to remove admin rights
     :param update: object representing the incoming update.
@@ -450,19 +451,19 @@ def demote(update: Update, context: CallbackContext):
     """
     # check if user has enough perms
     if update.effective_chat.id not in get_command_exception_chats("admin"):
-        user = update.effective_chat.get_member(update.effective_user.id)
+        user = await update.effective_chat.get_member(update.effective_user.id)
         if not user.can_promote_members and user.status != "creator":
-            update.effective_message.reply_markdown(
+            await update.effective_message.reply_markdown(
                 "Ask your sugar daddy to give you perms required to use the method `CanPromoteMembers`."
             )
             return
 
     # get bot member object to check it's perms
-    bot: ChatMember = update.effective_chat.get_member(context.bot.id)
+    bot: ChatMember = await update.effective_chat.get_member(context.bot.id)
 
     # check if bot can demote users
     if not bot.can_promote_members:
-        update.effective_message.reply_markdown(
+        await update.effective_message.reply_markdown(
             "Ask your sugar daddy to give me perms required to use the method `CanPromoteMembers`."
         )
         return
@@ -471,21 +472,21 @@ def demote(update: Update, context: CallbackContext):
     try:
         user_id, username = get_user_from_message(update.effective_message)
     except UserError:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Reply to a message by the user or give username of user you want to demote..."
         )
         return
     except UserRecordError as e:
-        update.effective_message.reply_text(e.message)
+        await update.effective_message.reply_text(e.message)
         return
 
     # demote member
-    if update.effective_chat.get_member(user_id).status != "administrator":
-        update.effective_message.reply_text("What are you gonna demote a pleb to?")
+    if await update.effective_chat.get_member(user_id).status != "administrator":
+        await update.effective_message.reply_text("What are you gonna demote a pleb to?")
         return
 
     try:
-        context.bot.promote_chat_member(
+        await context.bot.promote_chat_member(
             chat_id=update.effective_chat.id,
             user_id=user_id,
             can_change_info=False,
@@ -498,7 +499,7 @@ def demote(update: Update, context: CallbackContext):
             can_promote_members=False,
         )
 
-        update.effective_message.reply_markdown(
+        await update.effective_message.reply_markdown(
             emojize(
                 f"{mention_markdown(user_id, username)} has been thrown down from the council of admins to rot with the"
                 f" rest of you plebs :grinning_cat_face_with_smiling_eyes:"
@@ -506,7 +507,7 @@ def demote(update: Update, context: CallbackContext):
         )
 
     except BadRequest:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "This cat can't meow at it's superiors.... and neither can I change their perms or title."
         )
 
@@ -515,7 +516,7 @@ def demote(update: Update, context: CallbackContext):
 @for_chat_types("supergroup", "channel")
 @check_user_admin
 @check_bot_admin
-def pin(update: Update, context: CallbackContext):
+async def pin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Pin a message in the chat
     :param update: object representing the incoming update.
@@ -523,9 +524,9 @@ def pin(update: Update, context: CallbackContext):
     """
     # check if user has enough perms
     if update.effective_chat.id not in get_command_exception_chats("admin"):
-        user = update.effective_chat.get_member(update.effective_user.id)
+        user = await update.effective_chat.get_member(update.effective_user.id)
         if not user.can_pin_messages and user.status != "creator":
-            update.effective_message.reply_markdown(
+            await update.effective_message.reply_markdown(
                 "Ask your sugar daddy to give you perms required to use the method `CanPinMessages`."
             )
             return
@@ -533,19 +534,19 @@ def pin(update: Update, context: CallbackContext):
     # check if bot has perms to pin a message
     if (
         update.effective_chat.type == "supergroup"
-        and not update.effective_chat.get_member(context.bot.id).can_pin_messages
+        and not await update.effective_chat.get_member(context.bot.id).can_pin_messages
     ) or (
         update.effective_chat.type == "channel"
-        and not update.effective_chat.get_member(context.bot.id).can_edit_messages
+        and not await update.effective_chat.get_member(context.bot.id).can_edit_messages
     ):
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Bribe your sugar daddy with some catnip and ask him to allow me to pin messages..."
         )
         return
 
     # check if there is a message to pin
     if not update.effective_message.reply_to_message:
-        update.effective_message.reply_text("I'm a cat, not a psychic! Reply to the message you want to pin...")
+        await update.effective_message.reply_text("I'm a cat, not a psychic! Reply to the message you want to pin...")
         return
 
     # for future usage
@@ -561,7 +562,7 @@ def pin(update: Update, context: CallbackContext):
         disable_notification = None
 
     # pin the message
-    context.bot.pin_chat_message(
+    await context.bot.pin_chat_message(
         update.effective_chat.id,
         update.effective_message.reply_to_message.message_id,
         disable_notification=disable_notification,
@@ -570,7 +571,7 @@ def pin(update: Update, context: CallbackContext):
 
 @bot_action("enable")
 @check_user_admin
-def enable_command(update: Update, context: CallbackContext):
+async def enable_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Enable commands for given chat
     :param update: object representing the incoming update.
@@ -578,7 +579,9 @@ def enable_command(update: Update, context: CallbackContext):
     """
     # check if any commands were passed
     if not context.args:
-        update.effective_message.reply_text("I'm a cat, not a psychic! Mention the commands you want to enable...")
+        await update.effective_message.reply_text(
+            "I'm a cat, not a psychic! Mention the commands you want to enable..."
+        )
         return
 
     # enable commands in db
@@ -587,14 +590,14 @@ def enable_command(update: Update, context: CallbackContext):
 
     # format response and send to user
     if len(responses) > 1:
-        update.effective_message.reply_markdown("\n".join(f"- {response}" for response in responses))
+        await update.effective_message.reply_markdown("\n".join(f"- {response}" for response in responses))
     else:
-        update.effective_message.reply_markdown(responses[0])
+        await update.effective_message.reply_markdown(responses[0])
 
 
 @bot_action("disable")
 @check_user_admin
-def disable_command(update: Update, context: CallbackContext):
+async def disable_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Disable commands for given chat
     :param update: object representing the incoming update.
@@ -602,7 +605,9 @@ def disable_command(update: Update, context: CallbackContext):
     """
     # check if any commands were passed
     if not context.args:
-        update.effective_message.reply_text("I'm a cat, not a psychic! Mention the commands you want to disable...")
+        await update.effective_message.reply_text(
+            "I'm a cat, not a psychic! Mention the commands you want to disable..."
+        )
         return
 
     # disable commands in db
@@ -611,9 +616,9 @@ def disable_command(update: Update, context: CallbackContext):
 
     # format response and send to user
     if len(responses) > 1:
-        update.effective_message.reply_markdown("\n".join(f"- {response}" for response in responses))
+        await update.effective_message.reply_markdown("\n".join(f"- {response}" for response in responses))
     else:
-        update.effective_message.reply_markdown(responses[0])
+        await update.effective_message.reply_markdown(responses[0])
 
 
 __mod_name__ = "Admin"
@@ -695,13 +700,13 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("promote", promote, run_async=True))
-dispatcher.add_handler(CommandHandler("demote", demote, run_async=True))
-dispatcher.add_handler(CommandHandler("mute", mute, run_async=True))
-dispatcher.add_handler(CommandHandler("unmute", unmute, run_async=True))
-dispatcher.add_handler(CommandHandler("ban", ban, run_async=True))
-dispatcher.add_handler(CommandHandler("unban", unban, run_async=True))
-dispatcher.add_handler(CommandHandler("kick", kick, run_async=True))
-dispatcher.add_handler(CommandHandler("pin", pin, run_async=True))
-dispatcher.add_handler(CommandHandler("enable", enable_command, run_async=True))
-dispatcher.add_handler(CommandHandler("disable", disable_command, run_async=True))
+application.add_handler(CommandHandler("promote", promote, block=False))
+application.add_handler(CommandHandler("demote", demote, block=False))
+application.add_handler(CommandHandler("mute", mute, block=False))
+application.add_handler(CommandHandler("unmute", unmute, block=False))
+application.add_handler(CommandHandler("ban", ban, block=False))
+application.add_handler(CommandHandler("unban", unban, block=False))
+application.add_handler(CommandHandler("kick", kick, block=False))
+application.add_handler(CommandHandler("pin", pin, block=False))
+application.add_handler(CommandHandler("enable", enable_command, block=False))
+application.add_handler(CommandHandler("disable", disable_command, block=False))

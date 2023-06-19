@@ -9,7 +9,7 @@ from requests import post
 from telegram import Update, Message, MessageEntity
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
-from telegram.utils.helpers import mention_markdown
+from telegram.helpers import mention_markdown
 
 from telebot import config
 from telebot.modules.db.chat_commands import check_command_for_chat
@@ -58,8 +58,9 @@ def check_user_admin(func: Callable):
     def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
         if update.effective_chat.type != "private":
             # check if user is admin
-            if update.effective_chat.get_member(update.effective_user.id).status not in ("administrator", "creator"):
-                update.effective_message.reply_text(
+            user = await update.effective_chat.get_member(update.effective_user.id)
+            if user.status not in ("administrator", "creator"):
+                await update.effective_message.reply_text(
                     "Get some admin privileges before you try to order me around, baka!"
                 )
                 return
@@ -79,8 +80,8 @@ def check_bot_admin(func: Callable):
     def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
         if update.effective_chat.type != "private":
             # check if bot is an admin
-            if update.effective_chat.get_member(context.bot.id).status not in ("administrator", "creator"):
-                update.effective_message.reply_text("Ask your sugar daddy to give me admin status plej...")
+            if await update.effective_chat.get_member(context.bot.id).status not in ("administrator", "creator"):
+                await update.effective_message.reply_text("Ask your sugar daddy to give me admin status plej...")
                 return
 
         return func(update, context, *args, **kwargs)
@@ -125,7 +126,7 @@ def check_reply_to_message(error_msg: str):
                 return func(update, context, *args, **kwargs)  # execute the function
 
             else:
-                update.effective_message.reply_markdown(error_msg)
+                await update.effective_message.reply_markdown(error_msg)
 
         return inner
 
@@ -202,7 +203,7 @@ def bot_action(func_name: str = None, extra_text: str = ""):
                 return func(update, context, *args, **kwargs)
             except BadRequest as e:
                 if e.message == "Message is too long":
-                    update.effective_message.reply_text(
+                    await update.effective_message.reply_text(
                         emojize(
                             "I tried to send a message so long that my tongue got tired :sad_but_relieved_face: "
                             "This is not gonna work, let's try something else..."
@@ -215,7 +216,7 @@ def bot_action(func_name: str = None, extra_text: str = ""):
                     except:
                         err = f"```{format_exc()}```"
 
-                    update.effective_message.reply_markdown(
+                    await update.effective_message.reply_markdown(
                         f"{err}\n\n"
                         f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with "
                         "some catnip to fix it for you..."
@@ -227,7 +228,7 @@ def bot_action(func_name: str = None, extra_text: str = ""):
                 except:
                     err = f"```{format_exc()}```"
 
-                update.effective_message.reply_markdown(
+                await update.effective_message.reply_markdown(
                     f"{err}\n\n"
                     f"Show this to {mention_markdown(user_id=config.ADMIN, name='my master')} and bribe him with "
                     "some catnip to fix it for you..."
@@ -263,7 +264,7 @@ def check_command(command: str = None):
             :return: inner function to execute
             """
             if not check_command_for_chat(update.effective_chat.id, command):
-                update.effective_message.reply_text(
+                await update.effective_message.reply_text(
                     "This command is forbidden in this chat! If you want to do forbidden stuff, go to Alabama..."
                 )
                 return

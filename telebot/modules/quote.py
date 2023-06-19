@@ -8,14 +8,14 @@ from uuid import uuid4
 
 from PIL import ImageFont, ImageDraw, Image, ImageFilter
 from telegram import Update, Message
-from telegram.ext import CommandHandler, CallbackContext
+from telegram.ext import CommandHandler, ContextTypes
 
-from telebot import dispatcher
+from telebot import application
 from telebot.modules.db.users import add_user
 from telebot.utils import bot_action, CommandDescription, check_command
 
 
-def _message_to_sticker(update: Update, context: CallbackContext) -> str:
+async def _message_to_sticker(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     """
     Function to make the sticker from message and save it on disk as png image
     :param update: object representing the incoming update.
@@ -85,9 +85,9 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
 
         try:
             # Get users Profile Photo
-            profile_pic = update.effective_message.reply_to_message.from_user.get_profile_photos().photos[0][0]
+            profile_pic = await update.effective_message.reply_to_message.from_user.get_profile_photos().photos[0][0]
 
-            file_pp = context.bot.getFile(profile_pic)
+            file_pp = await context.bot.getFile(profile_pic)
             file_pp.download(f"{file_name}_dp.jpg")
 
         except IndexError:
@@ -294,19 +294,19 @@ def _message_to_sticker(update: Update, context: CallbackContext) -> str:
 
 @bot_action("quote")
 @check_command("quote")
-def quote(update: Update, context: CallbackContext):
+async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     convert message into quote and reply
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    context.bot.send_chat_action(update.effective_chat.id, "upload_photo")  # tell chat that a sticker is incoming
+    await context.bot.send_chat_action(update.effective_chat.id, "upload_photo")  # tell chat that a sticker is incoming
 
     # make sticker and save on disk
     try:
         file_name = _message_to_sticker(update, context)
     except AttributeError:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Please reply to a message to get its quote...\nThis cat can't read your mind!"
         )
         return
@@ -318,7 +318,7 @@ def quote(update: Update, context: CallbackContext):
     )
 
     # send generated image as sticker
-    update.effective_message.reply_sticker(sticker=open(file_name, "rb"))
+    await update.effective_message.reply_sticker(sticker=open(file_name, "rb"))
 
     # remove stored image
     if isfile(file_name):
@@ -334,4 +334,4 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("quote", quote, run_async=True))
+application.add_handler(CommandHandler("quote", quote, block=False))

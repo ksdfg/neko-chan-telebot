@@ -12,7 +12,6 @@ from emoji import emojize
 from pydantic import BaseModel
 from telegram import (
     Update,
-    TelegramError,
     InlineKeyboardMarkup,
     InlineKeyboardButton,
     Bot,
@@ -21,11 +20,11 @@ from telegram import (
     StickerSet,
     Sticker,
 )
-from telegram.error import BadRequest
-from telegram.ext import CallbackContext, CommandHandler, ConversationHandler, MessageHandler, Filters
-from telegram.utils.helpers import escape_markdown
+from telegram.error import BadRequest, TelegramError
+from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, ContextTypes, filters
+from telegram.helpers import escape_markdown
 
-from telebot import dispatcher, config
+from telebot import application, config
 from telebot.modules.db.exceptions import get_command_exception_chats
 from telebot.modules.db.users import add_user
 from telebot.utils import bot_action, CommandDescription, check_command
@@ -33,7 +32,7 @@ from telebot.utils import bot_action, CommandDescription, check_command
 
 @bot_action("sticker id")
 @check_command("stickerid")
-def sticker_id(update: Update, context: CallbackContext) -> None:
+async def sticker_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Reply with the file ID of a given sticker
     :param update: object representing the incoming update.
@@ -47,15 +46,17 @@ def sticker_id(update: Update, context: CallbackContext) -> None:
             user_id=update.effective_message.reply_to_message.from_user.id,
             username=update.effective_message.reply_to_message.from_user.username,
         )
-        update.effective_message.reply_markdown("Sticker ID:\n```" + escape_markdown(rep_msg.sticker.file_id) + "```")
+        await update.effective_message.reply_markdown(
+            "Sticker ID:\n```" + escape_markdown(rep_msg.sticker.file_id) + "```"
+        )
 
     else:
-        update.effective_message.reply_text("Please reply to a sticker to get its ID.")
+        await update.effective_message.reply_text("Please reply to a sticker to get its ID.")
 
 
 @bot_action("get sticker")
 @check_command("getsticker")
-def get_sticker(update: Update, context: CallbackContext) -> None:
+async def get_sticker(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Reply with the PNG image as a document for a given sticker
     :param update: object representing the incoming update.
@@ -73,24 +74,24 @@ def get_sticker(update: Update, context: CallbackContext) -> None:
 
         # check if sticker is animated, fugg off if it is
         if rep_msg.sticker.is_animated:
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 f"Sorry, cannyot get animated stickers for now {emojize(':crying_cat_face:', use_aliases=True)} I can meow tho..."
             )
 
         else:
             # download file
             file_id = rep_msg.sticker.file_id
-            new_file = context.bot.get_file(file_id)
+            new_file = await context.bot.get_file(file_id)
             new_file.download(f"{file_id}.png")
 
             # send picture
-            context.bot.send_document(chat_id, document=open(f"{file_id}.png", "rb"))
+            await context.bot.send_document(chat_id, document=open(f"{file_id}.png", "rb"))
 
             # delete locally created image
             remove(f"{file_id}.png")
 
     else:
-        update.effective_message.reply_text("Please reply to a sticker for me to upload its PNG.")
+        await update.effective_message.reply_text("Please reply to a sticker for me to upload its PNG.")
 
 
 class StickerType(IntEnum):
@@ -172,7 +173,7 @@ def _get_packs(user: User, bot: Bot, pack_type: StickerType) -> List[StickerSet]
         # default pack number and name of the first pack
         pack_num = 0
         pack_name = _generate_pack_name(user, bot, pack_num, pack_type)
-        sticker_set = bot.get_sticker_set(pack_name)
+        sticker_set = await bot.get_sticker_set(pack_name)
         packs.append(sticker_set)
 
         while len(sticker_set.stickers) >= max_stickers:
@@ -180,7 +181,7 @@ def _get_packs(user: User, bot: Bot, pack_type: StickerType) -> List[StickerSet]
             try:
                 pack_num += 1
                 pack_name = _generate_pack_name(user, bot, pack_num, pack_type)
-                sticker_set = bot.get_sticker_set(pack_name)
+                sticker_set = await bot.get_sticker_set(pack_name)
                 packs.append(sticker_set)
             except TelegramError:
                 # if the next pack doesn't exist yet, then this is the one to use
@@ -257,11 +258,11 @@ def _make_pack(
         pack_title = _generate_pack_title(user, pack_type, pack_num)
         match pack_type:
             case StickerType.STATIC:
-                bot.create_new_sticker_set(user.id, pack_name, pack_title, png_sticker=sticker, emojis=emoji)
+                await bot.create_new_sticker_set(user.id, pack_name, pack_title, png_sticker=sticker, emojis=emoji)
             case StickerType.ANIMATED:
-                bot.create_new_sticker_set(user.id, pack_name, pack_title, png_sticker=sticker, emojis=emoji)
+                await bot.create_new_sticker_set(user.id, pack_name, pack_title, png_sticker=sticker, emojis=emoji)
             case StickerType.VIDEO:
-                bot.create_new_sticker_set(user.id, pack_name, pack_title, webm_sticker=sticker, emojis=emoji)
+                await bot.create_new_sticker_set(user.id, pack_name, pack_title, webm_sticker=sticker, emojis=emoji)
 
     except TelegramError as e:
         match e.message:
@@ -331,13 +332,15 @@ class CustomSticker(BaseModel):
         if sticker.is_animated:
             self.type = StickerType.ANIMATED
             filename = self._get_temp_file_name()
-            sticker.get_file().download(filename)
+            sticker_file = await sticker.get_file()
+            sticker_file.download_to_drive(filename)
             self.content = open(filename, "rb")
 
         elif sticker.is_video:
             self.type = StickerType.VIDEO
             filename = self._get_temp_file_name()
-            sticker.get_file().download(filename)
+            sticker_file = await sticker.get_file()
+            sticker_file.download_to_drive(filename)
             self.content = open(filename, "rb")
 
         else:
@@ -363,7 +366,7 @@ class CustomSticker(BaseModel):
             self.type = StickerType.STATIC
 
             filename = self._get_temp_file_name()
-            self.bot.get_file(msg.reply_to_message.photo[-1].file_id).download(filename)
+            await self.bot.get_file(msg.reply_to_message.photo[-1].file_id).download(filename)
             _resize(filename)
             self.content = Path(filename)
 
@@ -372,7 +375,7 @@ class CustomSticker(BaseModel):
             self.type = StickerType.STATIC
 
             filename = self._get_temp_file_name()
-            self.bot.get_file(msg.reply_to_message.document.file_id).download(filename)
+            await self.bot.get_file(msg.reply_to_message.document.file_id).download(filename)
             _resize(filename)
             self.content = Path(filename)
 
@@ -387,17 +390,17 @@ class CustomSticker(BaseModel):
         """
         match self.type:
             case StickerType.STATIC:
-                self.bot.add_sticker_to_set(
+                await self.bot.add_sticker_to_set(
                     user_id=self.user.id, name=pack.name, png_sticker=self.content, emojis=self.emoji
                 )
 
             case StickerType.ANIMATED:
-                self.bot.add_sticker_to_set(
+                await self.bot.add_sticker_to_set(
                     user_id=self.user.id, name=pack.name, tgs_sticker=open(self.content, "rb"), emojis=self.emoji
                 )
 
             case StickerType.VIDEO:
-                self.bot.add_sticker_to_set(
+                await self.bot.add_sticker_to_set(
                     user_id=self.user.id, name=pack.name, webm_sticker=self.content, emojis=self.emoji
                 )
 
@@ -413,7 +416,7 @@ class CustomSticker(BaseModel):
 
 @bot_action("kang")
 @check_command("kang")
-def kang(update: Update, context: CallbackContext) -> None:
+async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Add a sticker to user's pack
     :param update: object representing the incoming update
@@ -483,7 +486,7 @@ def kang(update: Update, context: CallbackContext) -> None:
 
 @bot_action("migrate pack")
 @check_command("migrate")
-def migrate(update: Update, context: CallbackContext) -> None:
+async def migrate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Migrate all stickers from a given pack into user's pack(s)
     :param update: object representing the incoming update.
@@ -491,7 +494,9 @@ def migrate(update: Update, context: CallbackContext) -> None:
     """
     # check if there is a sticker to kang set from
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
-        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate!")
+        await update.effective_message.reply_text(
+            "Please reply to a sticker that belongs to a pack you want to migrate!"
+        )
         return
 
     # future usage
@@ -503,24 +508,26 @@ def migrate(update: Update, context: CallbackContext) -> None:
     # get original set name
     og_set_name = update.effective_message.reply_to_message.sticker.set_name
     if og_set_name is None:
-        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack you want to migrate!")
+        await update.effective_message.reply_text(
+            "Please reply to a sticker that belongs to a pack you want to migrate!"
+        )
         return
 
     # check if the sticker set already belongs to this bot
     if search(f"{context.bot.username}$", og_set_name):
-        update.effective_message.reply_markdown(f"This pack already belongs to `{context.bot.first_name}`...")
+        await update.effective_message.reply_markdown(f"This pack already belongs to `{context.bot.first_name}`...")
         return
 
-    update.effective_message.reply_text("Please be patient, this little kitty's paws can only kang so fast....")
+    await update.effective_message.reply_text("Please be patient, this little kitty's paws can only kang so fast....")
 
     # get original set data
-    og_stickers_set = context.bot.get_sticker_set(og_set_name)
+    og_stickers_set = await context.bot.get_sticker_set(og_set_name)
     og_set_title = og_stickers_set.title
     stickers = og_stickers_set.stickers
 
     # Get orignal set's sticker metadata
     if not og_stickers_set.stickers:
-        update.effective_message.reply_text("Congratulations on finding a sticker pack with no stickers...")
+        await update.effective_message.reply_text("Congratulations on finding a sticker pack with no stickers...")
     custom_sticker = CustomSticker(user=update.effective_user, bot=context.bot)
     custom_sticker.extract_from_sticker(stickers[0])
     pack_type = custom_sticker.type
@@ -549,7 +556,7 @@ def migrate(update: Update, context: CallbackContext) -> None:
         # remove first sticker from list of stickers to migrate
         stickers = stickers[1:]
 
-        sticker_pack = context.bot.get_sticker_set(pack_name)
+        sticker_pack = await context.bot.get_sticker_set(pack_name)
 
     appended_packs = [sticker_pack]  # list of packs the stickers were migrated into
 
@@ -580,7 +587,7 @@ def migrate(update: Update, context: CallbackContext) -> None:
                         print(len(sticker_pack.stickers))
 
             # update sticker pack
-            sticker_pack = context.bot.get_sticker_set(pack_name)
+            sticker_pack = await context.bot.get_sticker_set(pack_name)
 
         # if current pack is full
         else:
@@ -598,7 +605,7 @@ def migrate(update: Update, context: CallbackContext) -> None:
                 pack_type,
             )
 
-            sticker_pack = context.bot.get_sticker_set(pack_name)
+            sticker_pack = await context.bot.get_sticker_set(pack_name)
             appended_packs.append(sticker_pack)
 
         custom_sticker.delete_kang_temp_files()
@@ -610,12 +617,12 @@ def migrate(update: Update, context: CallbackContext) -> None:
             *[f"[{pack.title}](t.me/addstickers/{pack.name})" for pack in appended_packs],
         )
     )
-    update.effective_message.reply_markdown(reply)
+    await update.effective_message.reply_markdown(reply)
 
 
 @bot_action("delete sticker")
 @check_command("delsticker")
-def del_sticker(update: Update, context: CallbackContext) -> None:
+async def del_sticker(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Delete a sticker form one of the user's packs
     :param update: object representing the incoming update.
@@ -623,7 +630,7 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
     """
     # check if there's anything to delete
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
-        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
+        await update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return
 
     # future usage
@@ -636,24 +643,28 @@ def del_sticker(update: Update, context: CallbackContext) -> None:
     sticker = update.effective_message.reply_to_message.sticker
     set_name = sticker.set_name
     if not search(f"{context.bot.username}$", set_name):
-        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
+        await update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return
 
     # get sticker set info (for better replies)
-    set_title = context.bot.get_sticker_set(set_name).title
+    set_title = await context.bot.get_sticker_set(set_name).title
 
     # delete the sticker
     try:
-        context.bot.delete_sticker_from_set(sticker.file_id)
+        await context.bot.delete_sticker_from_set(sticker.file_id)
     except BadRequest:
-        update.effective_message.reply_text("Telegram seems to be high on catnip at the moment, try again in a while!")
+        await update.effective_message.reply_text(
+            "Telegram seems to be high on catnip at the moment, try again in a while!"
+        )
 
-    update.effective_message.reply_markdown(f"Deleted that sticker from [{set_title}](t.me/addstickers/{set_name}).")
+    await update.effective_message.reply_markdown(
+        f"Deleted that sticker from [{set_title}](t.me/addstickers/{set_name})."
+    )
 
 
 @bot_action("list packs")
 @check_command("packs")
-def packs(update: Update, context: CallbackContext):
+async def packs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     List all the packs of a user
     :param update: object representing the incoming update.
@@ -671,10 +682,10 @@ def packs(update: Update, context: CallbackContext):
         for pack in packs:
             reply += f"\n[{pack.title}](t.me/addstickers/{pack.name})"
 
-        update.effective_message.reply_markdown(reply)
+        await update.effective_message.reply_markdown(reply)
 
     else:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             emojize("You have no packs yet! kang or migrate to make one :grinning_cat_face_with_smiling_eyes:")
         )
 
@@ -685,7 +696,7 @@ reorder = {}
 
 @bot_action("reorder step 1")
 @check_command("reorder")
-def reorder1(update: Update, context: CallbackContext):
+async def reorder1(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     First step in reordering sticker in pack - take input of sticker who's position is to be changed
     :param update: object representing the incoming update.
@@ -694,7 +705,7 @@ def reorder1(update: Update, context: CallbackContext):
     """
     # check if there is a sticker to kang set from
     if not update.effective_message.reply_to_message or not update.effective_message.reply_to_message.sticker:
-        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
+        await update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return ConversationHandler.END
 
     # future usage
@@ -707,15 +718,15 @@ def reorder1(update: Update, context: CallbackContext):
     sticker = update.effective_message.reply_to_message.sticker
     set_name = sticker.set_name
     if not search(f"{context.bot.username}$", set_name):
-        update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
+        await update.effective_message.reply_text("Please reply to a sticker that belongs to a pack created by me")
         return ConversationHandler.END
 
     # if sticker position is given as arg, then set position and fugg off
     try:
-        context.bot.set_sticker_position_in_set(
+        await context.bot.set_sticker_position_in_set(
             update.effective_message.reply_to_message.sticker.file_id, int(context.args[0])
         )
-        update.effective_message.reply_markdown(
+        await update.effective_message.reply_markdown(
             f"I have updated [{context.bot.get_sticker_set(set_name).title}](t.me/addstickers/{set_name})!"
         )
         return ConversationHandler.END
@@ -727,7 +738,7 @@ def reorder1(update: Update, context: CallbackContext):
         str(update.effective_user.id) + str(update.effective_chat.id)
     ] = update.effective_message.reply_to_message.sticker.file_id
 
-    update.effective_message.reply_markdown(
+    await update.effective_message.reply_markdown(
         "Please send the sticker that is going to be on the `left` of this sticker __after__ the reorder, or /cancel to stop"
     )
 
@@ -735,7 +746,7 @@ def reorder1(update: Update, context: CallbackContext):
 
 
 @bot_action("reorder step 2")
-def reorder2(update: Update, context: CallbackContext):
+async def reorder2(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Last step in reordering sticker in pack - take input of sticker which is now gonna be on the left of the reordered sticker
     :param update: object representing the incoming update.
@@ -744,19 +755,19 @@ def reorder2(update: Update, context: CallbackContext):
     """
     # check if there is a sticker
     if not update.effective_message.sticker:
-        update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
+        await update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
         return 0
 
     # check if the bot has perms to reorder the sticker
     sticker = update.effective_message.sticker
     set_name = sticker.set_name
     if not search(f"{context.bot.username}$", set_name):
-        update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
+        await update.effective_message.reply_text("Please reply with a sticker that belongs to a pack created by me")
         return 0
 
     # get position of sticker in sticker pack
     old_index = new_index = -1
-    pack = context.bot.get_sticker_set(set_name)
+    pack = await context.bot.get_sticker_set(set_name)
     user_chat = reorder[str(update.effective_user.id) + str(update.effective_chat.id)]
     for i, s in enumerate(pack.stickers):
         if s.file_id == sticker.file_id:
@@ -771,11 +782,11 @@ def reorder2(update: Update, context: CallbackContext):
         new_index += 1  # since the empty space will be after the sticker, not before
 
     # set sticker position
-    context.bot.set_sticker_position_in_set(
+    await context.bot.set_sticker_position_in_set(
         reorder[str(update.effective_user.id) + str(update.effective_chat.id)], new_index
     )
     del reorder[str(update.effective_user.id) + str(update.effective_chat.id)]
-    update.effective_message.reply_markdown(
+    await update.effective_message.reply_markdown(
         f"I have updated [{context.bot.get_sticker_set(set_name).title}](t.me/addstickers/{set_name})!"
     )
 
@@ -784,7 +795,7 @@ def reorder2(update: Update, context: CallbackContext):
 
 @bot_action("reorder cancel")
 @check_command("cancel")
-def reorder_cancel(update: Update, context: CallbackContext):
+async def reorder_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Last step in reordering sticker in pack - take input of sticker which is now gonna be on the left of the reordered sticker
     :param update: object representing the incoming update.
@@ -793,7 +804,7 @@ def reorder_cancel(update: Update, context: CallbackContext):
     """
     # set sticker position
     del reorder[str(update.effective_user.id) + str(update.effective_chat.id)]
-    update.effective_message.reply_text(f"Don't wake me up from my nap before you make up your mind!")
+    await update.effective_message.reply_text(f"Don't wake me up from my nap before you make up your mind!")
 
     return ConversationHandler.END
 
@@ -844,16 +855,16 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("stickerid", sticker_id, run_async=True))
-dispatcher.add_handler(CommandHandler("getsticker", get_sticker, run_async=True))
-dispatcher.add_handler(CommandHandler("kang", kang, run_async=True))
-dispatcher.add_handler(CommandHandler("migrate", migrate, run_async=True))
-dispatcher.add_handler(CommandHandler("delsticker", del_sticker, run_async=True))
-dispatcher.add_handler(CommandHandler("packs", packs, run_async=True))
-dispatcher.add_handler(
+application.add_handler(CommandHandler("stickerid", sticker_id, block=False))
+application.add_handler(CommandHandler("getsticker", get_sticker, block=False))
+application.add_handler(CommandHandler("kang", kang, block=False))
+application.add_handler(CommandHandler("migrate", migrate, block=False))
+application.add_handler(CommandHandler("delsticker", del_sticker, block=False))
+application.add_handler(CommandHandler("packs", packs, block=False))
+application.add_handler(
     ConversationHandler(
-        entry_points=[CommandHandler("reorder", reorder1, run_async=True)],
-        states={0: [MessageHandler(Filters.sticker, reorder2, run_async=True)]},
-        fallbacks=[CommandHandler("cancel", reorder_cancel, run_async=True)],
+        entry_points=[CommandHandler("reorder", reorder1, block=False)],
+        states={0: [MessageHandler(filters.Sticker.ALL, reorder2, block=False)]},
+        fallbacks=[CommandHandler("cancel", reorder_cancel, block=False)],
     )
 )

@@ -29,6 +29,6 @@ class Config(BaseSettings):
 # create config object
 config = Config()
 
-# create updater and dispatcher
-updater = Updater(config.TOKEN, use_context=True)
-dispatcher = updater.dispatcher
+# create updater and application
+updater = Updater(config.TOKEN)
+application = updater.application

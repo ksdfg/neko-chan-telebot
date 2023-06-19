@@ -4,7 +4,7 @@ from typing import List
 from mongoengine import Document, StringField, ListField, IntField
 
 # create models for this module
-from telegram.utils.helpers import escape_markdown
+from telegram.helpers import escape_markdown
 
 
 class Exceptions(Document):

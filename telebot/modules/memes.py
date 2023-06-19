@@ -5,39 +5,43 @@ from re import sub
 from spongemock.spongemock import mock as mock_text
 from telegram import Update
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import CommandHandler, ContextTypes
 from zalgo_text.zalgo import zalgo
 
-from telebot import dispatcher
+from telebot import application
 from telebot.modules.db.users import add_user
 from telebot.utils import bot_action, CommandDescription, check_command
 
 
 @bot_action("runs")
 @check_command("runs")
-def runs(update: Update, context: CallbackContext) -> None:
+async def runs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Insulting reply whenever someone uses /runs
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    update.effective_message.reply_markdown("I'm a cute kitty, and here we have a fat pussy.")
-    update.effective_chat.send_sticker("CAACAgUAAxkBAAIJK19CjPoyyX9QwwHfNOZMnqww1hxXAALfAAPd6BozJDBFCIENpGkbBA")
+    await update.effective_message.reply_markdown("I'm a cute kitty, and here we have a fat pussy.")
+    await update.effective_chat.send_sticker("CAACAgUAAxkBAAIJK19CjPoyyX9QwwHfNOZMnqww1hxXAALfAAPd6BozJDBFCIENpGkbBA")
 
 
 @bot_action("mock")
 @check_command("mock")
-def mock(update: Update, context: CallbackContext) -> None:
+async def mock(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Mock a message like spongebob, and reply
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
     if context.args:
-        update.effective_message.reply_text(mock_text(update.effective_message.text.replace("/mock ", "").strip()))
+        await update.effective_message.reply_text(
+            mock_text(update.effective_message.text.replace("/mock ", "").strip())
+        )
 
     elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.text:
-        update.effective_message.reply_to_message.reply_text(mock_text(update.effective_message.reply_to_message.text))
+        await update.effective_message.reply_to_message.reply_text(
+            mock_text(update.effective_message.reply_to_message.text)
+        )
         # for future usage
         add_user(
             user_id=update.effective_message.reply_to_message.from_user.id,
@@ -45,12 +49,12 @@ def mock(update: Update, context: CallbackContext) -> None:
         )
 
     else:
-        update.effective_message.reply_text("I don't see anything to mock here other than your ugly face...")
+        await update.effective_message.reply_text("I don't see anything to mock here other than your ugly face...")
 
 
 @bot_action("zalgofy")
 @check_command("zalgofy")
-def zalgofy(update: Update, context: CallbackContext) -> None:
+async def zalgofy(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Corrupt the way the text looks, and reply
     :param update: object representing the incoming update.
@@ -59,10 +63,14 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
     transform = zalgo().zalgofy
 
     if context.args:
-        update.effective_message.reply_text(transform(update.effective_message.text.replace("/zalgofy ", "").strip()))
+        await update.effective_message.reply_text(
+            transform(update.effective_message.text.replace("/zalgofy ", "").strip())
+        )
 
     elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.text:
-        update.effective_message.reply_to_message.reply_text(transform(update.effective_message.reply_to_message.text))
+        await update.effective_message.reply_to_message.reply_text(
+            transform(update.effective_message.reply_to_message.text)
+        )
         # for future usage
         add_user(
             user_id=update.effective_message.reply_to_message.from_user.id,
@@ -70,12 +78,12 @@ def zalgofy(update: Update, context: CallbackContext) -> None:
         )
 
     else:
-        update.effective_message.reply_text("Gimme a message to zalgofy before I claw your tits off...")
+        await update.effective_message.reply_text("Gimme a message to zalgofy before I claw your tits off...")
 
 
 @bot_action("owo")
 @check_command("owo")
-def owo(update: Update, context: CallbackContext) -> None:
+async def owo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Change a message to look like it was said by a moe weeb
     :param update: object representing the incoming update.
@@ -126,20 +134,20 @@ def owo(update: Update, context: CallbackContext) -> None:
 
     if context.args:
         try:
-            update.effective_message.reply_markdown_v2(
+            await update.effective_message.reply_markdown_v2(
                 transform(update.effective_message.text_markdown_v2.replace("/owo ", "").strip())
             )
         except BadRequest as e:
             print(e)
             # in case we messed up markdown while replacing characters and adding kaomoji
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 "Gommenye, I over-owo'd myself.... please try again. "
                 "If it still doesn't work, then this must be the language of god's you're trying to translate...."
             )
 
     elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.text:
         try:
-            update.effective_message.reply_to_message.reply_markdown(
+            await update.effective_message.reply_to_message.reply_markdown(
                 transform(update.effective_message.reply_to_message.text_markdown)
             )
             # for future usage
@@ -150,36 +158,36 @@ def owo(update: Update, context: CallbackContext) -> None:
         except BadRequest as e:
             print(e)
             # in case we messed up markdown while replacing characters and adding kaomoji
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 "Gommenye, I over-owo'd myself.... please try again. "
                 "If it still doesn't work, then this must be the language of god's you're trying to translate...."
             )
 
     else:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Gommenye, I don't nyaruhodo what normie text you want to henshin into the moe weeb dialect"
         )
 
 
 @bot_action("stretch")
 @check_command("stretch")
-def stretch(update: Update, context: CallbackContext):
+async def stretch(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Stretch the vowels in a message by a random count
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
     if context.args:
-        update.effective_message.reply_markdown(
+        await update.effective_message.reply_markdown(
             sub(
                 r"([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])",
                 (r"\1" * randint(3, 10)),
-                update.effective_message.text_markdown.replace("/stretch ", "").strip(),
+                await update.effective_message.text_markdown.replace("/stretch ", "").strip(),
             )
         )
 
     elif update.effective_message.reply_to_message and update.effective_message.reply_to_message.text:
-        update.effective_message.reply_to_message.reply_markdown(
+        await update.effective_message.reply_to_message.reply_markdown(
             sub(
                 r"([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])",
                 (r"\1" * randint(3, 10)),
@@ -193,14 +201,14 @@ def stretch(update: Update, context: CallbackContext):
         )
 
     else:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "If you're not gonna give me something to meme then bring some catnip atleast..."
         )
 
 
 @bot_action("vapor")
 @check_command("vapor")
-def vapor(update: Update, context: CallbackContext):
+async def vapor(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Make a message look more ａｅｓｔｈｅｔｉｃ
     :param update: object representing the incoming update.
@@ -209,7 +217,7 @@ def vapor(update: Update, context: CallbackContext):
     if not context.args and not (
         update.effective_message.reply_to_message and update.effective_message.reply_to_message.text
     ):
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "If you're not gonna give me something to meme then bring some catnip atleast..."
         )
         return
@@ -229,14 +237,14 @@ def vapor(update: Update, context: CallbackContext):
 
     # reply with more ａｅｓｔｈｅｔｉｃｓ
     if context.args:
-        update.effective_message.reply_markdown(f"`{aesthetic_text}`")
+        await update.effective_message.reply_markdown(f"`{aesthetic_text}`")
     else:
-        update.effective_message.reply_to_message.reply_markdown(f"`{aesthetic_text}`")
+        await update.effective_message.reply_to_message.reply_markdown(f"`{aesthetic_text}`")
 
 
 @bot_action("sadge")
 @check_command("sadge")
-def sadge(update: Update, context: CallbackContext) -> None:
+async def sadge(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Quotes from Bennett Foddy's Getting over it
     :param update: object representing the incoming update.
@@ -247,9 +255,9 @@ def sadge(update: Update, context: CallbackContext) -> None:
 
     # If user replied to an original message, let quote be a reply to that message
     if update.effective_message.reply_to_message:
-        update.effective_message.reply_to_message.reply_markdown(f"```\n{choice(bennett_foddy)}\n```")
+        await update.effective_message.reply_to_message.reply_markdown(f"```\n{choice(bennett_foddy)}\n```")
     else:
-        update.effective_chat.send_message(f"```\n{choice(bennett_foddy)}\n```", parse_mode="markdown")
+        await update.effective_chat.send_message(f"```\n{choice(bennett_foddy)}\n```", parse_mode="markdown")
 
 
 __help__ = """
@@ -278,10 +286,10 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("runs", runs, run_async=True))
-dispatcher.add_handler(CommandHandler("mock", mock, run_async=True))
-dispatcher.add_handler(CommandHandler("zalgofy", zalgofy, run_async=True))
-dispatcher.add_handler(CommandHandler("owo", owo, run_async=True))
-dispatcher.add_handler(CommandHandler("stretch", stretch, run_async=True))
-dispatcher.add_handler(CommandHandler("vapor", vapor, run_async=True))
-dispatcher.add_handler(CommandHandler("sadge", sadge, run_async=True))
+application.add_handler(CommandHandler("runs", runs, block=False))
+application.add_handler(CommandHandler("mock", mock, block=False))
+application.add_handler(CommandHandler("zalgofy", zalgofy, block=False))
+application.add_handler(CommandHandler("owo", owo, block=False))
+application.add_handler(CommandHandler("stretch", stretch, block=False))
+application.add_handler(CommandHandler("vapor", vapor, block=False))
+application.add_handler(CommandHandler("sadge", sadge, block=False))

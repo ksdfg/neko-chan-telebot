@@ -3,10 +3,10 @@ from random import choice
 
 from emoji import emojize
 from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler
-from telegram.utils.helpers import escape_markdown
+from telegram.ext import CommandHandler, ContextTypes
+from telegram.helpers import escape_markdown
 
-from telebot import updater, dispatcher
+from telebot import updater, application
 from telebot.modules import imported_mods
 from telebot.utils import (
     bot_action,
@@ -30,23 +30,23 @@ I'm *{updater.bot.first_name}*, a cute little bot that does rendum shit.
 
 
 @bot_action("start")
-def start(update: Update, context: CallbackContext):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Reply with the start message on running /start
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    update.message.reply_markdown(START_TEXT)
+    await update.message.reply_markdown(START_TEXT)
 
 
 @bot_action("list modules")
-def list_modules(update: Update, context: CallbackContext):
+async def list_modules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Reply with all the imported modules
     :param update: object representing the incoming update.
     :param context: object containing data about the command call.
     """
-    update.effective_message.reply_markdown(
+    await update.effective_message.reply_markdown(
         "The list of Active Modules is as follows :\n\n`"
         + "`\n`".join(mod.__mod_name__.title() for mod in imported_mods.values())
         + "`"
@@ -54,7 +54,7 @@ def list_modules(update: Update, context: CallbackContext):
 
 
 @bot_action("help")
-def help(update: Update, context: CallbackContext):
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Reply with help message for the specified modules
     :param update: object representing the incoming update.
@@ -101,12 +101,12 @@ def help(update: Update, context: CallbackContext):
         "run /help followed by the module names, space separated."
     )
 
-    update.message.reply_markdown(text_blob)
+    await update.message.reply_markdown(text_blob)
 
 
 @bot_action("talk")
 @check_command("talk")
-def talk(update: Update, context: CallbackContext) -> None:
+async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Repeat a given word random number of times
     :param update: object representing the incoming update.
@@ -122,12 +122,12 @@ def talk(update: Update, context: CallbackContext) -> None:
     if word != "meow":
         spem += "\n\nmeow"
 
-    update.message.reply_markdown(f"`{spem}`")
+    await update.message.reply_markdown(f"`{spem}`")
 
 
 @bot_action("file id")
 @check_command("fileid")
-def get_file_id(update: Update, context: CallbackContext) -> None:
+async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Function to get chat and user ID
     :param update: object representing the incoming update.
@@ -145,15 +145,15 @@ def get_file_id(update: Update, context: CallbackContext) -> None:
     elif msg.voice:
         file = msg.voice
     else:
-        update.effective_message.reply_text("Find the cat that can find your file, cuz this cat can't.")
+        await update.effective_message.reply_text("Find the cat that can find your file, cuz this cat can't.")
         return
 
-    update.effective_message.reply_markdown(f"`{file.file_id}`")
+    await update.effective_message.reply_markdown(f"`{file.file_id}`")
 
 
 @bot_action("id")
 @check_command("id")
-def info(update: Update, context: CallbackContext):
+async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Function to get user details
     :param update: object representing the incoming update.
@@ -162,11 +162,11 @@ def info(update: Update, context: CallbackContext):
     # get user to display info of
     try:
         user_id, _ = get_user_from_message(update.effective_message)
-        user = update.effective_chat.get_member(user_id).user
+        user = await update.effective_chat.get_member(user_id).user
     except UserError:
         user = update.effective_user
     except UserRecordError as e:
-        update.effective_message.reply_text(e.message)
+        await update.effective_message.reply_text(e.message)
         return
 
     # make info string
@@ -180,7 +180,7 @@ def info(update: Update, context: CallbackContext):
     reply += user.mention_markdown(name="Click here to properly check this kitten out")
 
     # send user info
-    update.effective_message.reply_markdown(reply)
+    await update.effective_message.reply_markdown(reply)
 
 
 __mod_name__ = "Basics"
@@ -206,9 +206,9 @@ __commands__ = (
 )
 
 # create handlers
-dispatcher.add_handler(CommandHandler("start", start, run_async=True))
-dispatcher.add_handler(CommandHandler(["talk"], talk, run_async=True))
-dispatcher.add_handler(CommandHandler("help", help, run_async=True))
-dispatcher.add_handler(CommandHandler("modules", list_modules, run_async=True))
-dispatcher.add_handler(CommandHandler("id", info, run_async=True))
-dispatcher.add_handler(CommandHandler("fileid", get_file_id, run_async=True))
+application.add_handler(CommandHandler("start", start, block=False))
+application.add_handler(CommandHandler(["talk"], talk, block=False))
+application.add_handler(CommandHandler("help", help, block=False))
+application.add_handler(CommandHandler("modules", list_modules, block=False))
+application.add_handler(CommandHandler("id", info, block=False))
+application.add_handler(CommandHandler("fileid", get_file_id, block=False))
