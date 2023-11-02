@@ -1,5 +1,6 @@
-from pydantic import HttpUrl, BaseSettings
+from pydantic import HttpUrl
 from telegram.ext import Updater
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 # class for configuration of a bot
@@ -12,7 +13,7 @@ class Config(BaseSettings):
 
     GITHUB_TOKEN: str
 
-    WEBHOOK_URL: HttpUrl | None
+    WEBHOOK_URL: HttpUrl | None = None
     PORT: int = 80
 
     LOAD: list = []
@@ -22,8 +23,7 @@ class Config(BaseSettings):
 
     SUPERUSERS: list[int] = []
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra="allow")
 
 
 # create config object
